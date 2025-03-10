@@ -80,6 +80,7 @@ export const DraggableCabinet = ({ name, imageSrc, onCabinetClick }) => {
       }}
     >
       <img
+        className="itmimg"
         src={imageSrc}
         alt={name}
         style={{
@@ -102,7 +103,6 @@ export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
       isOver: !!monitor.isOver(),
     }),
   }));
-
 
   // Base aur Tall Cabinets ko alag-alag categorize karna
   const baseCabinets = droppedItems.filter((item) =>
@@ -145,12 +145,8 @@ export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
     setModalOpen(false);
   };
 
-
-
-
   return (
     <div>
-
       {/* Notes Modal */}
       <AddNotesModal
         isOpen={isModalOpen}
@@ -176,13 +172,11 @@ export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
           gap: "9px",
           alignContent: "flex-start",
         }}
-         className="sidemenu"
+        className="sidemenu"
       >
         {/* Base Cabinets - Column wise */}
         <div>
-          {baseCabinets.length === 0 && (
-            <p className="boxtxt">.</p>
-          )}
+          {baseCabinets.length === 0 && <p className="boxtxt">.</p>}
           {baseCabinets.map((item, index) => (
             <div key={index} style={{ position: "relative" }}>
               <img
@@ -270,9 +264,7 @@ export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
       </div>
     </div>
   );
-
 };
-
 
 // Function to retrieve notes from any file
 export const getNotes = () => getNotesFromLocalStorage();
