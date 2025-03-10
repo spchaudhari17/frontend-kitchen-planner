@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Body",
+    "properties": [
+      "background"
+    ]
+  },
+  {
+    "name": "Navbars",
+    "properties": [
+      "background",
+      "text"
+    ]
+  },
+  {
+    "name": "Button",
+    "properties": [
+      "background",
+      "text"
+    ]
+  },
+  {
+    "name": "Status",
+    "properties": [
+      "background",
+      "text"
+    ]
+  },
+  {
+    "name": "User",
+    "properties": [
+      "background",
+      "text",
+      "Button"
+    ]
+  },
+  {
+    "name": "Details",
+    "properties": [
+      "background",
+      "text",
+      "border"
+    ]
+  },
+  {
+    "name": "Modal",
+    "properties": [
+      "background",
+      "text"
+    ]
+  }
+]
