@@ -1,278 +1,278 @@
 .h4head {
-    color: #333;
-    font-size: 18px;
-    letter-spacing: -0.64px;
-    margin-bottom: 15px;
+  color: #333;
+  font-size: 18px;
+  letter-spacing: -0.64px;
+  margin-bottom: 15px;
 }
 
 .paratext {
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.38;
-    letter-spacing: -0.43px;
-    text-align: center;
-    color: #4c4c4c;
-    margin-bottom: 23px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.38;
+  letter-spacing: -0.43px;
+  text-align: center;
+  color: #4c4c4c;
+  margin-bottom: 23px;
 }
 
 .toptxt {
-    max-width: 600px;
+  max-width: 600px;
 }
 
 .maincont {
-    flex-wrap: wrap;
-    justify-content: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .cardtxt {
-    font-size: 1.1rem;
+  font-size: 1.1rem;
 }
 
 .step2itm {
-    display: flex;
-    flex-wrap: nowrap;
+  display: flex;
+  flex-wrap: nowrap;
 }
 
 .boxtxt {
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    padding: 20px;
-    margin: 0px;
-    transform: translate(-10px, -50%);
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  padding: 20px;
+  margin: 0px;
+  transform: translate(-10px, -50%);
 }
 
 .optbtn {
-    border-radius: 5px;
-    padding: 5px 10px;
-    border: 1px solid;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    font-size: 14px;
-    font-weight: 400;
+  border-radius: 5px;
+  padding: 5px 10px;
+  border: 1px solid;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .optbtn .text-left {
-    flex-grow: 1;
-    text-align: left;
+  flex-grow: 1;
+  text-align: left;
 }
 
 .optbtn .text-right {
-    flex-shrink: 0;
-    text-align: right;
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .c-flex {
-    display: flex !important;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    padding: 4px;
-    background: #00bfff2e;
-    height: 370px;
-    scroll-behavior: smooth;
-    overflow: auto;
-    scrollbar-width: thin;
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 4px;
+  background: #00bfff2e;
+  height: 370px;
+  scroll-behavior: smooth;
+  overflow: auto;
+  scrollbar-width: thin;
 }
 
 .btnflx {
-    display: flex;
-    padding: 20px;
+  display: flex;
+  padding: 20px;
 }
 
 .fldc .sidemenu .sidemenu {
-    width: 100% !important;
+  width: 100% !important;
 }
 
 /* MEDIA SCREEN */
 @media (max-width: 768px) {
-    .rempad {
-        padding: 0px !important;
-    }
+  .rempad {
+    padding: 0px !important;
+  }
 
-    .remmar {
-        margin: 0px !important;
-    }
+  .remmar {
+    margin: 0px !important;
+  }
 
-    .remmar h2 {
-        padding-top: 20px;
-    }
+  .remmar h2 {
+    padding-top: 20px;
+  }
 
-    .fldc {
-        flex-direction: column;
-    }
+  .fldc {
+    flex-direction: column;
+  }
 
-    .sidemenu {
-        width: 100% !important;
-    }
+  .sidemenu {
+    width: 100% !important;
+  }
 
-    .step2itm {
-        flex-direction: column;
-        align-items: center;
-    }
+  .step2itm {
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .roomlayout {
-        width: 100% !important;
-        padding-top: 0px !important;
-    }
+  .roomlayout {
+    width: 100% !important;
+    padding-top: 0px !important;
+  }
 
-    .mbtm {
-        margin-bottom: 20px;
-    }
+  .mbtm {
+    margin-bottom: 20px;
+  }
 
-    .ml5 {
-        margin-left: 5px;
-    }
+  .ml5 {
+    margin-left: 5px;
+  }
 
-    .nopad {
-        padding: 0px;
-    }
+  .nopad {
+    padding: 0px;
+  }
 
-    .cardtxt {
-        font-size: 12px;
-    }
+  .cardtxt {
+    font-size: 12px;
+  }
 
-    .p10 {
-        padding: 10px !important;
-    }
+  .p10 {
+    padding: 10px !important;
+  }
 
-    .crdimg {
-        height: 100px !important;
-    }
+  .crdimg {
+    height: 100px !important;
+  }
 
-    .w70 {
-        width: 70% !important;
-    }
+  .w70 {
+    width: 70% !important;
+  }
 
-    .step2itm h5 {
-        font-size: 1rem !important;
-    }
+  .step2itm h5 {
+    font-size: 1rem !important;
+  }
 
-    .step2itm .form-label {
-        font-size: 13px !important;
-    }
+  .step2itm .form-label {
+    font-size: 13px !important;
+  }
 
-    .step2itm .form-control {
-        font-size: 13px !important;
-    }
+  .step2itm .form-control {
+    font-size: 13px !important;
+  }
 
-    .step2itm p {
-        font-weight: normal !important;
-    }
+  .step2itm p {
+    font-weight: normal !important;
+  }
 
-    .step2itm .form-range {
-        height: 3.5rem;
-        display: flex;
-        padding-bottom: 10px;
-        align-items: flex-end;
-        width: 100%;
-    }
+  .step2itm .form-range {
+    height: 3.5rem;
+    display: flex;
+    padding-bottom: 10px;
+    align-items: flex-end;
+    width: 100%;
+  }
 
-    .step2itm .w66 {
-        width: 66%;
-    }
+  .step2itm .w66 {
+    width: 66%;
+  }
 
-    .btnflx {
-        flex-direction: column;
-        padding-top: 0px !important;
-    }
+  .btnflx {
+    flex-direction: column;
+    padding-top: 0px !important;
+  }
 
-    .btnflx button {
-        margin-left: 0px !important;
-        margin-top: 10px;
-    }
+  .btnflx button {
+    margin-left: 0px !important;
+    margin-top: 10px;
+  }
 
-    /* ************************** */
-    .itmimg {
-        width: 100px !important;
-        height: 100px !important;
-    }
+  /* ************************** */
+  .itmimg {
+    width: 100px !important;
+    height: 100px !important;
+  }
 
-    .c-flex {
-        justify-content: center;
-    }
+  .c-flex {
+    justify-content: center;
+  }
 
-    .rbtn1 {
-        width: 89%;
-    }
+  .rbtn1 {
+    width: 89%;
+  }
 
-    .rbtn2 {
-        width: 89%;
-        margin-top: 15px;
-        margin-bottom: 15px;
-    }
+  .rbtn2 {
+    width: 89%;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 992px) {
-    .itmimg {
-        width: 60px !important;
-        height: 60px !important;
-    }
+  .itmimg {
+    width: 60px !important;
+    height: 60px !important;
+  }
 
-    .rempad .sidemenu {
-        padding: 0px !important;
-    }
+  .rempad .sidemenu {
+    padding: 0px !important;
+  }
 
-    .c-flex {
-        padding: 0px !important;
-        justify-content: center;
-    }
+  .c-flex {
+    padding: 0px !important;
+    justify-content: center;
+  }
 }
 
 @media (min-width: 992px) and (max-width: 1200px) {
-    .itmimg {
-        width: 65px !important;
-        height: 65px !important;
-    }
+  .itmimg {
+    width: 65px !important;
+    height: 65px !important;
+  }
 
-    .c-flex {
-        padding: 0px !important;
-        justify-content: center;
-    }
+  .c-flex {
+    padding: 0px !important;
+    justify-content: center;
+  }
 
-    .rempad .sidemenu {
-        padding: 0px !important;
-    }
+  /* .rempad .sidemenu {
+    padding: 0px !important;
+  } */
 
     .rempad .w-25 {
         padding: 0px !important;
-    }
+      }
 }
 
 @media (min-width: 1200px) {
-    .itmimg {
-        width: 90px !important;
-        height: 90px !important;
-    }
+  .itmimg {
+    width: 90px !important;
+    height: 90px !important;
+  }
 
-    .c-flex {
-        justify-content: center;
-        padding: 0px !important;
-    }
+  .c-flex {
+    justify-content: center;
+    padding: 0px !important;
+  }
 
-    .rempad .sidemenu {
-        padding: 0px !important;
-    }
+  /* .rempad .sidemenu {
+    padding: 0px !important;
+  } */
 
     .rempad .w-25 {
         padding: 0px !important;
-    }
+      }
 }
 
-@media (min-width: 1200px) and (max-width:1400px) {
-    .itmimg {
-        width: 90px !important;
-        height: 90px !important;
-    }
+@media (min-width: 1200px) and (max-width: 1400px) {
+  .itmimg {
+    width: 90px !important;
+    height: 90px !important;
+  }
 
-    .c-flex {
-        justify-content: center;
-        padding: 0px !important;
-    }
+  .c-flex {
+    justify-content: center;
+    padding: 0px !important;
+  }
 }
 
 .rbtn1 {
-    margin-left: 20px;
+  margin-left: 20px;
 }
