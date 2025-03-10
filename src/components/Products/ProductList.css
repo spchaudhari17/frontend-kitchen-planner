@@ -232,9 +232,9 @@
     justify-content: center;
   }
 
-  .rempad .sidemenu {
+  /* .rempad .sidemenu {
     padding: 0px !important;
-  }
+  } */
 
   .rempad .w-25 {
     padding: 0px !important;
@@ -253,8 +253,8 @@
   }
 
   /* .rempad .sidemenu {
-        padding: 0px !important;
-    } */
+    padding: 0px !important;
+  } */
 
   .rempad .w-25 {
     padding: 0px !important;
