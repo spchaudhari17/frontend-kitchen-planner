@@ -238,7 +238,7 @@
 
     .rempad .w-25 {
         padding: 0px !important;
-      }
+    }
 }
 
 @media (min-width: 1200px) {
@@ -258,7 +258,7 @@
 
     .rempad .w-25 {
         padding: 0px !important;
-      }
+    }
 }
 
 @media (min-width: 1200px) and (max-width:1400px) {
