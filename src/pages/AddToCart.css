@@ -1,0 +1,96 @@
+/* Shopping Cart Container */
+.shopping-cart {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+/* Title */
+.shopping-cart h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* Product Item */
+.product-item {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+/* Product Image */
+.product-image {
+  width: 100px; /* Adjust size as needed */
+  height: auto;
+  margin-right: 15px;
+}
+
+/* Product Details */
+.product-details {
+  flex-grow: 1;
+}
+
+/* Product Title */
+.product-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
+}
+
+/* Measurements and Options */
+.product-measurements {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Price and Quantity Controls */
+.price-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Quantity Control */
+.quantity-control {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.quantity-control button {
+  border: 1px solid #ccc;
+  background-color: #f8f8f8;
+  padding: 5px 10px;
+}
+
+.quantity-control input {
+  width: 40px;
+  text-align: center;
+}
+
+/* Price */
+.product-price {
+  font-size: 20px;
+  color: #28a745;
+}
+
+/* Remove Button */
+.remove-button {
+  color: #d9534f;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .product-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-image {
+    margin-bottom: 10px;
+  }
+}
