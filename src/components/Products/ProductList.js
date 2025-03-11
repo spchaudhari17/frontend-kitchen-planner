@@ -1111,6 +1111,7 @@ const ProductList = () => {
                 onClick={() => setCurrentStep(step.name)}
               >
                 <div
+                  className="progitems"
                   style={{
                     width: "25px",
                     height: "25px",
@@ -1124,7 +1125,10 @@ const ProductList = () => {
                 >
                   {index + 1}
                 </div>
-                <p style={{ fontSize: "12px", marginTop: "5px" }}>
+                <p
+                  className="progtxt"
+                  style={{ fontSize: "12px", marginTop: "5px" }}
+                >
                   {step.name}
                 </p>
               </div>
@@ -1192,7 +1196,7 @@ const ProductList = () => {
               </span>
             </button>
             {openSection === "base" && (
-              <div className="mt-2 c-flex">
+              <div className="mt-2 c-flex drgbl">
                 <DraggableCabinet
                   name="1 Door Base"
                   imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
@@ -1200,6 +1204,34 @@ const ProductList = () => {
                 <DraggableCabinet
                   name="2 Door Base"
                   imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
+                />
+                <DraggableCabinet
+                  name="Sink Base"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
+                />
+                <DraggableCabinet
+                  name="Sink Base"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
+                />
+                <DraggableCabinet
+                  name="Sink Base"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
+                />
+                <DraggableCabinet
+                  name="Sink Base"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
+                />
+                <DraggableCabinet
+                  name="Sink Base"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
+                />
+                <DraggableCabinet
+                  name="Sink Base"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
+                />
+                <DraggableCabinet
+                  name="Sink Base"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
                 />
                 <DraggableCabinet
                   name="Sink Base"
