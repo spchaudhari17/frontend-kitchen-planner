@@ -174,6 +174,7 @@ const ProductList = () => {
     setItemDimensions({ height: "", width: "" });
   };
 
+  //save room details 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -228,6 +229,40 @@ const ProductList = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+
+  // add to card
+  const handleAddToCart = (event) => {
+    event.preventDefault();
+  
+    if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
+      setAlert({
+        open: true,
+        message: "Please fill out all fields before adding to cart.",
+        severity: "error",
+      });
+      return;
+    }
+  
+    // Cart ka data localStorage mein save karna
+    const cartData = {
+      user_id: userInfo._id,
+      width: roomSize.width,
+      depth: roomSize.depth,
+      description,
+      subdescription,
+      notes,
+      droppedItems,
+    };
+  
+    localStorage.setItem("cartData", JSON.stringify(cartData));
+  
+    setAlert({
+      open: true,
+      message: "Room details added to cart successfully!",
+      severity: "success",
+    });
   };
 
   const handleRemove = (indexToRemove) => {
@@ -1060,6 +1095,22 @@ const ProductList = () => {
               onClick={handleSubmit}
             >
               REVIEW AND SUBMIT
+            </button>
+
+            <button
+              className="rbtn2"
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#28a745",
+                color: "#fff",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginLeft: "20px",
+              }}
+              onClick={handleAddToCart}
+            >
+              Add To Card
             </button>
           </div>
         </DndProvider>

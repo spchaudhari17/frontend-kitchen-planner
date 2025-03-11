@@ -23,6 +23,7 @@ import TradeForm from './pages/Trade';
 import ProductList from './components/Products/ProductList';
 import ProductAdder from './components/Products/ProductAdder';
 import SavePlan from './pages/SavePlan';
+import AddToCart from './pages/AddToCart';
 
 function App() {
   const { auth } = useAuthContext();
@@ -99,6 +100,7 @@ function App() {
 
               <Route element={<RequireAuth />}>
                 <Route path="/account" element={<SavePlan />} />
+                <Route path="/cart" element={<AddToCart />} />
 
                 <Route element={<RequireRoles Roles={[ROLES.Staff, ROLES.Admin]} />}>
                   <Route path="/user" element={<User />} />
