@@ -8,11 +8,12 @@ const AddToCart = () => {
       <div className="cart-item d-flex mt-5" id="item-1">
         <div className="">
           <img
+            className="product-image"
             src="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
             alt="Cabinet Image"
           />
         </div>
-        <div>
+        <div className="cart-details">
           <h2>1 Door Base Cabinet</h2>
           <p>
             <strong>Width:</strong> <span id="width">150mm</span>
@@ -33,16 +34,19 @@ const AddToCart = () => {
           <button className="rembutton" id="remove-item">
             Remove
           </button>
-          <div className="quantity">
-            <button id="decrease-qty">-</button>
-            <span id="qty">1</span>
-            <button id="increase-qty">+</button>
+          <div className="d-flex">
+            <div className="quantity">
+              <button id="decrease-qty">-</button>
+              <span id="qty">1</span>
+              <button id="increase-qty">+</button>
+            </div>
+            <p className="product-price">
+              <strong>Price:</strong> <span id="price">$167.00</span>
+            </p>
           </div>
-          <p>
-            <strong>Price:</strong> <span id="price">$167.00</span>
-          </p>
         </div>
       </div>
+      <hr></hr>
     </>
   );
 };
