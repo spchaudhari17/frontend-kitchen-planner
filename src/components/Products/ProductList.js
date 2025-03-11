@@ -136,10 +136,10 @@ const ProductList = () => {
     { name: "Start", tooltip: "Start planning your kitchen." },
     { name: "Room Layout", tooltip: "Enter room dimensions and details." },
     { name: "Base Layout", tooltip: "Design the base layout of your kitchen." },
-    {
-      name: "Wall Layout",
-      tooltip: "Configure wall layouts for your kitchen.",
-    },
+    // {
+    //   name: "Wall Layout",
+    //   tooltip: "Configure wall layouts for your kitchen.",
+    // },
     { name: "Add Notes", tooltip: "Add notes or special instructions." },
     { name: "Review", tooltip: "Review your plan before finalizing." },
   ];
@@ -802,103 +802,103 @@ const ProductList = () => {
       );
     }
 
-    if (currentStep === "Wall Layout") {
-      return (
-        <DndProvider backend={HTML5Backend}>
-          <div style={{}}>
-            <div
-              style={{
-                flex: 3,
-                backgroundColor: "#fff",
-                padding: "20px",
-                borderRadius: "5px",
-                marginRight: "20px",
-              }}
-              className="remmar"
-            >
-              <h5>Plan Top View</h5>
-              <DropZone
-                onDrop={handleDrop}
-                droppedItems={droppedItems}
-                onRemove={handleRemove}
-              />
-            </div>
-          </div>
+    // if (currentStep === "Wall Layout") {
+    //   return (
+    //     <DndProvider backend={HTML5Backend}>
+    //       <div style={{}}>
+    //         <div
+    //           style={{
+    //             flex: 3,
+    //             backgroundColor: "#fff",
+    //             padding: "20px",
+    //             borderRadius: "5px",
+    //             marginRight: "20px",
+    //           }}
+    //           className="remmar"
+    //         >
+    //           <h5>Plan Top View</h5>
+    //           <DropZone
+    //             onDrop={handleDrop}
+    //             droppedItems={droppedItems}
+    //             onRemove={handleRemove}
+    //           />
+    //         </div>
+    //       </div>
 
-          {/* Modal for Item Dimensions */}
-          <Modal show={showModal} onHide={() => setShowModal(false)}>
-            <Modal.Header closeButton>
-              <Modal.Title>Set Cabinet Dimensions</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form>
-                {/* Width Input and Slider */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Width (mm)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={itemDimensions.width}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        width: e.target.value,
-                      })
-                    }
-                    placeholder="Enter width"
-                  />
-                  <Form.Range
-                    min={100}
-                    max={3000}
-                    value={itemDimensions.width}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        width: e.target.value,
-                      })
-                    }
-                  />
-                </Form.Group>
+    //       {/* Modal for Item Dimensions */}
+    //       <Modal show={showModal} onHide={() => setShowModal(false)}>
+    //         <Modal.Header closeButton>
+    //           <Modal.Title>Set Cabinet Dimensions</Modal.Title>
+    //         </Modal.Header>
+    //         <Modal.Body>
+    //           <Form>
+    //             {/* Width Input and Slider */}
+    //             <Form.Group className="mb-3">
+    //               <Form.Label>Width (mm)</Form.Label>
+    //               <Form.Control
+    //                 type="number"
+    //                 value={itemDimensions.width}
+    //                 onChange={(e) =>
+    //                   setItemDimensions({
+    //                     ...itemDimensions,
+    //                     width: e.target.value,
+    //                   })
+    //                 }
+    //                 placeholder="Enter width"
+    //               />
+    //               <Form.Range
+    //                 min={100}
+    //                 max={3000}
+    //                 value={itemDimensions.width}
+    //                 onChange={(e) =>
+    //                   setItemDimensions({
+    //                     ...itemDimensions,
+    //                     width: e.target.value,
+    //                   })
+    //                 }
+    //               />
+    //             </Form.Group>
 
-                {/* Height Input and Slider */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Height (mm)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={itemDimensions.height}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        height: e.target.value,
-                      })
-                    }
-                    placeholder="Enter height"
-                  />
-                  <Form.Range
-                    min={100}
-                    max={3000}
-                    value={itemDimensions.height}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        height: e.target.value,
-                      })
-                    }
-                  />
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleAddToDesign}>
-                Add to Design
-              </Button>
-            </Modal.Footer>
-          </Modal>
-        </DndProvider>
-      );
-    }
+    //             {/* Height Input and Slider */}
+    //             <Form.Group className="mb-3">
+    //               <Form.Label>Height (mm)</Form.Label>
+    //               <Form.Control
+    //                 type="number"
+    //                 value={itemDimensions.height}
+    //                 onChange={(e) =>
+    //                   setItemDimensions({
+    //                     ...itemDimensions,
+    //                     height: e.target.value,
+    //                   })
+    //                 }
+    //                 placeholder="Enter height"
+    //               />
+    //               <Form.Range
+    //                 min={100}
+    //                 max={3000}
+    //                 value={itemDimensions.height}
+    //                 onChange={(e) =>
+    //                   setItemDimensions({
+    //                     ...itemDimensions,
+    //                     height: e.target.value,
+    //                   })
+    //                 }
+    //               />
+    //             </Form.Group>
+    //           </Form>
+    //         </Modal.Body>
+    //         <Modal.Footer>
+    //           <Button variant="secondary" onClick={() => setShowModal(false)}>
+    //             Cancel
+    //           </Button>
+    //           <Button variant="primary" onClick={handleAddToDesign}>
+    //             Add to Design
+    //           </Button>
+    //         </Modal.Footer>
+    //       </Modal>
+    //     </DndProvider>
+    //   );
+    // }
 
     if (currentStep === "Add Notes") {
       return (
@@ -1072,7 +1072,7 @@ const ProductList = () => {
       className="rempad fldc"
       style={{
         display: "flex",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#f5f5f5", 
         minHeight: "100vh",
         padding: "20px",
       }}
