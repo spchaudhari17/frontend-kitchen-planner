@@ -136,10 +136,10 @@ const ProductList = () => {
     { name: "Start", tooltip: "Start planning your kitchen." },
     { name: "Room Layout", tooltip: "Enter room dimensions and details." },
     { name: "Base Layout", tooltip: "Design the base layout of your kitchen." },
-    {
-      name: "Wall Layout",
-      tooltip: "Configure wall layouts for your kitchen.",
-    },
+    // {
+    //   name: "Wall Layout",
+    //   tooltip: "Configure wall layouts for your kitchen.",
+    // },
     { name: "Add Notes", tooltip: "Add notes or special instructions." },
     { name: "Review", tooltip: "Review your plan before finalizing." },
   ];
