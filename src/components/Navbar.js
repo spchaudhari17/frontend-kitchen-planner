@@ -15,6 +15,7 @@ import { ROLES } from "../config/roles";
 import Button from "./ui/Button";
 import Modal from "./ui/Modal";
 import { FaUser } from "react-icons/fa";
+import { AiOutlineShoppingCart } from "react-icons/ai"; 
 
 const Navbars = () => {
   const { logout } = useLogout();
@@ -157,6 +158,7 @@ const Navbars = () => {
                   </Button>
                 )}
 
+                {/*profile icons */}
                 {auth && (
                   <Button
                     className="mx-3"
@@ -167,6 +169,22 @@ const Navbars = () => {
                     }}
                   >
                   <FaUser />
+                
+                  </Button>
+                )}
+
+                {/* cart icon */}
+                {auth && (
+                  <Button
+                    className="mx-3"
+                    onClick={() => navigate("/cart")}
+                    style={{
+                      backgroundColor: componentColors.Button?.background || "transparent",
+                      color: componentColors.Button?.text || "#ffffff",
+                    }}
+                  >
+                  {/* <FaUser /> */}
+                  <AiOutlineShoppingCart />
                 
                   </Button>
                 )}
