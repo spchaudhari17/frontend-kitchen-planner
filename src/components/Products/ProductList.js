@@ -1331,11 +1331,11 @@ const ProductList = () => {
               <div className="mt-2 c-flex">
                 <DraggableCabinet
                   name="Tall Cabinet 1"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-tall-pantry_medium.jpg?v=1431900700"
                 />
                 <DraggableCabinet
                   name="Tall Cabinet 2"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
+                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-tall-pantry_medium.jpg?v=1431553410"
                 />
               </div>
             )}
