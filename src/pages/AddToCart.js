@@ -1,10 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./AddToCart.css";
 
 const AddToCart = () => {
+
+  const [cartData, setCartData] = useState(null);
+
+  useEffect(() => {
+    const storedCartData = localStorage.getItem("cartData");
+    if (storedCartData) {
+      setCartData(JSON.parse(storedCartData));
+    }
+  }, []);
+
+
   return (
     <>
-      <h1>Add To Cart</h1>
+      <h1>Shopping Cart</h1>
       <div className="cart-item d-flex mt-5" id="item-1">
         <div className="">
           <img
@@ -14,12 +25,14 @@ const AddToCart = () => {
           />
         </div>
         <div className="cart-details">
-          <h2>1 Door Base Cabinet</h2>
+        <h2>{cartData ? cartData.description : "1 Door Base Cabinet"}</h2>
           <p>
-            <strong>Width:</strong> <span id="width">150mm</span>
+          <strong>Width:</strong>{" "}
+          <span id="width">{cartData ? cartData.width + "mm" : "150mm"}</span>
           </p>
           <p>
-            <strong>Depth:</strong> <span id="depth">585mm</span>
+          <strong>Depth:</strong>{" "}
+          <span id="depth">{cartData ? cartData.depth + "mm" : "585mm"}</span>
           </p>
           <p>
             <strong>Feet Option:</strong>{" "}
