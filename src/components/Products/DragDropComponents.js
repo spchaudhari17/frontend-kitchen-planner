@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import "./ProductList.css";
+import Draggable from "react-draggable";
 
 export const ItemTypes = {
   CABINET: "CABINET",
@@ -60,9 +61,9 @@ const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
 };
 
 // Draggable Cabinet Component
-export const DraggableCabinet = ({ name, imageSrc, onCabinetClick }) => {
+export const DraggableCabinet = ({ name, imageSrc, }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
-    type: ItemTypes.CABINET,
+    type: "CABINET",
     item: { name, imageSrc },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -72,15 +73,13 @@ export const DraggableCabinet = ({ name, imageSrc, onCabinetClick }) => {
   return (
     <div
       ref={drag}
-      onClick={() => onCabinetClick({ name, imageSrc })} // Click Event
       style={{
         opacity: isDragging ? 0.5 : 1,
         margin: "10px",
-        cursor: "pointer",
+        cursor: "grab",
       }}
     >
       <img
-        className="itmimg"
         src={imageSrc}
         alt={name}
         style={{
@@ -94,27 +93,28 @@ export const DraggableCabinet = ({ name, imageSrc, onCabinetClick }) => {
   );
 };
 
-// Drop Zone Component
-export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
+
+
+export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: ItemTypes.CABINET,
-    drop: (item) => onDrop(item),
+    accept: "CABINET",
+    drop: (item, monitor) => {
+      const offset = monitor.getSourceClientOffset();
+      if (offset) {
+        const x = offset.x;
+        const y = offset.y;
+        onDrop({ ...item, x, y, rotation: 0 }); // Default rotation
+      }
+    },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
   }));
 
-  // Base aur Tall Cabinets ko alag-alag categorize karna
-  const baseCabinets = droppedItems.filter((item) =>
-    item.name.includes("Base")
-  );
-  const tallCabinets = droppedItems.filter((item) =>
-    item.name.includes("Tall")
-  );
-
-  //  Modal State for Notes
+  // Modal State for Notes
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  // const [notesMap, setNotesMap] = useState({});
   const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
 
   useEffect(() => {
@@ -126,28 +126,43 @@ export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
     setModalOpen(true);
   };
 
+  // const handleSaveNotes = (item, note) => {
+  //   setNotesMap((prevNotesMap) => {
+  //     const existingNotes = prevNotesMap[item.name] || [];
+  //     const updatedNotes = {
+  //       ...prevNotesMap,
+  //       [item.name]: [...existingNotes, note],
+  //     };
+
+  //     // Save to localStorage
+  //     saveNotesToLocalStorage(updatedNotes);
+
+  //     // Fire a storage event
+  //     window.dispatchEvent(new Event("storage"));
+
+  //     return updatedNotes;
+  //   });
+  //   setModalOpen(false);
+  // };
+
   const handleSaveNotes = (item, note) => {
     setNotesMap((prevNotesMap) => {
-      const existingNotes = prevNotesMap[item.name] || [];
-      const updatedNotes = {
-        ...prevNotesMap,
-        [item.name]: [...existingNotes, note],
-      };
+      const existingNotes = Array.isArray(prevNotesMap[item.name]) ? prevNotesMap[item.name] : [];
+      const updatedNotes = { ...prevNotesMap, [item.name]: [...existingNotes, note] };
 
-      // Save to localStorage
-      saveNotesToLocalStorage(updatedNotes);
+      // ✅ Ensure JSON.stringify is used correctly
+      localStorage.setItem("cabinetNotes", JSON.stringify(updatedNotes));
 
-      // Fire a storage event
       window.dispatchEvent(new Event("storage"));
-
       return updatedNotes;
     });
     setModalOpen(false);
   };
 
+
   return (
     <div>
-      {/* Notes Modal */}
+      {/* Modal for Notes */}
       <AddNotesModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
@@ -162,83 +177,74 @@ export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
           width: "75%",
           height: "400px",
           border: isOver ? "2px dashed #00bfff" : "2px dashed #ccc",
-          textAlign: "center",
           backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
-
           position: "relative",
           padding: "10px",
+          textAlign: "center",
           display: "flex",
           flexWrap: "wrap",
           gap: "9px",
           alignContent: "flex-start",
         }}
-        className="sidemenu"
+      // className="dropzone"
       >
-        {/* Base Cabinets - Column wise */}
-        <div>
-          {baseCabinets.length === 0 && <p className="boxtxt">.</p>}
-          {baseCabinets.map((item, index) => (
-            <div key={index} style={{ position: "relative" }}>
+        {droppedItems.map((item, index) => (
+          <Draggable
+            key={index}
+            defaultPosition={{ x: item.x || 50, y: item.y || 50 }}
+            bounds="parent"
+          >
+            <div
+              style={{
+                position: "absolute",
+                cursor: "move",
+                transform: `rotate(${item.rotation}deg)`, // ✅ Rotation Applied Here
+                transition: "transform 0.3s ease-in-out",
+              }}
+              onClick={() => handleCabinetClick(item)} // Modal open on click
+            >
               <img
                 src={item.imageSrc}
                 alt={item.name}
-                onClick={() => handleCabinetClick(item)}
                 style={{
                   width: "100px",
                   height: "100px",
                   objectFit: "cover",
                   border: "1px solid #ccc",
-                  cursor: "pointer",
+                  display: "block",
+                  transform: `rotate(${item.rotation}deg)`, // ✅ Ensure Rotation Here
+                  transition: "transform 0.3s ease-in-out",
                 }}
-                className="itmimg"
+                // className="rotated-image"
               />
+              {/* Rotate Button */}
               <button
-                onClick={() => onRemove(index)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent modal from opening
+                  onRotate(index);
+                }}
                 style={{
                   position: "absolute",
-                  top: "5px",
-                  right: "5px",
-                  background: "#0dcaf0",
-                  color: "#343a40",
+                  bottom: "5px",
+                  left: "5px",
+                  background: "#28a745",
+                  color: "#fff",
                   border: "none",
                   borderRadius: "50%",
-                  width: "20px",
-                  height: "20px",
+                  width: "25px",
+                  height: "25px",
                   cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "20px",
                 }}
               >
-                ×
+                ↻
               </button>
-            </div>
-          ))}
-        </div>
 
-        {/* Tall Cabinets - Next to Base */}
-        <div style={{ display: "flex", gap: "10px" }}>
-          {tallCabinets.length === 0 && (
-            <p className="boxtxt">Drag and drop cabinets here</p>
-          )}
-          {tallCabinets.map((item, index) => (
-            <div key={index} style={{ position: "relative" }}>
-              <img
-                src={item.imageSrc}
-                alt={item.name}
-                onClick={() => handleCabinetClick(item)}
-                style={{
-                  width: "100px",
-                  height: "100px",
-                  objectFit: "cover",
-                  border: "1px solid #ccc",
-                  cursor: "pointer",
-                }}
-                className="itmimg"
-              />
+              {/* Remove Button */}
               <button
-                onClick={() => onRemove(index)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent modal from opening
+                  onRemove(index);
+                }}
                 style={{
                   position: "absolute",
                   top: "5px",
@@ -250,21 +256,18 @@ export const DropZone = ({ onDrop, droppedItems, onRemove }) => {
                   width: "20px",
                   height: "20px",
                   cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "20px",
                 }}
               >
                 ×
               </button>
             </div>
-          ))}
-        </div>
+          </Draggable>
+        ))}
       </div>
     </div>
   );
 };
+
 
 // Function to retrieve notes from any file
 export const getNotes = () => getNotesFromLocalStorage();

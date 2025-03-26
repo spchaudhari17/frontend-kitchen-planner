@@ -17,11 +17,11 @@ const ProductList = () => {
   const { auth } = useAuthContext();
   const navigate = useNavigate();
 
-  const [openSection, setOpenSection] = useState(null);
+  // const [openSection, setOpenSection] = useState(null);
 
-  const toggleSection = (section) => {
-    setOpenSection(openSection === section ? null : section);
-  };
+  // const toggleSection = (section) => {
+  //   setOpenSection(openSection === section ? null : section);
+  // };
 
   // const handleOpenSavedPlan = () => {
   //   if (auth) {
@@ -148,13 +148,36 @@ const ProductList = () => {
     setRoomSize((prev) => ({ ...prev, [name]: value }));
   };
 
+
   // const handleDrop = (item) => {
-  //   setDroppedItems((prev) => [...prev, item]);
+  //   setSelectedItem(item);
+  //   setShowModal(true);
+  // };
+  // const handleDrop = (item) => {
+  //   setDroppedItems((prev) => [
+  //     ...prev,
+  //     { ...item, x: 50, y: 50, rotation: 0 }, // Default position
+  //   ]);
+  //   setSelectedItem(item);
+  //   setShowModal(true);
   // };
 
   const handleDrop = (item) => {
-    setSelectedItem(item);
-    setShowModal(true);
+    setDroppedItems((prevItems) => [
+      ...prevItems,
+      { ...item, rotation: 0 }, // ✅ Default rotation 0°
+    ]);
+  };
+
+  const handleRotate = (index) => {
+    setDroppedItems((prevItems) => {
+      const updatedItems = prevItems.map((item, i) =>
+        i === index ? { ...item, rotation: (item.rotation + 90) % 360 } : item
+      );
+
+      console.log("Updated Items:", updatedItems); // 🔍 Debugging
+      return updatedItems;
+    });
   };
 
   const handleAddToDesign = () => {
@@ -235,7 +258,7 @@ const ProductList = () => {
   // add to card
   const handleAddToCart = (event) => {
     event.preventDefault();
-  
+
     if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
       setAlert({
         open: true,
@@ -244,7 +267,7 @@ const ProductList = () => {
       });
       return;
     }
-  
+
     // Cart ka data localStorage mein save karna
     const cartData = {
       user_id: userInfo._id,
@@ -255,9 +278,9 @@ const ProductList = () => {
       notes,
       droppedItems,
     };
-  
+
     localStorage.setItem("cartData", JSON.stringify(cartData));
-  
+
     setAlert({
       open: true,
       message: "Room details added to cart successfully!",
@@ -276,140 +299,7 @@ const ProductList = () => {
   };
 
   const renderStepContent = () => {
-    // if (currentStep === "Start") {
-    //   return (
-    //     <div style={{ textAlign: "center", padding: "20px" }}>
-    //       <h4>Would You Like to Create a  Plan?</h4>
-    //       <p>
-    //         Need help visualizing your dream kitchen? Our kitchen planner puts the design power in your hands,
-    //         with an incredibly easy-to-use drag-and-drop builder.
-    //       </p>
-    //       <Row className="justify-content-center">
-    //         <Col xs={12} sm={6} md={4} onClick={() => setCurrentStep("Room Layout")} style={{ cursor: "pointer" }}>
-    //           <div
-    //             style={{
-    //               border: "1px solid #ccc",
-    //               borderRadius: "5px",
-    //               textAlign: "center",
-    //               padding: "20px",
-    //               margin: "10px",
-    //             }}
-    //           >
-    //             <div
-    //               style={{
-    //                 backgroundColor: "#000",
-    //                 width: "100%",
-    //                 height: "150px",
-    //                 marginBottom: "10px",
-    //                 position: "relative",
-    //               }}
-    //             >
-    //               <div
-    //                 style={{
-    //                   width: "50px",
-    //                   height: "50px",
-    //                   backgroundColor: "#fff",
-    //                   position: "absolute",
-    //                   top: "50%",
-    //                   left: "50%",
-    //                   transform: "translate(-50%, -50%)",
-    //                 }}
-    //               ></div>
-    //             </div>
-    //             <h5>CREATE NEW PLAN</h5>
-    //           </div>
-    //         </Col>
-    //       </Row>
-    //     </div>
-    //   );
-    // }
 
-    // if (currentStep === "Start") {
-    //   return (
-    //     <div style={{ textAlign: "center", padding: "20px" }}>
-    //       <h4>Would You Like to Create a Plan?</h4>
-    //       <p>
-    //         Need help visualizing your dream kitchen? Our kitchen planner puts the design power in your hands,
-    //         with an incredibly easy-to-use drag-and-drop builder.
-    //       </p>
-    //       <Row className="justify-content-center">
-    //         {/* Create New Plan */}
-    //         <Col xs={12} sm={6} md={4} onClick={() => setCurrentStep("Room Layout")} style={{ cursor: "pointer" }}>
-    //           <div
-    //             style={{
-    //               border: "1px solid #ccc",
-    //               borderRadius: "5px",
-    //               textAlign: "center",
-    //               padding: "20px",
-    //               margin: "10px",
-    //             }}
-    //           >
-    //             <div
-    //               style={{
-    //                 backgroundColor: "#000",
-    //                 width: "100%",
-    //                 height: "150px",
-    //                 marginBottom: "10px",
-    //                 position: "relative",
-    //               }}
-    //             >
-    //               <div
-    //                 style={{
-    //                   width: "50px",
-    //                   height: "50px",
-    //                   backgroundColor: "#fff",
-    //                   position: "absolute",
-    //                   top: "50%",
-    //                   left: "50%",
-    //                   transform: "translate(-50%, -50%)",
-    //                 }}
-    //               ></div>
-    //             </div>
-    //             <h5>CREATE NEW PLAN</h5>
-    //           </div>
-    //         </Col>
-
-    //         {/* Open Saved Plan */}
-    //         <Col xs={12} sm={6} md={4} onClick={() => setCurrentStep("Open Saved Plan")} style={{ cursor: "pointer" }}>
-    //           <div
-    //             style={{
-    //               border: "1px solid #ccc",
-    //               borderRadius: "5px",
-    //               textAlign: "center",
-    //               padding: "20px",
-    //               margin: "10px",
-    //             }}
-    //           >
-    //             <div
-    //               style={{
-    //                 backgroundColor: "#000",
-    //                 width: "100%",
-    //                 height: "150px",
-    //                 marginBottom: "10px",
-    //                 position: "relative",
-    //               }}
-    //             >
-    //               <div
-    //                 style={{
-    //                   width: "50px",
-    //                   height: "50px",
-    //                   backgroundColor: "#fff",
-    //                   borderTop: "10px solid black",
-    //                   borderRight: "10px solid black",
-    //                   position: "absolute",
-    //                   top: "50%",
-    //                   left: "50%",
-    //                   transform: "translate(-50%, -50%)",
-    //                 }}
-    //               ></div>
-    //             </div>
-    //             <h5>OPEN SAVED PLAN</h5>
-    //           </div>
-    //         </Col>
-    //       </Row>
-    //     </div>
-    //   );
-    // }
 
     if (currentStep === "Start") {
       return (
@@ -562,15 +452,7 @@ const ProductList = () => {
                     backgroundPosition: "center",
                   }}
                 >
-                  {/* <div
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      backgroundColor: "#fff",
-                      margin: "auto",
-                      transform: "translateY(50%)",
-                    }}
-                  ></div> */}
+
                 </div>
                 <h5 className="cardtxt">Create New Plan</h5>
               </div>
@@ -698,10 +580,6 @@ const ProductList = () => {
 
     if (currentStep === "Base Layout") {
       return (
-        // <DndProvider backend={HTML5Backend}>
-        //   <h5>Plan Top View</h5>
-        //   <DropZone onDrop={handleDrop} droppedItems={droppedItems}  onRemove={handleRemove}/>
-        // </DndProvider>
 
         <DndProvider backend={HTML5Backend}>
           <div style={{}}>
@@ -721,46 +599,12 @@ const ProductList = () => {
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
                 onRemove={handleRemove}
+                onRotate={handleRotate}
               />
+
             </div>
           </div>
 
-          {/* Modal for Item Dimensions */}
-          {/* <Modal show={showModal} onHide={() => setShowModal(false)}>
-            <Modal.Header closeButton>
-              <Modal.Title>Set Cabinet Dimensions</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form>
-                <Form.Group className="mb-3">
-                  <Form.Label>Width (mm)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={itemDimensions.width}
-                    onChange={(e) => setItemDimensions({ ...itemDimensions, width: e.target.value })}
-                    placeholder="Enter width"
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Height (mm)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={itemDimensions.height}
-                    onChange={(e) => setItemDimensions({ ...itemDimensions, height: e.target.value })}
-                    placeholder="Enter height"
-                  />
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleAddToDesign}>
-                Add to Design
-              </Button>
-            </Modal.Footer>
-          </Modal> */}
 
           {/* Modal for Item Dimensions */}
           <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -837,103 +681,7 @@ const ProductList = () => {
       );
     }
 
-    // if (currentStep === "Wall Layout") {
-    //   return (
-    //     <DndProvider backend={HTML5Backend}>
-    //       <div style={{}}>
-    //         <div
-    //           style={{
-    //             flex: 3,
-    //             backgroundColor: "#fff",
-    //             padding: "20px",
-    //             borderRadius: "5px",
-    //             marginRight: "20px",
-    //           }}
-    //           className="remmar"
-    //         >
-    //           <h5>Plan Top View</h5>
-    //           <DropZone
-    //             onDrop={handleDrop}
-    //             droppedItems={droppedItems}
-    //             onRemove={handleRemove}
-    //           />
-    //         </div>
-    //       </div>
 
-    //       {/* Modal for Item Dimensions */}
-    //       <Modal show={showModal} onHide={() => setShowModal(false)}>
-    //         <Modal.Header closeButton>
-    //           <Modal.Title>Set Cabinet Dimensions</Modal.Title>
-    //         </Modal.Header>
-    //         <Modal.Body>
-    //           <Form>
-    //             {/* Width Input and Slider */}
-    //             <Form.Group className="mb-3">
-    //               <Form.Label>Width (mm)</Form.Label>
-    //               <Form.Control
-    //                 type="number"
-    //                 value={itemDimensions.width}
-    //                 onChange={(e) =>
-    //                   setItemDimensions({
-    //                     ...itemDimensions,
-    //                     width: e.target.value,
-    //                   })
-    //                 }
-    //                 placeholder="Enter width"
-    //               />
-    //               <Form.Range
-    //                 min={100}
-    //                 max={3000}
-    //                 value={itemDimensions.width}
-    //                 onChange={(e) =>
-    //                   setItemDimensions({
-    //                     ...itemDimensions,
-    //                     width: e.target.value,
-    //                   })
-    //                 }
-    //               />
-    //             </Form.Group>
-
-    //             {/* Height Input and Slider */}
-    //             <Form.Group className="mb-3">
-    //               <Form.Label>Height (mm)</Form.Label>
-    //               <Form.Control
-    //                 type="number"
-    //                 value={itemDimensions.height}
-    //                 onChange={(e) =>
-    //                   setItemDimensions({
-    //                     ...itemDimensions,
-    //                     height: e.target.value,
-    //                   })
-    //                 }
-    //                 placeholder="Enter height"
-    //               />
-    //               <Form.Range
-    //                 min={100}
-    //                 max={3000}
-    //                 value={itemDimensions.height}
-    //                 onChange={(e) =>
-    //                   setItemDimensions({
-    //                     ...itemDimensions,
-    //                     height: e.target.value,
-    //                   })
-    //                 }
-    //               />
-    //             </Form.Group>
-    //           </Form>
-    //         </Modal.Body>
-    //         <Modal.Footer>
-    //           <Button variant="secondary" onClick={() => setShowModal(false)}>
-    //             Cancel
-    //           </Button>
-    //           <Button variant="primary" onClick={handleAddToDesign}>
-    //             Add to Design
-    //           </Button>
-    //         </Modal.Footer>
-    //       </Modal>
-    //     </DndProvider>
-    //   );
-    // }
 
     if (currentStep === "Add Notes") {
       return (
@@ -1118,12 +866,86 @@ const ProductList = () => {
     }
   };
 
+
+  const [openSection, setOpenSection] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/product/products");
+        console.log("iamge ---", response)
+        setProducts(response.data);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+
+  const toggleSection = (section) => {
+    setOpenSection(openSection === section ? null : section);
+  };
+
+  const renderCabinets = (type) => {
+    return products
+      .filter((product) => product.cabinateType === type)
+      .map((cabinet) => {
+        const imageUrl = cabinet.cabinateImage;
+        console.log("Image URL:", imageUrl);
+
+        return (
+
+          <DraggableCabinet
+            key={cabinet._id}
+            id={cabinet._id}
+            name={cabinet.cabinateName}
+            imageSrc={cabinet.cabinateImage}
+          />
+        )
+      });
+  };
+
+  // const renderCabinets = (type) => {
+  //   return products
+  //     .filter(product => product.cabinateType === type)
+  //     .map(product => {
+  //       console.log("Cabinet Name:", product.cabinateName);
+  //       console.log("Image URL:", product.cabinateImage);
+
+  //       return (
+  //         <div key={product._id} className="cabinet-item">
+  //           <img
+  //             // src={product.cabinateImage}
+  //             src={new URL(product.cabinateImage, window.location.origin).href}
+  //             alt={product.cabinateName}
+  //             className="cabinet-image"
+  //             style={{ width: "100px", height: "100px", objectFit: "cover" }}
+  //             onError={(e) => console.error("Image Load Error:", e.target.src)} // Debugging step
+  //           />
+  //           <p>{product.cabinateName}</p>
+  //         </div>
+  //       );
+  //     });
+  // };
+
+
+
+
   return (
     <div
       className="rempad fldc"
       style={{
         display: "flex",
-        backgroundColor: "#f5f5f5", 
+        backgroundColor: "#f5f5f5",
         minHeight: "100vh",
         padding: "20px",
       }}
@@ -1227,163 +1049,54 @@ const ProductList = () => {
 
       <div className="w-25 p-4 bg-gray-100 rounded-lg sidemenu">
         <h4 className="text-lg font-bold">Kitchen Options</h4>
-        <p
-          className="text-sm text-gray-500 paratext"
-          style={{ textAlign: "left" }}
-        >
+        <p className="text-sm text-gray-500 paratext" style={{ textAlign: "left" }}>
           Drag and drop your items into our planner.
         </p>
+
+        {loading ? <p>Loading...</p> : error ? <p className="text-red-500">{error}</p> : null}
 
         <DndProvider backend={HTML5Backend}>
           {/* Base Cabinets */}
           <div className="mt-4">
-            <button
-              className="w-full text-left font-semibold optbtn"
-              onClick={() => toggleSection("base")}
-            >
+            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("base")}>
               <span className="text-left">Base Cabinets</span>
-              <span className="text-right">
-                {openSection === "base" ? "-" : "+"}
-              </span>
+              <span className="text-right">{openSection === "base" ? "-" : "+"}</span>
             </button>
-            {openSection === "base" && (
-              <div className="mt-2 c-flex drgbl">
-                <DraggableCabinet
-                  name="1 Door Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
-                />
-                <DraggableCabinet
-                  name="2 Door Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-                <DraggableCabinet
-                  name="Sink Base"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-              </div>
-            )}
+            {openSection === "base" && <div className="mt-2 c-flex drgbl">{renderCabinets("base")}</div>}
           </div>
 
           {/* Tall Cabinets */}
           <div className="mt-4">
-            <button
-              className="w-full text-left font-semibold optbtn"
-              onClick={() => toggleSection("tall")}
-            >
+            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("tall")}>
               <span className="text-left">Tall Cabinets</span>
-              <span className="text-right">
-                {openSection === "tall" ? "-" : "+"}
-              </span>
+              <span className="text-right">{openSection === "tall" ? "-" : "+"}</span>
             </button>
-            {openSection === "tall" && (
-              <div className="mt-2 c-flex">
-                <DraggableCabinet
-                  name="Tall Cabinet 1"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-tall-pantry_medium.jpg?v=1431900700"
-                />
-                <DraggableCabinet
-                  name="Tall Cabinet 2"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-tall-pantry_medium.jpg?v=1431553410"
-                />
-              </div>
-            )}
+            {openSection === "tall" && <div className="mt-2 c-flex">{renderCabinets("tall")}</div>}
           </div>
 
           {/* Finishing Panels */}
           <div className="mt-4">
-            <button
-              className="w-full text-left font-semibold optbtn"
-              onClick={() => toggleSection("panels")}
-            >
+            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("finishing")}>
               <span className="text-left">Finishing Panels</span>
-              <span className="text-right">
-                {openSection === "panels" ? "-" : "+"}
-              </span>
+              <span className="text-right">{openSection === "finishing" ? "-" : "+"}</span>
             </button>
-            {openSection === "panels" && (
-              <div className="mt-2 c-flex">
-                <DraggableCabinet
-                  name="Panel 1"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
-                />
-              </div>
-            )}
+            {openSection === "finishing" && <div className="mt-2 c-flex">{renderCabinets("finishing")}</div>}
           </div>
 
           {/* Wall Cabinets */}
           <div className="mt-4">
-            <button
-              className="w-full text-left font-semibold optbtn"
-              onClick={() => toggleSection("wall")}
-            >
+            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("wall")}>
               <span className="text-left">Wall Cabinets</span>
-              <span className="text-right">
-                {openSection === "wall" ? "-" : "+"}
-              </span>
+              <span className="text-right">{openSection === "wall" ? "-" : "+"}</span>
             </button>
-            {openSection === "wall" && (
-              <div className="mt-2 c-flex">
-                <DraggableCabinet
-                  name="Wall Cabinet 1"
-                  imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-                />
-              </div>
-            )}
+            {openSection === "wall" && <div className="mt-2 c-flex">{renderCabinets("wall")}</div>}
           </div>
         </DndProvider>
       </div>
+
+
+
+
 
       {/* // */}
 

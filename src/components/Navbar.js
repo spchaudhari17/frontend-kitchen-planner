@@ -158,6 +158,19 @@ const Navbars = () => {
                   </Button>
                 )}
 
+                {auth && (
+                  <Button
+                    className="mx-3"
+                    onClick={() => navigate("/admin-add-cabinates")}
+                    style={{
+                      backgroundColor: componentColors.Button?.background || "transparent",
+                      color: componentColors.Button?.text || "#ffffff",
+                    }}
+                  >
+                    Add Cabinates
+                  </Button>
+                )}
+
                 {/*profile icons */}
                 {auth && (
                   <Button
