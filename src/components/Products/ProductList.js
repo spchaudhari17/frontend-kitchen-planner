@@ -167,6 +167,9 @@ const ProductList = () => {
       ...prevItems,
       { ...item, rotation: 0 }, // ✅ Default rotation 0°
     ]);
+
+    // setSelectedItem(item); // Drop kiya gaya item set karein
+    // setShowModal(true);
   };
 
   const handleRotate = (index) => {
@@ -225,7 +228,8 @@ const ProductList = () => {
           subdescription,
           notes,
           droppedItems,
-        }
+        },
+        { withCredentials: true } 
       );
 
       console.log("response -- ", response);
@@ -701,9 +705,14 @@ const ProductList = () => {
             >
               <h5>Plan Top View</h5>
               <DropZone
+                // onDrop={handleDrop}
+                // droppedItems={droppedItems}
+                // onRemove={handleRemove}
+
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
                 onRemove={handleRemove}
+                onRotate={handleRotate}
               />
             </div>
           </DndProvider>
@@ -777,9 +786,14 @@ const ProductList = () => {
               {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Kitchen Planner</h2> */}
               <h5>Plan Top View</h5>
               <DropZone
+                // onDrop={handleDrop}
+                // droppedItems={droppedItems}
+                // onRemove={handleRemove}
+
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
                 onRemove={handleRemove}
+                onRotate={handleRotate}
               />
             </div>
 
@@ -877,7 +891,6 @@ const ProductList = () => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get("http://localhost:3001/api/product/products");
-        console.log("iamge ---", response)
         setProducts(response.data);
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -900,8 +913,6 @@ const ProductList = () => {
       .filter((product) => product.cabinateType === type)
       .map((cabinet) => {
         const imageUrl = cabinet.cabinateImage;
-        console.log("Image URL:", imageUrl);
-
         return (
 
           <DraggableCabinet

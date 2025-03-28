@@ -95,6 +95,184 @@ export const DraggableCabinet = ({ name, imageSrc, }) => {
 
 
 
+// export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
+//   const [{ isOver }, drop] = useDrop(() => ({
+//     accept: "CABINET",
+//     drop: (item, monitor) => {
+//       const offset = monitor.getSourceClientOffset();
+//       if (offset) {
+//         const x = offset.x;
+//         const y = offset.y;
+//         onDrop({ ...item, x, y, rotation: 0 }); // Default rotation
+//       }
+//     },
+//     collect: (monitor) => ({
+//       isOver: !!monitor.isOver(),
+//     }),
+//   }));
+
+//   // Modal State for Notes
+//   const [selectedItem, setSelectedItem] = useState(null);
+//   const [isModalOpen, setModalOpen] = useState(false);
+//   // const [notesMap, setNotesMap] = useState({});
+//   const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
+
+//   useEffect(() => {
+//     saveNotesToLocalStorage(notesMap);
+//   }, [notesMap]);
+
+//   const handleCabinetClick = (item) => {
+//     setSelectedItem(item);
+//     setModalOpen(true);
+//   };
+
+//   // const handleSaveNotes = (item, note) => {
+//   //   setNotesMap((prevNotesMap) => {
+//   //     const existingNotes = prevNotesMap[item.name] || [];
+//   //     const updatedNotes = {
+//   //       ...prevNotesMap,
+//   //       [item.name]: [...existingNotes, note],
+//   //     };
+
+//   //     // Save to localStorage
+//   //     saveNotesToLocalStorage(updatedNotes);
+
+//   //     // Fire a storage event
+//   //     window.dispatchEvent(new Event("storage"));
+
+//   //     return updatedNotes;
+//   //   });
+//   //   setModalOpen(false);
+//   // };
+
+//   const handleSaveNotes = (item, note) => {
+//     setNotesMap((prevNotesMap) => {
+//       const existingNotes = Array.isArray(prevNotesMap[item.name]) ? prevNotesMap[item.name] : [];
+//       const updatedNotes = { ...prevNotesMap, [item.name]: [...existingNotes, note] };
+
+//       // ✅ Ensure JSON.stringify is used correctly
+//       localStorage.setItem("cabinetNotes", JSON.stringify(updatedNotes));
+
+//       window.dispatchEvent(new Event("storage"));
+//       return updatedNotes;
+//     });
+//     setModalOpen(false);
+//   };
+
+
+//   return (
+//     <div>
+//       {/* Modal for Notes */}
+//       <AddNotesModal
+//         isOpen={isModalOpen}
+//         onClose={() => setModalOpen(false)}
+//         onSave={handleSaveNotes}
+//         item={selectedItem}
+//       />
+
+//       {/* Drop Area */}
+//       <div
+//         ref={drop}
+//         style={{
+//           width: "75%",
+//           height: "400px",
+//           border: isOver ? "2px dashed #00bfff" : "2px dashed #ccc",
+//           backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
+//           position: "relative",
+//           padding: "10px",
+//           textAlign: "center",
+//           display: "flex",
+//           flexWrap: "wrap",
+//           gap: "9px",
+//           alignContent: "flex-start",
+//         }}
+//       // className="dropzone"
+//       >
+//         {droppedItems.map((item, index) => (
+//           <Draggable
+//             key={index}
+//             defaultPosition={{ x: item.x || 50, y: item.y || 50 }}
+//             bounds="parent"
+//           >
+//             <div
+//               style={{
+//                 position: "absolute",
+//                 cursor: "move",
+//                 transform: `rotate(${item.rotation}deg)`, // ✅ Rotation Applied Here
+//                 transition: "transform 0.3s ease-in-out",
+//               }}
+//               onClick={() => handleCabinetClick(item)} // Modal open on click
+//             >
+//               <img
+//                 src={item.imageSrc}
+//                 alt={item.name}
+//                 style={{
+//                   width: "100px",
+//                   height: "100px",
+//                   objectFit: "cover",
+//                   border: "1px solid #ccc",
+//                   display: "block",
+//                   transform: `rotate(${item.rotation}deg)`, // ✅ Ensure Rotation Here
+//                   transition: "transform 0.3s ease-in-out",
+//                 }}
+//                 // className="rotated-image"
+//               />
+//               {/* Rotate Button */}
+//               <button
+//                 onClick={(e) => {
+//                   e.stopPropagation(); // Prevent modal from opening
+//                   onRotate(index);
+//                 }}
+//                 style={{
+//                   position: "absolute",
+//                   bottom: "5px",
+//                   left: "5px",
+//                   background: "#28a745",
+//                   color: "#fff",
+//                   border: "none",
+//                   borderRadius: "50%",
+//                   width: "25px",
+//                   height: "25px",
+//                   cursor: "pointer",
+//                 }}
+//               >
+//                 ↻
+//               </button>
+
+//               {/* Remove Button */}
+//               <button
+//                 onClick={(e) => {
+//                   e.stopPropagation(); // Prevent modal from opening
+//                   onRemove(index);
+//                 }}
+//                 style={{
+//                   position: "absolute",
+//                   top: "5px",
+//                   right: "5px",
+//                   background: "#0dcaf0",
+//                   color: "#343a40",
+//                   border: "none",
+//                   borderRadius: "50%",
+//                   width: "20px",
+//                   height: "20px",
+//                   cursor: "pointer",
+//                 }}
+//               >
+//                 ×
+//               </button>
+//             </div>
+//           </Draggable>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+
+
+
+
+
 export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CABINET",
@@ -103,7 +281,7 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
       if (offset) {
         const x = offset.x;
         const y = offset.y;
-        onDrop({ ...item, x, y, rotation: 0 }); // Default rotation
+        onDrop({ ...item, x, y, rotation: 0 });
       }
     },
     collect: (monitor) => ({
@@ -111,65 +289,22 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
     }),
   }));
 
-  // Modal State for Notes
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isModalOpen, setModalOpen] = useState(false);
-  // const [notesMap, setNotesMap] = useState({});
-  const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
 
+  // ✅ Global click event listener
   useEffect(() => {
-    saveNotesToLocalStorage(notesMap);
-  }, [notesMap]);
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".cabinet-item")) {
+        setSelectedItemIndex(null);
+      }
+    };
 
-  const handleCabinetClick = (item) => {
-    setSelectedItem(item);
-    setModalOpen(true);
-  };
-
-  // const handleSaveNotes = (item, note) => {
-  //   setNotesMap((prevNotesMap) => {
-  //     const existingNotes = prevNotesMap[item.name] || [];
-  //     const updatedNotes = {
-  //       ...prevNotesMap,
-  //       [item.name]: [...existingNotes, note],
-  //     };
-
-  //     // Save to localStorage
-  //     saveNotesToLocalStorage(updatedNotes);
-
-  //     // Fire a storage event
-  //     window.dispatchEvent(new Event("storage"));
-
-  //     return updatedNotes;
-  //   });
-  //   setModalOpen(false);
-  // };
-
-  const handleSaveNotes = (item, note) => {
-    setNotesMap((prevNotesMap) => {
-      const existingNotes = Array.isArray(prevNotesMap[item.name]) ? prevNotesMap[item.name] : [];
-      const updatedNotes = { ...prevNotesMap, [item.name]: [...existingNotes, note] };
-
-      // ✅ Ensure JSON.stringify is used correctly
-      localStorage.setItem("cabinetNotes", JSON.stringify(updatedNotes));
-
-      window.dispatchEvent(new Event("storage"));
-      return updatedNotes;
-    });
-    setModalOpen(false);
-  };
-
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
     <div>
-      {/* Modal for Notes */}
-      <AddNotesModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSaveNotes}
-        item={selectedItem}
-      />
-
       {/* Drop Area */}
       <div
         ref={drop}
@@ -186,22 +321,21 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
           gap: "9px",
           alignContent: "flex-start",
         }}
-      // className="dropzone"
       >
         {droppedItems.map((item, index) => (
-          <Draggable
-            key={index}
-            defaultPosition={{ x: item.x || 50, y: item.y || 50 }}
-            bounds="parent"
-          >
+          <Draggable key={index} defaultPosition={{ x: item.x || 50, y: item.y || 50 }} bounds="parent">
             <div
+              className="cabinet-item" // ✅ Added class for easy detection
               style={{
                 position: "absolute",
                 cursor: "move",
-                transform: `rotate(${item.rotation}deg)`, // ✅ Rotation Applied Here
+                transform: `rotate(${item.rotation}deg)`,
                 transition: "transform 0.3s ease-in-out",
               }}
-              onClick={() => handleCabinetClick(item)} // Modal open on click
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedItemIndex(index);
+              }}
             >
               <img
                 src={item.imageSrc}
@@ -212,54 +346,59 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
                   objectFit: "cover",
                   border: "1px solid #ccc",
                   display: "block",
-                  transform: `rotate(${item.rotation}deg)`, // ✅ Ensure Rotation Here
+                  transform: `rotate(${item.rotation}deg)`,
                   transition: "transform 0.3s ease-in-out",
                 }}
-                // className="rotated-image"
               />
-              {/* Rotate Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent modal from opening
-                  onRotate(index);
-                }}
-                style={{
-                  position: "absolute",
-                  bottom: "5px",
-                  left: "5px",
-                  background: "#28a745",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "25px",
-                  height: "25px",
-                  cursor: "pointer",
-                }}
-              >
-                ↻
-              </button>
 
-              {/* Remove Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent modal from opening
-                  onRemove(index);
-                }}
-                style={{
-                  position: "absolute",
-                  top: "5px",
-                  right: "5px",
-                  background: "#0dcaf0",
-                  color: "#343a40",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "20px",
-                  height: "20px",
-                  cursor: "pointer",
-                }}
-              >
-                ×
-              </button>
+              {/* Show buttons only when selected */}
+              {selectedItemIndex === index && (
+                <>
+                  {/* Rotate Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRotate(index);
+                    }}
+                    style={{
+                      position: "absolute",
+                      bottom: "5px",
+                      left: "5px",
+                      background: "#28a745",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "25px",
+                      height: "25px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ↻
+                  </button>
+
+                  {/* Remove Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(index);
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      background: "#0dcaf0",
+                      color: "#343a40",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "20px",
+                      height: "20px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ×
+                  </button>
+                </>
+              )}
             </div>
           </Draggable>
         ))}
@@ -267,6 +406,9 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate }) => {
     </div>
   );
 };
+
+
+
 
 
 // Function to retrieve notes from any file
