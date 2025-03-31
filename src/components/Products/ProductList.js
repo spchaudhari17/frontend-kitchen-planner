@@ -288,6 +288,8 @@ const ProductList = () => {
           message: "Room details updated successfully!",
           severity: "success",
         });
+
+        navigate("/account");
       }
     } catch (error) {
       setAlert({
