@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { useNavigate } from "react-router-dom";
 
 const MyAccount = () => {
   const [roomDetails, setRoomDetails] = useState([]);
+  const navigate = useNavigate();
 
   const userInfoString = localStorage.getItem("user");
   const userInfo = JSON.parse(userInfoString);
@@ -57,6 +59,16 @@ const MyAccount = () => {
     }
   };
 
+  const handleOpenPlan = (room) => {
+    navigate("/product-list/Kitchen/Base", {
+      state: {
+        roomDetails: room, // Passing full room details
+        fromSavedPlans: true
+      }
+    });
+  };
+
+  
   return (
     <div className="container mt-4">
       <h1>My Account</h1>
@@ -99,39 +111,6 @@ const MyAccount = () => {
           style={{ width: "70px", borderTop: "2px solid #009cde", fontWeight: "700" }}
         />
 
-        {/* {Array.isArray(roomDetails.data) && roomDetails.data.length > 0 ? (
-          <div className="row">
-            {roomDetails.data.map((room, index) => (
-              <div key={index} className="col-md-3 mb-3">
-                <div className="card" style={{ borderRadius: "0" }}>
-                  <img
-                    src="https://cdn.shopify.com/s/files/1/0383/0669/files/Cabjaks_place_holder.png?v=1593401742"
-                    className="card-img-top bg-dark p-3"
-                    style={{ borderRadius: "0", height: "150px", objectFit: "cover" }}
-                  />
-                  <div className="card-body text-center">
-                    <h6 className="card-title fw-bold">Kitchen Plan 1</h6>
-                    <div className="d-flex justify-content-between border-top pt-2">
-                      <button className="btn btn-sm btn-light rounded-0">
-                        <i className="bi bi-folder2-open"></i> Open
-                      </button>
-                      <button className="btn btn-sm btn-light rounded-0">
-                        <i className="bi bi-pencil"></i> Rename
-                      </button>
-                      <button className="btn btn-sm btn-light text-danger rounded-0"
-                        onClick={() => deleteRoomPlan(room._id)}>
-                        <i className="bi bi-trash"></i> Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>No saved plans found.</p>
-        )} */}
-
 
         {roomDetails.length > 0 ? (
           <div className="row">
@@ -146,7 +125,9 @@ const MyAccount = () => {
                   <div className="card-body text-center">
                     <h6 className="card-title fw-bold">{room.description || "No Name"}</h6>
                     <div className="d-flex justify-content-between border-top pt-2">
-                      <button className="btn btn-sm btn-light rounded-0">
+                      <button className="btn btn-sm btn-light rounded-0"
+                        onClick={() => handleOpenPlan(room)}
+                      >
                         <i className="bi bi-folder2-open"></i> Open
                       </button>
                       <button className="btn btn-sm btn-light rounded-0">

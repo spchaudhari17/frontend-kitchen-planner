@@ -10,26 +10,13 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import axios from "axios";
 
 import { useAuthContext } from "../../context/auth";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./ProductList.css";
 
 const ProductList = () => {
   const { auth } = useAuthContext();
   const navigate = useNavigate();
-
-  // const [openSection, setOpenSection] = useState(null);
-
-  // const toggleSection = (section) => {
-  //   setOpenSection(openSection === section ? null : section);
-  // };
-
-  // const handleOpenSavedPlan = () => {
-  //   if (auth) {
-  //     setCurrentStep("Room Layout");
-  //   } else {
-  //     navigate("/login");
-  //   }
-  // };
+  const location = useLocation();
 
   const [roomDetails, setRoomDetails] = useState([]);
 
@@ -94,7 +81,6 @@ const ProductList = () => {
   const [showModal, setShowModal] = useState(false);
   const [showFrontView, setShowFrontView] = useState(false); // State for front view toggle
   const [showView, setShowView] = useState(false); // New state for showing the div
-
   const [notes, setNotes] = useState({});
 
   console.log("droppedItems --- ", droppedItems);
@@ -119,6 +105,23 @@ const ProductList = () => {
     setShowView(!showView); // Toggle visibility of the div
   };
 
+  //location for open cabinates data
+  useEffect(() => {
+    if (location.state?.roomDetails) {
+      const room = location.state.roomDetails;
+
+      // Set the retrieved room details into state
+      setRoomSize({ width: room.width, depth: room.depth });
+      setDescription(room.description);
+      setSubdescription(room.subdescription);
+      setNotes(room.notes || {});
+      setDroppedItems(room.droppedItems || []);
+
+      // Set current step to "Room Layout"
+      setCurrentStep("Room Layout");
+    }
+  }, [location.state]);
+
   // Function to delete all notes from localStorage
   const handleDeleteAllNotes = () => {
     //  LocalStorage se Notes Delete karega
@@ -136,10 +139,6 @@ const ProductList = () => {
     { name: "Start", tooltip: "Start planning your kitchen." },
     { name: "Room Layout", tooltip: "Enter room dimensions and details." },
     { name: "Base Layout", tooltip: "Design the base layout of your kitchen." },
-    // {
-    //   name: "Wall Layout",
-    //   tooltip: "Configure wall layouts for your kitchen.",
-    // },
     { name: "Add Notes", tooltip: "Add notes or special instructions." },
     { name: "Review", tooltip: "Review your plan before finalizing." },
   ];
@@ -149,10 +148,7 @@ const ProductList = () => {
   };
 
 
-  // const handleDrop = (item) => {
-  //   setSelectedItem(item);
-  //   setShowModal(true);
-  // };
+
   // const handleDrop = (item) => {
   //   setDroppedItems((prev) => [
   //     ...prev,
@@ -229,7 +225,7 @@ const ProductList = () => {
           notes,
           droppedItems,
         },
-        { withCredentials: true } 
+        { withCredentials: true }
       );
 
       console.log("response -- ", response);
@@ -257,6 +253,53 @@ const ProductList = () => {
       setIsLoading(false);
     }
   };
+
+  
+  //update room details
+  const handleUpdate = async () => {
+    // if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
+    //   setAlert({
+    //     open: true,
+    //     message: "Please fill out all fields before updating.",
+    //     severity: "error",
+    //   });
+    //   return;
+    // }
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/api/room-details/update-room-details/${location.state.roomDetails._id}`, // ID from state
+        {
+          width: roomSize.width,
+          depth: roomSize.depth,
+          description,
+          subdescription,
+        },
+        { withCredentials: true }
+      );
+
+      console.log("Update Response:", response);
+
+      if (response.status === 200) {
+        setAlert({
+          open: true,
+          message: "Room details updated successfully!",
+          severity: "success",
+        });
+      }
+    } catch (error) {
+      setAlert({
+        open: true,
+        message: "Failed to update room details. Please try again.",
+        severity: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
 
   // add to card
@@ -863,6 +906,23 @@ const ProductList = () => {
               className="rbtn2"
               style={{
                 padding: "10px 20px",
+                backgroundColor: "#007bff", // Blue color for update
+                color: "#fff",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginLeft: "20px",
+              }}
+              onClick={handleUpdate}
+            >
+              UPDATE DETAILS
+            </button>
+
+
+            <button
+              className="rbtn2"
+              style={{
+                padding: "10px 20px",
                 backgroundColor: "#28a745",
                 color: "#fff",
                 border: "none",
@@ -924,31 +984,6 @@ const ProductList = () => {
         )
       });
   };
-
-  // const renderCabinets = (type) => {
-  //   return products
-  //     .filter(product => product.cabinateType === type)
-  //     .map(product => {
-  //       console.log("Cabinet Name:", product.cabinateName);
-  //       console.log("Image URL:", product.cabinateImage);
-
-  //       return (
-  //         <div key={product._id} className="cabinet-item">
-  //           <img
-  //             // src={product.cabinateImage}
-  //             src={new URL(product.cabinateImage, window.location.origin).href}
-  //             alt={product.cabinateName}
-  //             className="cabinet-image"
-  //             style={{ width: "100px", height: "100px", objectFit: "cover" }}
-  //             onError={(e) => console.error("Image Load Error:", e.target.src)} // Debugging step
-  //           />
-  //           <p>{product.cabinateName}</p>
-  //         </div>
-  //       );
-  //     });
-  // };
-
-
 
 
   return (
@@ -1025,38 +1060,6 @@ const ProductList = () => {
       </div>
 
       {/* Sidebar for Kitchen Options */}
-      {/* Sidebar for Kitchen Options */}
-      {/* <div
-        style={{
-          width: "20%",
-          padding: "10px",
-          // backgroundColor: currentStep === "Base Layout" ? "#fff" : "lightgray", // Adjust background color for inactive steps
-          backgroundColor: ["Base Layout", "Wall Layout", "Add Notes"].includes(currentStep) ? "#fff" : "lightgray",
-          borderRadius: "5px",
-          // opacity: currentStep === "Base Layout" ? 1 : 0.5, // Reduce opacity for inactive steps
-          opacity: ["Base Layout", "Wall Layout", "Add Notes"].includes(currentStep) ? 1 : 0.5,
-          // pointerEvents: currentStep === "Base Layout" ? "auto" : "none", // Disable interaction for inactive steps
-          pointerEvents: ["Base Layout", "Wall Layout", "Add Notes"].includes(currentStep) ? "auto" : "none",
-        }}
-      >
-        <h5 style={{ textAlign: "center", marginBottom: "20px" }}>Base Cabinets</h5>
-        <DndProvider backend={HTML5Backend}>
-          <DraggableCabinet
-            name="1 Door Base"
-            imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
-          />
-          <DraggableCabinet
-            name="2 Door Base"
-            imageSrc="https://cabjaks.co.nz/cdn/shop/products/1-door-base-cabinet_large.jpg?v=1430364177"
-          />
-          <DraggableCabinet
-            name="Sink Base"
-            imageSrc="https://cabjaks.co.nz/cdn/shop/products/2-door-base-cabinet_large.jpg?v=1430456846"
-          />
-        </DndProvider>
-      </div> */}
-
-      {/* /// */}
 
       <div className="w-25 p-4 bg-gray-100 rounded-lg sidemenu">
         <h4 className="text-lg font-bold">Kitchen Options</h4>
@@ -1104,12 +1107,6 @@ const ProductList = () => {
           </div>
         </DndProvider>
       </div>
-
-
-
-
-
-      {/* // */}
 
       {/* Snackbar AlertMessage */}
       <AlertMessage
