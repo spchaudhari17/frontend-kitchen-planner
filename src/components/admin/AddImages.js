@@ -48,7 +48,7 @@ const AddImages = () => {
             );
 
             if (response.status === 201) {
-                setMessage("Product added successfully!");
+                // setMessage("Product added successfully!");
                 setTitle("");
                 setCabinetType("");
                 setCabinetImage(null);
@@ -84,7 +84,7 @@ const AddImages = () => {
         try {
             await axios.delete(`http://localhost:3001/api/product/products/${selectedCabinetId}`);
             setProducts(products.filter(product => product._id !== selectedCabinetId));
-            setMessage("Cabinet deleted successfully!");
+            // setMessage("Cabinet deleted successfully!");
         } catch (error) {
             console.error("Error deleting cabinet:", error);
             setMessage("Error deleting cabinet");
