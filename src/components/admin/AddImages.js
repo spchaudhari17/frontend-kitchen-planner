@@ -7,6 +7,7 @@ const AddImages = () => {
     const [title, setTitle] = useState("");
     const [cabinetType, setCabinetType] = useState("");
     const [cabinetImage, setCabinetImage] = useState(null);
+    const [price, setPrice] = useState("");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [products, setProducts] = useState([]);
@@ -35,6 +36,7 @@ const AddImages = () => {
         const formData = new FormData();
         formData.append("cabinateName", title);
         formData.append("cabinateType", cabinetType);
+        formData.append("price", price);
         if (cabinetImage) {
             formData.append("cabinateImage", cabinetImage);
         }
@@ -50,6 +52,7 @@ const AddImages = () => {
                 setTitle("");
                 setCabinetType("");
                 setCabinetImage(null);
+                setPrice("");
                 fetchProducts();
                 handleCloseAdd(); // Close modal after submission
             } else {
@@ -113,6 +116,7 @@ const AddImages = () => {
         { name: 'Sr.No', selector: (row, index) => index + 1, sortable: true, width: '100px' },
         { name: 'Title', selector: (row) => row.cabinateName || 'N/A', sortable: true, minWidth: '150px' },
         { name: 'Type', selector: (row) => row.cabinateType || 'N/A', sortable: true, minWidth: '150px' },
+        { name: 'Price', selector: (row) => row.price ? `$${row.price}` : 'N/A', sortable: true, minWidth: '100px' },
         {
             name: 'Image',
             selector: (row) => row.cabinateImage ? <img src={row.cabinateImage} alt="Cabinet" width="50" /> : 'N/A',
@@ -166,6 +170,7 @@ const AddImages = () => {
                 </div>
             </div>
 
+
             {/* Add Cabinet Modal */}
             <Modal show={showAddModal} centered onHide={handleCloseAdd}>
                 <Modal.Body className="text-center px-md-5 py-5">
@@ -185,6 +190,10 @@ const AddImages = () => {
                                 <option value="finishing">Finishing Panels</option>
                                 <option value="wall">Wall Cabinets</option>
                             </select>
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="title" className="form-label">Cabinet Price</label>
+                            <input type="number" placeholder="Price" required value={price} onChange={(e) => setPrice(e.target.value)} />
                         </div>
                         <div className="mb-3">
                             <label htmlFor="cabinetImage" className="form-label">Upload Cabinet Image</label>

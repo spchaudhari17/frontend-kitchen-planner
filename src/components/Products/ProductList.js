@@ -149,24 +149,41 @@ const ProductList = () => {
 
 
 
+  //sahi hai 
   // const handleDrop = (item) => {
-  //   setDroppedItems((prev) => [
-  //     ...prev,
-  //     { ...item, x: 50, y: 50, rotation: 0 }, // Default position
+  //   setDroppedItems((prevItems) => [
+  //     ...prevItems,
+  //     { ...item, rotation: 0 }, // ✅ Default rotation 0°
   //   ]);
-  //   setSelectedItem(item);
+  //   setSelectedItem(item); // Drop kiya gaya item set karein
   //   setShowModal(true);
   // };
 
   const handleDrop = (item) => {
-    setDroppedItems((prevItems) => [
-      ...prevItems,
-      { ...item, rotation: 0 }, // ✅ Default rotation 0°
-    ]);
+    // Create a new item with unique ID and default rotation
+    const newItem = {
+      ...item,
+      id: Date.now(),
+      rotation: 0,
+      height: 0,    // Initialize dimensions to 0
+      width: 0,      // They'll be set in the modal
+      x: 50,          // Default position
+    y: 50,
+    };
+    // setDroppedItems((prevItems) => [
+    //   ...prevItems,
+    //   { ...item, rotation: 0 }, // ✅ Default rotation 0°
+    // ]);
+    // Set as selected item and show modal
+    // setDroppedItems(prev => [...prev, newItem]);
+    setSelectedItem(newItem);
+    setShowModal(true);
 
-    // setSelectedItem(item); // Drop kiya gaya item set karein
-    // setShowModal(true);
+    // DO NOT add to droppedItems yet - wait for modal confirmation
   };
+
+
+
 
   const handleRotate = (index) => {
     setDroppedItems((prevItems) => {
@@ -206,6 +223,7 @@ const ProductList = () => {
         message: "Please fill out all fields before proceeding.",
         severity: "error",
       });
+
       return;
     }
 
@@ -254,18 +272,9 @@ const ProductList = () => {
     }
   };
 
-  
+
   //update room details
   const handleUpdate = async () => {
-    // if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
-    //   setAlert({
-    //     open: true,
-    //     message: "Please fill out all fields before updating.",
-    //     severity: "error",
-    //   });
-    //   return;
-    // }
-
     setIsLoading(true);
 
     try {
@@ -325,7 +334,7 @@ const ProductList = () => {
       description,
       subdescription,
       notes,
-      droppedItems,
+      droppedItems
     };
 
     localStorage.setItem("cartData", JSON.stringify(cartData));
@@ -341,6 +350,16 @@ const ProductList = () => {
     setDroppedItems((prev) =>
       prev.filter((_, index) => index !== indexToRemove)
     );
+  };
+
+  const commonDropZoneProps = {
+    onDrop: handleDrop,
+    droppedItems: droppedItems, // Same state for all steps
+    onRemove: handleRemove,
+    onRotate: handleRotate,
+    currentStep: currentStep,
+    setDroppedItems: setDroppedItems,
+    
   };
 
   const handleAlertClose = () => {
@@ -644,12 +663,15 @@ const ProductList = () => {
             >
               {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Kitchen Planner</h2> */}
               <h5>Plan Top View</h5>
-              <DropZone
+              {/* <DropZone
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
                 onRemove={handleRemove}
                 onRotate={handleRotate}
-              />
+                currentStep={currentStep}
+              /> */}
+
+              <DropZone {...commonDropZoneProps} />
 
             </div>
           </div>
@@ -749,16 +771,15 @@ const ProductList = () => {
               className="sidemenu"
             >
               <h5>Plan Top View</h5>
-              <DropZone
-                // onDrop={handleDrop}
-                // droppedItems={droppedItems}
-                // onRemove={handleRemove}
-
+              {/* <DropZone
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
                 onRemove={handleRemove}
                 onRotate={handleRotate}
-              />
+                currentStep={currentStep}
+              /> */}
+
+              <DropZone {...commonDropZoneProps} />
             </div>
           </DndProvider>
 
@@ -830,16 +851,14 @@ const ProductList = () => {
             >
               {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Kitchen Planner</h2> */}
               <h5>Plan Top View</h5>
-              <DropZone
-                // onDrop={handleDrop}
-                // droppedItems={droppedItems}
-                // onRemove={handleRemove}
-
+              {/* <DropZone
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
                 onRemove={handleRemove}
                 onRotate={handleRotate}
-              />
+              /> */}
+
+              <DropZone {...commonDropZoneProps} />
             </div>
 
             <button
