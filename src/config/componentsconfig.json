@@ -1,52 +1,38 @@
+
+
+
 [
   {
     "name": "Body",
-    "properties": [
-      "background"
-    ]
+    "properties": ["background"]
   },
   {
     "name": "Navbars",
-    "properties": [
-      "background",
-      "text"
-    ]
+    "properties": ["background", "text"]
   },
   {
     "name": "Button",
-    "properties": [
-      "background",
-      "text"
-    ]
+    "properties": ["background", "text"]
   },
   {
     "name": "Status",
-    "properties": [
-      "background",
-      "text"
-    ]
+    "properties": ["background", "text"]
   },
   {
     "name": "User",
-    "properties": [
-      "background",
-      "text",
-      "Button"
-    ]
+    "properties": ["background", "text", "Button"]
   },
   {
     "name": "Details",
-    "properties": [
-      "background",
-      "text",
-      "border"
-    ]
+    "properties": ["background", "text", "border"]
   },
   {
     "name": "Modal",
-    "properties": [
-      "background",
-      "text"
-    ]
-  }
+    "properties": ["background", "text"]
+  },
+  {
+    "name": "Kitchen Planner",
+    "properties": ["background", "text"]
+  } 
+  
 ]
