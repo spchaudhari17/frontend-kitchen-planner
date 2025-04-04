@@ -125,14 +125,15 @@ const ProductList = () => {
   // Function to delete all notes from localStorage
   const handleDeleteAllNotes = () => {
     //  LocalStorage se Notes Delete karega
-    localStorage.removeItem("cabinetNotes");
-    localStorage.removeItem("droppedCabinets"); // Cabinets bhi delete karne ke liye
+    sessionStorage.removeItem("cabinetNotes");
+    // localStorage.removeItem("droppedCabinets"); // Cabinets bhi delete karne ke liye
+
+    //  State ko update karega
+    setNotes({});
 
     //  Storage Event Trigger karega
     window.dispatchEvent(new Event("storage"));
 
-    //  State ko update karega
-    setNotes({});
   };
 
   const steps = [
@@ -993,7 +994,6 @@ const ProductList = () => {
     return products
       .filter((product) => product.cabinateType === type)
       .map((cabinet) => {
-        const imageUrl = cabinet.cabinateImage;
         return (
 
           <DraggableCabinet

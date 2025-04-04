@@ -9,11 +9,11 @@ export const ItemTypes = {
 
 // Utility functions for localStorage
 const saveNotesToLocalStorage = (notes) => {
-  localStorage.setItem("cabinetNotes", JSON.stringify(notes));
+  sessionStorage.setItem("cabinetNotes", JSON.stringify(notes));
 };
 
 const getNotesFromLocalStorage = () => {
-  const storedNotes = localStorage.getItem("cabinetNotes");
+  const storedNotes = sessionStorage.getItem("cabinetNotes");
   return storedNotes ? JSON.parse(storedNotes) : {};
 };
 
@@ -92,9 +92,6 @@ export const DraggableCabinet = ({ name, imageSrc, }) => {
     </div>
   );
 };
-
-
-
 
 
 //sahi hai 
@@ -184,6 +181,22 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate, currentStep
       return updated;
     });
   };
+
+
+  // const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
+
+// Add this useEffect to sync with localStorage changes
+useEffect(() => {
+  const handleStorageChange = () => {
+    setNotesMap(getNotesFromLocalStorage());
+  };
+
+  window.addEventListener('storage', handleStorageChange);
+  
+  return () => {
+    window.removeEventListener('storage', handleStorageChange);
+  };
+}, []);
 
   return (
     <div>
