@@ -164,12 +164,12 @@ const ProductList = () => {
     // Create a new item with unique ID and default rotation
     const newItem = {
       ...item,
-      id: Date.now(),
+      id: item.id || Date.now(),
       rotation: 0,
       height: 0,    // Initialize dimensions to 0
       width: 0,      // They'll be set in the modal
       x: 50,          // Default position
-    y: 50,
+      y: 50,
     };
     // setDroppedItems((prevItems) => [
     //   ...prevItems,
@@ -208,7 +208,7 @@ const ProductList = () => {
     }
     setDroppedItems((prev) => [
       ...prev,
-      { ...selectedItem, ...itemDimensions },
+      { ...selectedItem, ...itemDimensions, price: selectedItem.price },
     ]);
     setShowModal(false);
     setItemDimensions({ height: "", width: "" });
@@ -327,18 +327,36 @@ const ProductList = () => {
       return;
     }
 
-    // Cart ka data localStorage mein save karna
-    const cartData = {
+    // Get existing cart data from localStorage (or initialize an empty array)
+    const existingCart = JSON.parse(localStorage.getItem("cartData")) || [];
+
+    // New cart item
+    const newCartItem = {
       user_id: userInfo._id,
       width: roomSize.width,
       depth: roomSize.depth,
       description,
       subdescription,
       notes,
-      droppedItems
+      // droppedItems,
+      droppedItems: droppedItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        imageSrc: item.imageSrc,
+        price: item.price,
+        x: item.x,
+        y: item.y,
+        rotation: item.rotation,
+        width: item.width,
+        height: item.height
+      })),
     };
 
-    localStorage.setItem("cartData", JSON.stringify(cartData));
+    // Add new item to the existing cart array
+    existingCart.push(newCartItem);
+
+    // Save updated cart back to localStorage
+    localStorage.setItem("cartData", JSON.stringify(existingCart));
 
     setAlert({
       open: true,
@@ -346,6 +364,7 @@ const ProductList = () => {
       severity: "success",
     });
   };
+
 
   const handleRemove = (indexToRemove) => {
     setDroppedItems((prev) =>
@@ -360,7 +379,7 @@ const ProductList = () => {
     onRotate: handleRotate,
     currentStep: currentStep,
     setDroppedItems: setDroppedItems,
-    
+
   };
 
   const handleAlertClose = () => {
@@ -900,6 +919,12 @@ const ProductList = () => {
                       alt={showFrontView ? "Front View" : "Top View"}
                       style={{ width: "100px" }}
                     />
+                    <hr className="side-line"></hr>
+                    <hr className="bottom-line"></hr>
+                    {/* <div className="side-txt">200</div>
+                    <div className="bottom-txt">300</div> */}
+                    <div className="side-txt">{item.height}</div>
+                    <div className="bottom-txt">{item.width}</div>
                   </div>
                 ))}
               </div>
@@ -1001,6 +1026,7 @@ const ProductList = () => {
             id={cabinet._id}
             name={cabinet.cabinateName}
             imageSrc={cabinet.cabinateImage}
+            price={cabinet.price}
           />
         )
       });

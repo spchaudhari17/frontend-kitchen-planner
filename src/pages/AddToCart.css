@@ -112,6 +112,10 @@
   text-decoration: underline;
 }
 
+
+
+
+
 /* Responsive Design */
 @media (max-width: 600px) {
   .product-item {

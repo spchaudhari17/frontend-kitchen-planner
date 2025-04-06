@@ -94,6 +94,46 @@
   margin-left: 20px;
 }
 
+
+
+.side-line {
+  background-color: #fff;
+  margin: 0;
+  height: 76px;
+  width: 1px;
+  position: relative;
+  left: 104px;
+  top: -76px;
+}
+
+.bottom-line {
+  color: #fff !important;
+  margin: 0;
+  position: relative;
+  bottom: 72px;
+}
+
+.side-txt {
+  position: relative;
+  right: -108px;
+  top: -128px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 100;
+  display: inline;
+}
+
+.bottom-txt {
+  position: relative;
+  left: 25px;
+  bottom: 78px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 100;
+  display: inline;
+}
+
+
 /* MEDIA SCREEN Mobile*/
 @media (max-width: 768px) {
   .rempad {
@@ -215,6 +255,7 @@
     margin-top: 15px;
     margin-bottom: 15px;
   }
+
   .progitems {
     width: 20px !important;
     height: 20px !important;
@@ -223,6 +264,7 @@
     align-items: center;
     justify-content: center;
   }
+
   .progtxt {
     font-size: 8px !important;
   }
@@ -259,9 +301,9 @@
     padding: 0px !important;
   } */
 
-    .rempad .w-25 {
-        padding: 0px !important;
-      }
+  .rempad .w-25 {
+    padding: 0px !important;
+  }
 }
 
 @media (min-width: 1200px) {
@@ -279,9 +321,9 @@
     padding: 0px !important;
   } */
 
-    .rempad .w-25 {
-        padding: 0px !important;
-      }
+  .rempad .w-25 {
+    padding: 0px !important;
+  }
 }
 
 @media (min-width: 1200px) and (max-width: 1400px) {
@@ -301,12 +343,15 @@
   .drgbl {
     height: fit-content !important;
   }
+
   .cardtxt {
     font-size: 16px;
   }
+
   .crdimg {
     height: 150px !important;
   }
+
   .fldc {
     display: block !important;
   }

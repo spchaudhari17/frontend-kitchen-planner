@@ -61,10 +61,10 @@ const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
 };
 
 // Draggable Cabinet Component
-export const DraggableCabinet = ({ name, imageSrc, }) => {
+export const DraggableCabinet = ({ name, imageSrc, id, price }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CABINET",
-    item: { name, imageSrc },
+    item: { id, name, imageSrc, price },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -89,6 +89,7 @@ export const DraggableCabinet = ({ name, imageSrc, }) => {
           border: "1px solid #ccc",
         }}
       />
+
     </div>
   );
 };
@@ -155,11 +156,6 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate, currentStep
     setModalOpen(false);
   };
 
-  // const handleCabinetClick = (item) => {
-  //   setSelectedItem(item);
-  //   setModalOpen(true);
-  // };
-
 
   const handleCabinetClick = (item) => {
     // Only show notes modal in "Add Notes" step
@@ -183,20 +179,18 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate, currentStep
   };
 
 
-  // const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
+  // Add this useEffect to sync with localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setNotesMap(getNotesFromLocalStorage());
+    };
 
-// Add this useEffect to sync with localStorage changes
-useEffect(() => {
-  const handleStorageChange = () => {
-    setNotesMap(getNotesFromLocalStorage());
-  };
+    window.addEventListener('storage', handleStorageChange);
 
-  window.addEventListener('storage', handleStorageChange);
-  
-  return () => {
-    window.removeEventListener('storage', handleStorageChange);
-  };
-}, []);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   return (
     <div>
@@ -228,9 +222,9 @@ useEffect(() => {
         }}
       >
         {droppedItems.map((item, index) => (
-          <Draggable key={item.id || index} position={{ x: item.x || 50, y: item.y || 50 }} 
-          bounds="parent" 
-          onStop={(e, data) => handlePositionChange(index, data)}>
+          <Draggable key={item.id || index} position={{ x: item.x || 50, y: item.y || 50 }}
+            bounds="parent"
+            onStop={(e, data) => handlePositionChange(index, data)}>
             <div
               className="cabinet-item" // ✅ Added class for easy detection
               style={{
@@ -260,7 +254,7 @@ useEffect(() => {
               />
 
               {/* Show buttons only when selected */}
-              {(currentStep === "Base Layout" && selectedItemIndex === index )&& (
+              {(currentStep === "Base Layout" && selectedItemIndex === index) && (
                 <>
                   {/* Rotate Button */}
                   <button
