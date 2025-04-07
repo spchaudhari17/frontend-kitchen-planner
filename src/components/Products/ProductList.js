@@ -29,13 +29,13 @@ const ProductList = () => {
   const plannerBg = componentColors?.['Kitchen Planner']?.background || defaultColors.background;
   const plannerText = componentColors?.['Kitchen Planner']?.text || defaultColors.text;
 
- const defaultButtonColors = {
-  background: '#007bff',  
-  text: '#ffffff'
-};
- 
-const globalButtonBg = componentColors?.['Button']?.background || defaultButtonColors.background;
-const globalButtonText = componentColors?.['Button']?.text || defaultButtonColors.text;
+  const defaultButtonColors = {
+    background: '#007bff', // fallback
+    text: '#ffffff'
+  };
+
+  const globalButtonBg = componentColors?.['Button']?.background || defaultButtonColors.background;
+  const globalButtonText = componentColors?.['Button']?.text || defaultButtonColors.text;
 
 
   const [roomDetails, setRoomDetails] = useState([]);
@@ -184,12 +184,12 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
     // Create a new item with unique ID and default rotation
     const newItem = {
       ...item,
-      id: Date.now(),
+      id: item.id || Date.now(),
       rotation: 0,
       height: 0,    // Initialize dimensions to 0
       width: 0,      // They'll be set in the modal
       x: 50,          // Default position
-    y: 50,
+      y: 50,
     };
     // setDroppedItems((prevItems) => [
     //   ...prevItems,
@@ -228,7 +228,7 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
     }
     setDroppedItems((prev) => [
       ...prev,
-      { ...selectedItem, ...itemDimensions },
+      { ...selectedItem, ...itemDimensions, price: selectedItem.price },
     ]);
     setShowModal(false);
     setItemDimensions({ height: "", width: "" });
@@ -335,9 +335,61 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
 
 
   // add to card
+  // const handleAddToCart = (event) => {
+  //   event.preventDefault();
+
+  //   if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
+  //     setAlert({
+  //       open: true,
+  //       message: "Please fill out all fields before adding to cart.",
+  //       severity: "error",
+  //     });
+  //     return;
+  //   }
+
+  //   // Get existing cart data from localStorage (or initialize an empty array)
+  //   const existingCart = JSON.parse(localStorage.getItem("cartData")) || [];
+
+  //   // New cart item
+  //   const newCartItem = {
+  //     user_id: userInfo._id,
+  //     width: roomSize.width,
+  //     depth: roomSize.depth,
+  //     description,
+  //     subdescription,
+  //     notes,
+  //     // droppedItems,
+  //     droppedItems: droppedItems.map(item => ({
+  //       id: item.id,
+  //       name: item.name,
+  //       imageSrc: item.imageSrc,
+  //       price: item.price,
+  //       x: item.x,
+  //       y: item.y,
+  //       rotation: item.rotation,
+  //       width: item.width,
+  //       height: item.height
+  //     })),
+  //   };
+
+  //   // Add new item to the existing cart array
+  //   existingCart.push(newCartItem);
+
+  //   // Save updated cart back to localStorage
+  //   localStorage.setItem("cartData", JSON.stringify(existingCart));
+
+  //   setAlert({
+  //     open: true,
+  //     message: "Room details added to cart successfully!",
+  //     severity: "success",
+  //   });
+  // };
+
+
   const handleAddToCart = (event) => {
     event.preventDefault();
 
+    // Step 1: Validate input fields
     if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
       setAlert({
         open: true,
@@ -347,25 +399,52 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
       return;
     }
 
-    // Cart ka data localStorage mein save karna
-    const cartData = {
+    // Step 2: Safely parse existing cart data
+    let existingCart = [];
+    try {
+      const storedCart = JSON.parse(localStorage.getItem("cartData"));
+      if (Array.isArray(storedCart)) {
+        existingCart = storedCart;
+      }
+    } catch (e) {
+      console.error("Error parsing cartData from localStorage:", e);
+      // You can optionally show an error alert here
+    }
+
+    // Step 3: Create new cart item
+    const newCartItem = {
       user_id: userInfo._id,
       width: roomSize.width,
       depth: roomSize.depth,
       description,
       subdescription,
       notes,
-      droppedItems
+      droppedItems: droppedItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        imageSrc: item.imageSrc,
+        price: item.price,
+        x: item.x,
+        y: item.y,
+        rotation: item.rotation,
+        width: item.width,
+        height: item.height
+      })),
     };
 
-    localStorage.setItem("cartData", JSON.stringify(cartData));
+    // Step 4: Add to cart and update localStorage
+    existingCart.push(newCartItem);
+    localStorage.setItem("cartData", JSON.stringify(existingCart));
 
+    // Step 5: Show success message
     setAlert({
       open: true,
       message: "Room details added to cart successfully!",
       severity: "success",
     });
   };
+
+
 
   const handleRemove = (indexToRemove) => {
     setDroppedItems((prev) =>
@@ -380,7 +459,7 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
     onRotate: handleRotate,
     currentStep: currentStep,
     setDroppedItems: setDroppedItems,
-    
+
   };
 
   const handleAlertClose = () => {
@@ -393,23 +472,23 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
     if (currentStep === "Start") {
       return (
         <div
-        className="maincont"
-        style={{
-          textAlign: 'center',
-          padding: '20px',
-          display: 'flex',
-          backgroundColor: plannerBg,
-          color: plannerText,
-        }}
-      >
-          <div className="toptxt"   style={{
-          textAlign: 'center',
-          padding: '20px',
-          display: 'flex',
-         
-        }}>
-            <h4 className="h4head" style={{color:plannerText}}  >Would You Like to Create a Plan?</h4>
-            <p className="paratext" style={{color:plannerText , marginLeft:"10px"}}>
+          className="maincont"
+          style={{
+            textAlign: 'center',
+            padding: '20px',
+            display: 'flex',
+            backgroundColor: plannerBg,
+            color: plannerText,
+          }}
+        >
+          <div className="toptxt" style={{
+            textAlign: 'center',
+            padding: '20px',
+            display: 'flex',
+
+          }}>
+            <h4 className="h4head" style={{ color: plannerText }}  >Would You Like to Create a Plan?</h4>
+            <p className="paratext" style={{ color: plannerText, marginLeft: "10px" }}>
               Need help visualizing your dream kitchen? Our kitchen planner puts
               the design power in your hands, with an incredibly easy-to-use
               drag-and-drop builder.
@@ -503,15 +582,15 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
     if (currentStep === "Room Layout") {
       return (
         <div
-        className="roomlayout"
-        style={{
-          width: '80%',
-          backgroundColor: plannerBg,
-          color: plannerText,
-          padding: '20px',
-          margin: 'auto',
-        }}
-      >
+          className="roomlayout"
+          style={{
+            width: '80%',
+            backgroundColor: plannerBg,
+            color: plannerText,
+            padding: '20px',
+            margin: 'auto',
+          }}
+        >
           {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
             Kitchen Planner
           </h2> */}
@@ -561,7 +640,7 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
             <Col xs={12} sm={8}>
               <Form>
                 <h5>Please Enter Your Room Size</h5>
-                <p className="paratext" style={{ textAlign: "left", color:plannerText }}>
+                <p className="paratext" style={{ textAlign: "left", color: plannerText }}>
                   You can use the default measurements below if you’re not sure
                   of your room size yet.
                 </p>
@@ -601,7 +680,7 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
                 <Form.Group controlId="roomDepth" className="mb-3">
                   <Row>
                     <Col xs={4}>
-                      <Form.Label style={{ color:plannerText }}>Depth:</Form.Label>
+                      <Form.Label style={{ color: plannerText }}>Depth:</Form.Label>
                       <Form.Control
                         type="number"
                         value={roomSize.depth}
@@ -684,7 +763,7 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
 
         <DndProvider backend={HTML5Backend}>
           <div style={{}}>
-          <div
+            <div
               style={{
                 flex: 3,
                 backgroundColor: plannerBg,
@@ -774,12 +853,16 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowModal(false)} style={{  backgroundColor: globalButtonBg,
-                color: globalButtonText,}}>
+              <Button variant="secondary" onClick={() => setShowModal(false)} style={{
+                backgroundColor: globalButtonBg,
+                color: globalButtonText,
+              }}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleAddToDesign} style={{  backgroundColor: globalButtonBg,
-                color: globalButtonText,}}>
+              <Button variant="primary" onClick={handleAddToDesign} style={{
+                backgroundColor: globalButtonBg,
+                color: globalButtonText,
+              }}>
                 Add to Design
               </Button>
             </Modal.Footer>
@@ -877,7 +960,7 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
       return (
         <DndProvider backend={HTML5Backend}>
           <div style={{}}>
-          <div
+            <div
               style={{
                 flex: 3,
                 backgroundColor: plannerBg,
@@ -901,100 +984,106 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
               <DropZone {...commonDropZoneProps} />
             </div>
             <div className="mt-4">
-            <Button
-              className="rbtn1"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: globalButtonBg,
-                color: globalButtonText,
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-              onClick={handleFrontViewToggle}
-            >
-              {showView ? "HIDE FRONT VIEW" : "SHOW FRONT VIEW"}
-            </Button>
-
-            {/* Conditionally render this div only when showView is true */}
-            {showView && (
-              <div
+              <Button
+                className="rbtn1"
                 style={{
-                  position: "relative",
-                  height: "400px",
-                  backgroundColor: "#333",
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
                   borderRadius: "5px",
-                  margin: "20px",
-                  // marginTop: "20px",
-                  // marginBottom: "20px",
+                  cursor: "pointer",
                 }}
+                onClick={handleFrontViewToggle}
               >
-                {droppedItems.map((item, index) => (
-                  <div
-                    key={index}
-                    style={{ position: "absolute", top: 50, left: 50 }}
-                  >
-                    <img
-                      src={item.imageSrc}
-                      alt={showFrontView ? "Front View" : "Top View"}
-                      style={{ width: "100px" }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+                {showView ? "HIDE FRONT VIEW" : "SHOW FRONT VIEW"}
+              </Button>
 
-            {/* </div> */}
+              {/* Conditionally render this div only when showView is true */}
+              {showView && (
+                <div
+                  style={{
+                    position: "relative",
+                    height: "400px",
+                    backgroundColor: "#333",
+                    borderRadius: "5px",
+                    margin: "20px",
+                    // marginTop: "20px",
+                    // marginBottom: "20px",
+                  }}
+                >
+                  {droppedItems.map((item, index) => (
+                    <div
+                      key={index}
+                      style={{ position: "absolute", top: 50, left: 50 }}
+                    >
+                      <img
+                        src={item.imageSrc}
+                        alt={showFrontView ? "Front View" : "Top View"}
+                        style={{ width: "100px" }}
+                      />
+                      <hr className="side-line"></hr>
+                      <hr className="bottom-line"></hr>
+                      {/* <div className="side-txt">200</div>
+                    <div className="bottom-txt">300</div> */}
+                      <div className="side-txt">{item.height}</div>
+                      <div className="bottom-txt">{item.width}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            {/* New "Review & Submit" Button */}
-            <Button
-              className="rbtn2"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: globalButtonBg,
-                color: globalButtonText,
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "20px",
-              }}
-              onClick={handleSubmit}
-            >
-              REVIEW AND SUBMIT
-            </Button>
+              {/* </div> */}
 
-            <Button
-              className="rbtn2"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: globalButtonBg,
-                color: globalButtonText,
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "20px",
-              }}
-              onClick={handleUpdate}
-            >
-              UPDATE DETAILS
-            </Button>
+              {/* New "Review & Submit" Button */}
+              <Button
+                className="rbtn2"
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  marginLeft: "20px",
+                }}
+                onClick={handleSubmit}
+              >
+                REVIEW AND SUBMIT
+              </Button>
+
+              <Button
+                className="rbtn2"
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  marginLeft: "20px",
+                }}
+                onClick={handleUpdate}
+              >
+                UPDATE DETAILS
+              </Button>
 
 
-            <Button
-              className="rbtn2 mt-4"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: globalButtonBg,
-                color: globalButtonText,
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "20px",
-              }}
-              onClick={handleAddToCart}
-            >
-              Add To Card
-            </Button>
+              <Button
+                className="rbtn2 mt-4"
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  marginLeft: "20px",
+                }}
+                onClick={handleAddToCart}
+              >
+                Add To Card
+              </Button>
             </div>
           </div>
         </DndProvider>
@@ -1041,6 +1130,7 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
             id={cabinet._id}
             name={cabinet.cabinateName}
             imageSrc={cabinet.cabinateImage}
+            price={cabinet.price}
           />
         )
       });
@@ -1049,15 +1139,15 @@ const globalButtonText = componentColors?.['Button']?.text || defaultButtonColor
 
   return (
     <div
-    className="rempad fldc"
-    style={{
-      display: 'flex',
-      backgroundColor: plannerBg,
-      color: plannerText,
-      minHeight: '100vh',
-      padding: '20px',
-    }}
-  >
+      className="rempad fldc"
+      style={{
+        display: 'flex',
+        backgroundColor: plannerBg,
+        color: plannerText,
+        minHeight: '100vh',
+        padding: '20px',
+      }}
+    >
       {/* Main Content */}
       <div
         className="rempad remmar"
