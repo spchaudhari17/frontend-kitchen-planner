@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DataTable from "react-data-table-component";
-import { Button, FormControl, InputGroup, Modal } from "react-bootstrap";
-
-const AddImages = () => {
+import {  FormControl, InputGroup, Modal } from "react-bootstrap";
+ import Button from "../ui/Button";
+import { useColorContext } from "../../context/colorcontext";
+const AddCabinet = () => {
     const [title, setTitle] = useState("");
     const [cabinetType, setCabinetType] = useState("");
     const [cabinetImage, setCabinetImage] = useState(null);
@@ -18,6 +19,25 @@ const AddImages = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCabinetId, setSelectedCabinetId] = useState(null);
+    const { componentColors } = useColorContext();
+
+    const defaultButtonColors = {
+        background: '#007bff', // fallback
+        text: '#ffffff'
+      };
+      
+      const globalButtonBg = componentColors?.['Button']?.background || defaultButtonColors.background;
+      const globalButtonText = componentColors?.['Button']?.text || defaultButtonColors.text;
+
+
+      const defaultCabinetColors = {
+        background: "#ffffff",
+        text: "#000000"
+      };
+      
+      const cabinetBg = componentColors?.["Add Cabinet"]?.background || defaultCabinetColors.background;
+      const cabinetText = componentColors?.["Add Cabinet"]?.text || defaultCabinetColors.text;
+      
 
     const handleCloseAdd = () => setShowAddModal(false);
     const handleShowAdd = () => setShowAddModal(true);
@@ -99,18 +119,38 @@ const AddImages = () => {
     );
 
     const customStyles = {
-        rows: { style: { fontSize: "14px" } },
-        headCells: {
-            style: {
-                fontSize: "14px",
-                fontWeight: '700',
-                padding: "12px",
-                color: "#fff",
-                backgroundColor: 'var(--bs-primary)',
-            },
+        table: {
+          style: {
+            backgroundColor: cabinetBg,
+            color: cabinetText,
+          },
         },
-        cells: { style: { color: '#31373d', fontSize: "14px", padding: "5px 12px" } },
-    };
+        rows: {
+          style: {
+            backgroundColor: cabinetBg,
+            color: cabinetText,
+            fontSize: "14px",
+          },
+        },
+        headCells: {
+          style: {
+            fontSize: "14px",
+            fontWeight: "700",
+            padding: "12px",
+            color: cabinetText,
+            backgroundColor: cabinetBg, // or set another for contrast
+          },
+        },
+        cells: {
+          style: {
+            fontSize: "14px",
+            padding: "5px 12px",
+            color: cabinetText,
+            backgroundColor: cabinetBg,
+          },
+        },
+      };
+      
 
     const columns = [
         { name: 'Sr.No', selector: (row, index) => index + 1, sortable: true, width: '100px' },
@@ -137,13 +177,18 @@ const AddImages = () => {
     ];
 
     return (
-        <div className="container-fluid">
-            <div className="WallList-wrapper bg-white rounded-3 p-3">
-                <div className="heading-wrapper d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div className="container-fluid"  >
+            <div className="WallList-wrapper bg-white rounded-3 p-3" >
+                <div className="heading-wrapper d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3" style={{ backgroundColor: cabinetBg, color: cabinetText }}>
                     <h5 className="fw-bold m-0">All Cabinets</h5>
-                    <Button variant="success" className='px-3' onClick={handleShowAdd}>
+                    <Button
+                        className="px-3"
+                        onClick={handleShowAdd}
+                        style={{ backgroundColor: globalButtonBg, color: globalButtonText }}
+                        >
                         <i className="bi bi-person-add fs-18 lh-sm"></i> Add Cabinet
-                    </Button>
+                        </Button>
+
                     <InputGroup className="search-bar">
                         <InputGroup.Text><i className="bi bi-search"></i></InputGroup.Text>
                         <FormControl
@@ -155,9 +200,10 @@ const AddImages = () => {
                     </InputGroup>
                 </div>
 
-                <div className="table-responsive table-custom-wrapper product-table mt-3">
-                    {error && <div className="alert alert-danger">{error}</div>}
+                <div className="table-responsive table-custom-wrapper product-table mt-3" style={{ backgroundColor: cabinetBg, color: cabinetText }}>
+                    {error && <div className="alert alert-danger"  >{error}</div>}
                     <DataTable
+                    style={{ backgroundColor: cabinetBg, color: cabinetText }}
                         columns={columns}
                         data={filteredCabinates}
                         dense
@@ -199,7 +245,15 @@ const AddImages = () => {
                             <label htmlFor="cabinetImage" className="form-label">Upload Cabinet Image</label>
                             <input type="file" id="cabinetImage" required className="form-control" accept="image/*" onChange={(e) => setCabinetImage(e.target.files[0])} />
                         </div>
-                        <Button type="submit" variant="success" className="w-100" disabled={loading}>{loading ? "Submitting..." : "Submit"}</Button>
+                        <Button
+                            type="submit"
+                            className="w-100"
+                            disabled={loading}
+                            style={{ backgroundColor: globalButtonBg, color: globalButtonText }}
+                            >
+                            {loading ? "Submitting..." : "Submit"}
+                            </Button>
+
                     </form>
                 </Modal.Body>
             </Modal>
@@ -211,8 +265,21 @@ const AddImages = () => {
                 <Modal.Body className="text-center px-md-5 py-5">
                     <h4>Are you sure you want to delete this cabinet?</h4>
                     <div className="mt-4">
-                        <Button variant="secondary" onClick={handleCloseDelete}>Cancel</Button>
-                        <Button variant="danger" onClick={deleteCabinetHandler} className="ms-3">Delete</Button>
+                    <Button
+                            onClick={handleCloseDelete}
+                            style={{ backgroundColor: globalButtonBg, color: globalButtonText }}
+                            >
+                            Cancel
+                            </Button>
+
+                            <Button
+                            onClick={deleteCabinetHandler}
+                            className="ms-3"
+                            style={{ backgroundColor: globalButtonBg, color: globalButtonText }}
+                            >
+                            Delete
+                            </Button>
+
                     </div>
                 </Modal.Body>
             </Modal>
@@ -221,4 +288,4 @@ const AddImages = () => {
     );
 };
 
-export default AddImages;
+export default AddCabinet;

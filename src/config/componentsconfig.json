@@ -33,6 +33,11 @@
   {
     "name": "Kitchen Planner",
     "properties": ["background", "text"]
-  } 
+  },
+  {
+    "name": "Add Cabinet",
+    "properties": ["background", "text"]
+  }
+  
   
 ]

@@ -24,7 +24,7 @@ import ProductList from './components/Products/ProductList';
 import ProductAdder from './components/Products/ProductAdder';
 import SavePlan from './pages/SavePlan';
 import AddToCart from './pages/AddToCart';
-import AddImages from './components/admin/AddImages';
+import AddCabinet from './components/admin/AddCabinet';
 
 function App() {
   const { auth } = useAuthContext();
@@ -102,7 +102,7 @@ function App() {
               <Route element={<RequireAuth />}>
                 <Route path="/account" element={<SavePlan />} />
                 <Route path="/cart" element={<AddToCart />} />
-                <Route path="/admin-add-cabinates" element={<AddImages />} />
+                <Route path="/admin-add-cabinates" element={<AddCabinet />} />
 
                 <Route element={<RequireRoles Roles={[ROLES.Staff, ROLES.Admin]} />}>
                   <Route path="/user" element={<User />} />

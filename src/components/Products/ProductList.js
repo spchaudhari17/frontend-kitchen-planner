@@ -30,10 +30,10 @@ const ProductList = () => {
   const plannerText = componentColors?.['Kitchen Planner']?.text || defaultColors.text;
 
  const defaultButtonColors = {
-  background: '#007bff', // fallback
+  background: '#007bff',  
   text: '#ffffff'
 };
-
+ 
 const globalButtonBg = componentColors?.['Button']?.background || defaultButtonColors.background;
 const globalButtonText = componentColors?.['Button']?.text || defaultButtonColors.text;
 
