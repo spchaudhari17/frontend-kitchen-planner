@@ -10,6 +10,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import axios from "axios";
 
 import { useAuthContext } from "../../context/auth";
+import { useColorContext } from '../../context/colorcontext';
 import { useLocation, useNavigate } from "react-router-dom";
 import "./ProductList.css";
 
@@ -17,6 +18,25 @@ const ProductList = () => {
   const { auth } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
+  const { componentColors } = useColorContext(); // 👈 access context
+
+  const defaultColors = {
+    background: '#ffffff',
+    text: '#000000',
+  };
+
+  // Main planner background and text
+  const plannerBg = componentColors?.['Kitchen Planner']?.background || defaultColors.background;
+  const plannerText = componentColors?.['Kitchen Planner']?.text || defaultColors.text;
+
+  const defaultButtonColors = {
+    background: '#007bff', // fallback
+    text: '#ffffff'
+  };
+
+  const globalButtonBg = componentColors?.['Button']?.background || defaultButtonColors.background;
+  const globalButtonText = componentColors?.['Button']?.text || defaultButtonColors.text;
+
 
   const [roomDetails, setRoomDetails] = useState([]);
 
@@ -315,9 +335,61 @@ const ProductList = () => {
 
 
   // add to card
+  // const handleAddToCart = (event) => {
+  //   event.preventDefault();
+
+  //   if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
+  //     setAlert({
+  //       open: true,
+  //       message: "Please fill out all fields before adding to cart.",
+  //       severity: "error",
+  //     });
+  //     return;
+  //   }
+
+  //   // Get existing cart data from localStorage (or initialize an empty array)
+  //   const existingCart = JSON.parse(localStorage.getItem("cartData")) || [];
+
+  //   // New cart item
+  //   const newCartItem = {
+  //     user_id: userInfo._id,
+  //     width: roomSize.width,
+  //     depth: roomSize.depth,
+  //     description,
+  //     subdescription,
+  //     notes,
+  //     // droppedItems,
+  //     droppedItems: droppedItems.map(item => ({
+  //       id: item.id,
+  //       name: item.name,
+  //       imageSrc: item.imageSrc,
+  //       price: item.price,
+  //       x: item.x,
+  //       y: item.y,
+  //       rotation: item.rotation,
+  //       width: item.width,
+  //       height: item.height
+  //     })),
+  //   };
+
+  //   // Add new item to the existing cart array
+  //   existingCart.push(newCartItem);
+
+  //   // Save updated cart back to localStorage
+  //   localStorage.setItem("cartData", JSON.stringify(existingCart));
+
+  //   setAlert({
+  //     open: true,
+  //     message: "Room details added to cart successfully!",
+  //     severity: "success",
+  //   });
+  // };
+
+
   const handleAddToCart = (event) => {
     event.preventDefault();
 
+    // Step 1: Validate input fields
     if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
       setAlert({
         open: true,
@@ -327,10 +399,19 @@ const ProductList = () => {
       return;
     }
 
-    // Get existing cart data from localStorage (or initialize an empty array)
-    const existingCart = JSON.parse(localStorage.getItem("cartData")) || [];
+    // Step 2: Safely parse existing cart data
+    let existingCart = [];
+    try {
+      const storedCart = JSON.parse(localStorage.getItem("cartData"));
+      if (Array.isArray(storedCart)) {
+        existingCart = storedCart;
+      }
+    } catch (e) {
+      console.error("Error parsing cartData from localStorage:", e);
+      // You can optionally show an error alert here
+    }
 
-    // New cart item
+    // Step 3: Create new cart item
     const newCartItem = {
       user_id: userInfo._id,
       width: roomSize.width,
@@ -338,7 +419,6 @@ const ProductList = () => {
       description,
       subdescription,
       notes,
-      // droppedItems,
       droppedItems: droppedItems.map(item => ({
         id: item.id,
         name: item.name,
@@ -352,18 +432,18 @@ const ProductList = () => {
       })),
     };
 
-    // Add new item to the existing cart array
+    // Step 4: Add to cart and update localStorage
     existingCart.push(newCartItem);
-
-    // Save updated cart back to localStorage
     localStorage.setItem("cartData", JSON.stringify(existingCart));
 
+    // Step 5: Show success message
     setAlert({
       open: true,
       message: "Room details added to cart successfully!",
       severity: "success",
     });
   };
+
 
 
   const handleRemove = (indexToRemove) => {
@@ -393,11 +473,22 @@ const ProductList = () => {
       return (
         <div
           className="maincont"
-          style={{ textAlign: "center", padding: "20px", display: "flex" }}
+          style={{
+            textAlign: 'center',
+            padding: '20px',
+            display: 'flex',
+            backgroundColor: plannerBg,
+            color: plannerText,
+          }}
         >
-          <div className="toptxt">
-            <h4 className="h4head">Would You Like to Create a Plan?</h4>
-            <p className="paratext">
+          <div className="toptxt" style={{
+            textAlign: 'center',
+            padding: '20px',
+            display: 'flex',
+
+          }}>
+            <h4 className="h4head" style={{ color: plannerText }}  >Would You Like to Create a Plan?</h4>
+            <p className="paratext" style={{ color: plannerText, marginLeft: "10px" }}>
               Need help visualizing your dream kitchen? Our kitchen planner puts
               the design power in your hands, with an incredibly easy-to-use
               drag-and-drop builder.
@@ -493,10 +584,11 @@ const ProductList = () => {
         <div
           className="roomlayout"
           style={{
-            width: "80%",
-            backgroundColor: "white",
-            padding: "20px",
-            margin: "auto",
+            width: '80%',
+            backgroundColor: plannerBg,
+            color: plannerText,
+            padding: '20px',
+            margin: 'auto',
           }}
         >
           {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -548,7 +640,7 @@ const ProductList = () => {
             <Col xs={12} sm={8}>
               <Form>
                 <h5>Please Enter Your Room Size</h5>
-                <p className="paratext" style={{ textAlign: "left" }}>
+                <p className="paratext" style={{ textAlign: "left", color: plannerText }}>
                   You can use the default measurements below if you’re not sure
                   of your room size yet.
                 </p>
@@ -557,7 +649,7 @@ const ProductList = () => {
                 <Form.Group controlId="roomWidth" className="mb-3">
                   <Row>
                     <Col xs={4}>
-                      <Form.Label style={{ color: "grey" }}>Width:</Form.Label>
+                      <Form.Label style={{ color: plannerText }}>Width:</Form.Label>
                       <Form.Control
                         type="number"
                         value={roomSize.width}
@@ -588,7 +680,7 @@ const ProductList = () => {
                 <Form.Group controlId="roomDepth" className="mb-3">
                   <Row>
                     <Col xs={4}>
-                      <Form.Label style={{ color: "grey" }}>Depth:</Form.Label>
+                      <Form.Label style={{ color: plannerText }}>Depth:</Form.Label>
                       <Form.Control
                         type="number"
                         value={roomSize.depth}
@@ -619,7 +711,7 @@ const ProductList = () => {
                   style={{
                     fontSize: "12px",
                     marginTop: "10px",
-                    color: "grey",
+                    color: plannerText,
                     fontWeight: "bold",
                   }}
                 >
@@ -652,7 +744,7 @@ const ProductList = () => {
                 <div style={{ marginTop: "20px", textAlign: "center" }}>
                   <Button
                     variant="primary"
-                    type="button"
+                    type="Button"
                     disabled={isLoading}
                     onClick={handleNextStep}
                   >
@@ -674,10 +766,11 @@ const ProductList = () => {
             <div
               style={{
                 flex: 3,
-                backgroundColor: "#fff",
-                padding: "20px",
-                borderRadius: "5px",
-                marginRight: "20px",
+                backgroundColor: plannerBg,
+                color: plannerText,
+                padding: '20px',
+                borderRadius: '5px',
+                marginRight: '20px',
               }}
               className="remmar"
             >
@@ -760,10 +853,16 @@ const ProductList = () => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
+              <Button variant="secondary" onClick={() => setShowModal(false)} style={{
+                backgroundColor: globalButtonBg,
+                color: globalButtonText,
+              }}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleAddToDesign}>
+              <Button variant="primary" onClick={handleAddToDesign} style={{
+                backgroundColor: globalButtonBg,
+                color: globalButtonText,
+              }}>
                 Add to Design
               </Button>
             </Modal.Footer>
@@ -806,10 +905,12 @@ const ProductList = () => {
           {/* Notes Section */}
           <div
             style={{
-              width: "50%", // Fixed width for Notes
-              backgroundColor: "#fff",
-              padding: "20px",
-              borderRadius: "5px",
+              width: '50%', // Fixed width for Notes
+              backgroundColor: plannerBg,
+              color: plannerText,
+
+              padding: '20px',
+              borderRadius: '5px',
               // marginLeft: "20px",
               // border:"2px solid black"
             }}
@@ -835,7 +936,7 @@ const ProductList = () => {
 
             {/* Delete All Notes Button */}
             {Object.keys(notes).length > 0 && (
-              <button
+              <Button
                 onClick={handleDeleteAllNotes}
                 style={{
                   // marginTop: "10px",
@@ -848,7 +949,7 @@ const ProductList = () => {
                 }}
               >
                 Delete
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -862,9 +963,11 @@ const ProductList = () => {
             <div
               style={{
                 flex: 3,
-                backgroundColor: "#fff",
-                padding: "20px",
-                borderRadius: "5px",
+                backgroundColor: plannerBg,
+                color: plannerText,
+
+                padding: '20px',
+                borderRadius: '5px',
                 // marginRight: "20px",
               }}
               className="sidemenu remmar"
@@ -880,107 +983,108 @@ const ProductList = () => {
 
               <DropZone {...commonDropZoneProps} />
             </div>
-
-            <button
-              className="rbtn1"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#3db4f2",
-                color: "#fff",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-              onClick={handleFrontViewToggle}
-            >
-              {showView ? "HIDE FRONT VIEW" : "SHOW FRONT VIEW"}
-            </button>
-
-            {/* Conditionally render this div only when showView is true */}
-            {showView && (
-              <div
+            <div className="mt-4">
+              <Button
+                className="rbtn1"
                 style={{
-                  position: "relative",
-                  height: "400px",
-                  backgroundColor: "#333",
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
                   borderRadius: "5px",
-                  margin: "20px",
-                  // marginTop: "20px",
-                  // marginBottom: "20px",
+                  cursor: "pointer",
                 }}
+                onClick={handleFrontViewToggle}
               >
-                {droppedItems.map((item, index) => (
-                  <div
-                    key={index}
-                    style={{ position: "absolute", top: 50, left: 50 }}
-                  >
-                    <img
-                      src={item.imageSrc}
-                      alt={showFrontView ? "Front View" : "Top View"}
-                      style={{ width: "100px" }}
-                    />
-                    <hr className="side-line"></hr>
-                    <hr className="bottom-line"></hr>
-                    {/* <div className="side-txt">200</div>
+                {showView ? "HIDE FRONT VIEW" : "SHOW FRONT VIEW"}
+              </Button>
+
+              {/* Conditionally render this div only when showView is true */}
+              {showView && (
+                <div
+                  style={{
+                    position: "relative",
+                    height: "400px",
+                    backgroundColor: "#333",
+                    borderRadius: "5px",
+                    margin: "20px",
+                    // marginTop: "20px",
+                    // marginBottom: "20px",
+                  }}
+                >
+                  {droppedItems.map((item, index) => (
+                    <div
+                      key={index}
+                      style={{ position: "absolute", top: 50, left: 50 }}
+                    >
+                      <img
+                        src={item.imageSrc}
+                        alt={showFrontView ? "Front View" : "Top View"}
+                        style={{ width: "100px" }}
+                      />
+                      <hr className="side-line"></hr>
+                      <hr className="bottom-line"></hr>
+                      {/* <div className="side-txt">200</div>
                     <div className="bottom-txt">300</div> */}
-                    <div className="side-txt">{item.height}</div>
-                    <div className="bottom-txt">{item.width}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <div className="side-txt">{item.height}</div>
+                      <div className="bottom-txt">{item.width}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            {/* </div> */}
+              {/* </div> */}
 
-            {/* New "Review & Submit" button */}
-            <button
-              className="rbtn2"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#28a745",
-                color: "#fff",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "20px",
-              }}
-              onClick={handleSubmit}
-            >
-              REVIEW AND SUBMIT
-            </button>
+              {/* New "Review & Submit" Button */}
+              <Button
+                className="rbtn2"
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  marginLeft: "20px",
+                }}
+                onClick={handleSubmit}
+              >
+                REVIEW AND SUBMIT
+              </Button>
 
-            <button
-              className="rbtn2"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#007bff", // Blue color for update
-                color: "#fff",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "20px",
-              }}
-              onClick={handleUpdate}
-            >
-              UPDATE DETAILS
-            </button>
+              <Button
+                className="rbtn2"
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  marginLeft: "20px",
+                }}
+                onClick={handleUpdate}
+              >
+                UPDATE DETAILS
+              </Button>
 
 
-            <button
-              className="rbtn2"
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#28a745",
-                color: "#fff",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "20px",
-              }}
-              onClick={handleAddToCart}
-            >
-              Add To Card
-            </button>
+              <Button
+                className="rbtn2 mt-4"
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: globalButtonBg,
+                  color: globalButtonText,
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  marginLeft: "20px",
+                }}
+                onClick={handleAddToCart}
+              >
+                Add To Card
+              </Button>
+            </div>
           </div>
         </DndProvider>
       );
@@ -1037,10 +1141,11 @@ const ProductList = () => {
     <div
       className="rempad fldc"
       style={{
-        display: "flex",
-        backgroundColor: "#f5f5f5",
-        minHeight: "100vh",
-        padding: "20px",
+        display: 'flex',
+        backgroundColor: plannerBg,
+        color: plannerText,
+        minHeight: '100vh',
+        padding: '20px',
       }}
     >
       {/* Main Content */}
@@ -1118,38 +1223,38 @@ const ProductList = () => {
 
         <DndProvider backend={HTML5Backend}>
           {/* Base Cabinets */}
-          <div className="mt-4">
-            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("base")}>
+          <div className="mt-4" >
+            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("base")}   >
               <span className="text-left">Base Cabinets</span>
               <span className="text-right">{openSection === "base" ? "-" : "+"}</span>
-            </button>
+            </Button>
             {openSection === "base" && <div className="mt-2 c-flex drgbl">{renderCabinets("base")}</div>}
           </div>
 
           {/* Tall Cabinets */}
           <div className="mt-4">
-            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("tall")}>
+            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("tall")}>
               <span className="text-left">Tall Cabinets</span>
               <span className="text-right">{openSection === "tall" ? "-" : "+"}</span>
-            </button>
+            </Button>
             {openSection === "tall" && <div className="mt-2 c-flex">{renderCabinets("tall")}</div>}
           </div>
 
           {/* Finishing Panels */}
           <div className="mt-4">
-            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("finishing")}>
+            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("finishing")}>
               <span className="text-left">Finishing Panels</span>
               <span className="text-right">{openSection === "finishing" ? "-" : "+"}</span>
-            </button>
+            </Button>
             {openSection === "finishing" && <div className="mt-2 c-flex">{renderCabinets("finishing")}</div>}
           </div>
 
           {/* Wall Cabinets */}
           <div className="mt-4">
-            <button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("wall")}>
+            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("wall")}>
               <span className="text-left">Wall Cabinets</span>
               <span className="text-right">{openSection === "wall" ? "-" : "+"}</span>
-            </button>
+            </Button>
             {openSection === "wall" && <div className="mt-2 c-flex">{renderCabinets("wall")}</div>}
           </div>
         </DndProvider>
