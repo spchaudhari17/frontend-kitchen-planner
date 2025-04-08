@@ -1,8 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Container, Row, Col, Card, ListGroup, FormCheck } from "react-bootstrap";
+import AlertMessage from "../ui/AlertMessage"; // same as used in ProductList
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const ShippingAddressForm = () => {
   const [useSavedAddress, setUseSavedAddress] = useState(true);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedSavedId, setSelectedSavedId] = useState(null);
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "success" });
+  const navigate = useNavigate(); 
+
   const [address, setAddress] = useState({
     firstName: "",
     lastName: "",
@@ -16,18 +24,20 @@ const ShippingAddressForm = () => {
     receiveUpdates: false
   });
 
-  const savedAddresses = [
-    {
-      id: 1,
-      name: "Home Address",
-      address: "123 Main St, Auckland, 1010"
-    },
-    {
-      id: 2,
-      name: "Work Address",
-      address: "456 Office Rd, Wellington, 6011"
-    }
-  ];
+  // Fetch saved addresses
+  useEffect(() => {
+    const fetchSavedAddresses = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/shipping");
+        setSavedAddresses(response.data);
+      } catch (err) {
+        console.error("Error fetching saved addresses:", err);
+        setAlert({ open: true, message: "Failed to load addresses.", severity: "error" });
+      }
+    };
+
+    fetchSavedAddresses();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -37,30 +47,43 @@ const ShippingAddressForm = () => {
     }));
   };
 
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post("http://localhost:3001/api/shipping", address);
+      setAlert({ open: true, message: "Address saved successfully!", severity: "success" });
+
+      // Update saved list and switch to saved view
+      setSavedAddresses(prev => [...prev, response.data.address]);
+      setUseSavedAddress(true);
+    } catch (err) {
+      console.error("Error saving address:", err);
+      setAlert({ open: true, message: "Failed to save address.", severity: "error" });
+    }
+  };
+
   return (
     <Container className="my-5">
       <Card>
         <Card.Body>
           <Card.Title className="mb-4">Shipping Address</Card.Title>
-          
+
+          {/* Alert Message */}
+          <AlertMessage
+            open={alert.open}
+            onClose={() => setAlert(prev => ({ ...prev, open: false }))}
+            message={alert.message}
+            severity={alert.severity}
+          />
+
+          {/* Toggle options */}
           <ListGroup className="mb-4">
-            <ListGroup.Item 
-              active={useSavedAddress}
-              onClick={() => setUseSavedAddress(true)}
-              style={{cursor: "pointer"}}
-            >
+            <ListGroup.Item active={useSavedAddress} onClick={() => setUseSavedAddress(true)} style={{ cursor: "pointer" }}>
               Saved Addresses
             </ListGroup.Item>
-            <ListGroup.Item 
-              active={!useSavedAddress}
-              onClick={() => setUseSavedAddress(false)}
-              style={{cursor: "pointer"}}
-            >
+            <ListGroup.Item active={!useSavedAddress} onClick={() => setUseSavedAddress(false)} style={{ cursor: "pointer" }}>
               Use a new address
             </ListGroup.Item>
           </ListGroup>
-
-          <hr className="mb-4" />
 
           {useSavedAddress ? (
             <div className="mb-4">
@@ -68,14 +91,16 @@ const ShippingAddressForm = () => {
               <Form>
                 {savedAddresses.map(addr => (
                   <FormCheck
-                    key={addr.id}
+                    key={addr._id}
                     type="radio"
-                    id={`address-${addr.id}`}
                     name="savedAddress"
+                    id={`address-${addr._id}`}
+                    checked={selectedSavedId === addr._id}
+                    onChange={() => setSelectedSavedId(addr._id)}
                     label={
                       <div>
-                        <strong>{addr.name}</strong><br />
-                        {addr.address}
+                        <strong>{addr.firstName} {addr.lastName}</strong><br />
+                        {addr.addressLine1}, {addr.city}, {addr.postalCode}
                       </div>
                     }
                   />
@@ -94,96 +119,53 @@ const ShippingAddressForm = () => {
               <Row className="mb-3">
                 <Col>
                   <Form.Label>First name</Form.Label>
-                  <Form.Control 
-                    name="firstName"
-                    value={address.firstName}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Form.Control name="firstName" value={address.firstName} onChange={handleChange} required />
                 </Col>
                 <Col>
                   <Form.Label>Last name</Form.Label>
-                  <Form.Control 
-                    name="lastName"
-                    value={address.lastName}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Form.Control name="lastName" value={address.lastName} onChange={handleChange} required />
                 </Col>
               </Row>
 
               <Form.Group className="mb-3">
-                <Form.Label>Company (optional)</Form.Label>
-                <Form.Control 
-                  name="company"
-                  value={address.company}
-                  onChange={handleChange}
-                />
+                <Form.Label>Company</Form.Label>
+                <Form.Control name="company" value={address.company} onChange={handleChange} />
               </Form.Group>
 
               <Form.Group className="mb-3">
                 <Form.Label>Address</Form.Label>
-                <Form.Control 
-                  name="addressLine1"
-                  value={address.addressLine1}
-                  onChange={handleChange}
-                  required
-                />
+                <Form.Control name="addressLine1" value={address.addressLine1} onChange={handleChange} required />
               </Form.Group>
 
               <Form.Group className="mb-3">
-                <Form.Label>Apartment, suite, etc. (optional)</Form.Label>
-                <Form.Control 
-                  name="addressLine2"
-                  value={address.addressLine2}
-                  onChange={handleChange}
-                />
+                <Form.Label>Apartment, suite, etc.</Form.Label>
+                <Form.Control name="addressLine2" value={address.addressLine2} onChange={handleChange} />
               </Form.Group>
 
               <Row className="mb-3">
                 <Col md={6}>
                   <Form.Label>City</Form.Label>
-                  <Form.Control 
-                    name="city"
-                    value={address.city}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Form.Control name="city" value={address.city} onChange={handleChange} required />
                 </Col>
                 <Col md={3}>
                   <Form.Label>Region</Form.Label>
-                  <Form.Control 
-                    name="region"
-                    value={address.region}
-                    onChange={handleChange}
-                  />
+                  <Form.Control name="region" value={address.region} onChange={handleChange} />
                 </Col>
                 <Col md={3}>
-                  <Form.Label>Postal code</Form.Label>
-                  <Form.Control 
-                    name="postalCode"
-                    value={address.postalCode}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Form.Label>Postal Code</Form.Label>
+                  <Form.Control name="postalCode" value={address.postalCode} onChange={handleChange} required />
                 </Col>
               </Row>
 
               <Form.Group className="mb-3">
-                <Form.Label>Mobile phone number</Form.Label>
-                <Form.Control 
-                  name="phone"
-                  value={address.phone}
-                  onChange={handleChange}
-                  type="tel"
-                  required
-                />
+                <Form.Label>Mobile Phone</Form.Label>
+                <Form.Control name="phone" value={address.phone} onChange={handleChange} required />
               </Form.Group>
 
               <Form.Check
                 type="checkbox"
                 id="receiveUpdates"
-                label="Receive updates on shipping details via text"
+                label="Receive shipping updates via text"
                 name="receiveUpdates"
                 checked={address.receiveUpdates}
                 onChange={handleChange}
@@ -193,8 +175,14 @@ const ShippingAddressForm = () => {
           )}
 
           <div className="d-flex justify-content-between">
-            <Button variant="outline-secondary">Return to cart</Button>
-            <Button variant="primary">Continue to shipping</Button>
+           
+            <Button
+              variant="outline-secondary"
+              onClick={() => navigate("/cart")}  
+            >Return to Cart</Button>
+                  <Button variant="primary" onClick={handleSubmit}>
+                    Continue to Shipping
+                  </Button>
           </div>
         </Card.Body>
       </Card>

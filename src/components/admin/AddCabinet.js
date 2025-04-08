@@ -22,7 +22,7 @@ const AddCabinet = () => {
     const { componentColors } = useColorContext();
 
     const defaultButtonColors = {
-        background: '#007bff', // fallback
+        background: '#007bff',  
         text: '#ffffff'
       };
       
@@ -182,11 +182,11 @@ const AddCabinet = () => {
                 <div className="heading-wrapper d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3" style={{ backgroundColor: cabinetBg, color: cabinetText }}>
                     <h5 className="fw-bold m-0">All Cabinets</h5>
                     <Button
-                        className="px-3"
+                        className="px-3 mt-3 mx-3"
                         onClick={handleShowAdd}
                         style={{ backgroundColor: globalButtonBg, color: globalButtonText }}
                         >
-                        <i className="bi bi-person-add fs-18 lh-sm"></i> Add Cabinet
+                        <i className="bi bi-person-add fs-18 lh-sm "></i> Add Cabinet
                         </Button>
 
                     <InputGroup className="search-bar">
@@ -205,7 +205,7 @@ const AddCabinet = () => {
                     <DataTable
                     style={{ backgroundColor: cabinetBg, color: cabinetText }}
                         columns={columns}
-                        data={filteredCabinates}
+                        data={filteredCabinates}        
                         dense
                         pagination
                         highlightOnHover
@@ -220,7 +220,7 @@ const AddCabinet = () => {
             {/* Add Cabinet Modal */}
             <Modal show={showAddModal} centered onHide={handleCloseAdd}>
                 <Modal.Body className="text-center px-md-5 py-5">
-                    <h2 className="text-center mb-4">Add Cabinet</h2>
+                    <h2 className="text-center mb-4 mt-3">Add Cabinet</h2>
                     {message && <div className="alert alert-info">{message}</div>}
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
