@@ -154,7 +154,7 @@ const AddCabinet = () => {
 
     const columns = [
         { name: 'Sr.No', selector: (row, index) => index + 1, sortable: true, width: '100px' },
-        { name: 'Title', selector: (row) => row.cabinateName || 'N/A', sortable: true, minWidth: '150px' },
+        { name: 'Name', selector: (row) => row.cabinateName || 'N/A', sortable: true, minWidth: '150px' },
         { name: 'Type', selector: (row) => row.cabinateType || 'N/A', sortable: true, minWidth: '150px' },
         { name: 'Price', selector: (row) => row.price ? `$${row.price}` : 'N/A', sortable: true, minWidth: '100px' },
         {
@@ -224,12 +224,12 @@ const AddCabinet = () => {
                     {message && <div className="alert alert-info">{message}</div>}
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
-                            <label htmlFor="title" className="form-label">Cabinet Name</label>
-                            <input type="text" id="title" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
+                            {/* <label htmlFor="title" className="form-label">Cabinet Name</label> */}
+                            <input type="text" id="title" placeholder="Cabinet Name" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="cabinetType" className="form-label">Cabinet Type</label>
-                            <select id="cabinetType" className="form-control" required value={cabinetType} onChange={(e) => setCabinetType(e.target.value)}>
+                            {/* <label htmlFor="cabinetType" className="form-label">Cabinet Type</label> */}
+                            <select id="cabinetType" placeholder="Cabinet Type" className="form-control" required value={cabinetType} onChange={(e) => setCabinetType(e.target.value)}>
                                 <option value="">Select Cabinet Type</option>
                                 <option value="base">Base Cabinets</option>
                                 <option value="tall">Tall Cabinets</option>
@@ -237,12 +237,40 @@ const AddCabinet = () => {
                                 <option value="wall">Wall Cabinets</option>
                             </select>
                         </div>
+
+
                         <div className="mb-3">
-                            <label htmlFor="title" className="form-label">Cabinet Price</label>
-                            <input type="number" placeholder="Price" required value={price} onChange={(e) => setPrice(e.target.value)} />
+                            {/* <label htmlFor="title" className="form-label">Cabinet Name</label> */}
+                            <input type="text" id="title" placeholder="Cabinet Min Width" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
+                        </div>
+
+                        <div className="mb-3">
+                            {/* <label htmlFor="title" className="form-label">Cabinet Name</label> */}
+                            <input type="text" id="title" placeholder="Cabinet Max Width" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
+                        </div>
+
+                        <div className="mb-3">
+                            {/* <label htmlFor="title" className="form-label">Cabinet Name</label> */}
+                            <input type="text" id="title" placeholder="Cabinet No Of Hinges " className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
+                        </div>
+
+                        <div className="mb-3">
+                            {/* <label htmlFor="title" className="form-label">Cabinet Name</label> */}
+                            <input type="text" id="title" placeholder="Cabinet No Of Handles  " className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
+                        </div>
+
+                        <div className="mb-3">
+                            {/* <label htmlFor="title" className="form-label">Cabinet Name</label> */}
+                            <input type="text" id="title" placeholder="Cabinet No Of Drawers   " className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
+                        </div>
+
+
+                        <div className="mb-3">
+                            {/* <label htmlFor="title" className="form-label">Cabinet Price</label> */}
+                            {/* <input type="number" placeholder="Price" required value={price} onChange={(e) => setPrice(e.target.value)} /> */}
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="cabinetImage" className="form-label">Upload Cabinet Image</label>
+                            {/* <label htmlFor="cabinetImage" className="form-label">Upload Cabinet Image</label> */}
                             <input type="file" id="cabinetImage" required className="form-control" accept="image/*" onChange={(e) => setCabinetImage(e.target.files[0])} />
                         </div>
                         <Button

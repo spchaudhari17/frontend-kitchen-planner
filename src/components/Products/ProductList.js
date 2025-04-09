@@ -334,58 +334,6 @@ const ProductList = () => {
 
 
 
-  // add to card
-  // const handleAddToCart = (event) => {
-  //   event.preventDefault();
-
-  //   if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
-  //     setAlert({
-  //       open: true,
-  //       message: "Please fill out all fields before adding to cart.",
-  //       severity: "error",
-  //     });
-  //     return;
-  //   }
-
-  //   // Get existing cart data from localStorage (or initialize an empty array)
-  //   const existingCart = JSON.parse(localStorage.getItem("cartData")) || [];
-
-  //   // New cart item
-  //   const newCartItem = {
-  //     user_id: userInfo._id,
-  //     width: roomSize.width,
-  //     depth: roomSize.depth,
-  //     description,
-  //     subdescription,
-  //     notes,
-  //     // droppedItems,
-  //     droppedItems: droppedItems.map(item => ({
-  //       id: item.id,
-  //       name: item.name,
-  //       imageSrc: item.imageSrc,
-  //       price: item.price,
-  //       x: item.x,
-  //       y: item.y,
-  //       rotation: item.rotation,
-  //       width: item.width,
-  //       height: item.height
-  //     })),
-  //   };
-
-  //   // Add new item to the existing cart array
-  //   existingCart.push(newCartItem);
-
-  //   // Save updated cart back to localStorage
-  //   localStorage.setItem("cartData", JSON.stringify(existingCart));
-
-  //   setAlert({
-  //     open: true,
-  //     message: "Room details added to cart successfully!",
-  //     severity: "success",
-  //   });
-  // };
-
-
   const handleAddToCart = (event) => {
     event.preventDefault();
 
@@ -459,7 +407,7 @@ const ProductList = () => {
     onRotate: handleRotate,
     currentStep: currentStep,
     setDroppedItems: setDroppedItems,
-
+    roomSize: roomSize,
   };
 
   const handleAlertClose = () => {
@@ -784,7 +732,7 @@ const ProductList = () => {
                 currentStep={currentStep}
               /> */}
 
-              <DropZone {...commonDropZoneProps} />
+              <DropZone {...commonDropZoneProps} roomSize={roomSize} />
 
             </div>
           </div>
@@ -826,7 +774,7 @@ const ProductList = () => {
 
                 {/* Height Input and Slider */}
                 <Form.Group className="mb-3">
-                  <Form.Label>Height (mm)</Form.Label>
+                  <Form.Label>Depth (mm)</Form.Label>
                   <Form.Control
                     type="number"
                     value={itemDimensions.height}
@@ -836,7 +784,7 @@ const ProductList = () => {
                         height: e.target.value,
                       })
                     }
-                    placeholder="Enter height"
+                    placeholder="Enter Depth"
                   />
                   <Form.Range
                     min={100}
@@ -850,6 +798,25 @@ const ProductList = () => {
                     }
                   />
                 </Form.Group>
+
+
+                {/* Handle Side Dropdown */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Handle Side</Form.Label>
+                  <Form.Select
+                    value={itemDimensions.handleSide || "left"}
+                    onChange={(e) =>
+                      setItemDimensions({
+                        ...itemDimensions,
+                        handleSide: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="left">Left</option>
+                    <option value="right">Right</option>
+                  </Form.Select>
+                </Form.Group>
+
               </Form>
             </Modal.Body>
             <Modal.Footer>

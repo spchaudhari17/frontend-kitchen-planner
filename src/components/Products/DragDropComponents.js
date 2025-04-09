@@ -96,7 +96,7 @@ export const DraggableCabinet = ({ name, imageSrc, id, price }) => {
 
 
 //sahi hai 
-export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate, currentStep, setDroppedItems }) => {
+export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate, currentStep, setDroppedItems, roomSize }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CABINET",
     drop: (item, monitor) => {
@@ -192,8 +192,21 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate, currentStep
     };
   }, []);
 
+
+  // ✅ Select only clicked cabinet for measurement
+  const selectedDroppedItem = droppedItems[selectedItemIndex] || {};
+
+  // ✅ Width & Depth based on selected cabinet only
+  const totalCabinetsWidth = parseInt(selectedDroppedItem.width || 0);
+  const totalCabinetsdeapth = parseInt(selectedDroppedItem.height || 0);
+
+  const remainingSpace = roomSize.width - totalCabinetsWidth;
+  const remainingSpacedeapth = roomSize.depth - totalCabinetsdeapth;
+
+  console.log("remainingSpacedeapth", remainingSpacedeapth);
+
   return (
-    <div>
+    <div style={{ display: "flex" }}>
 
 
       <AddNotesModal
@@ -204,106 +217,183 @@ export const DropZone = ({ onDrop, droppedItems, onRemove, onRotate, currentStep
       />
 
 
-      {/* Drop Area */}
-      <div
-        ref={drop}
-        style={{
+      {/* vertical */}
+      <div style={{
+        position: "relative",
+        width: "40px", // adjust as needed
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between"
+      }}>
+        <span style={{
+          position: "absolute",
+          top: 0,
+          left: "5px",
+          fontSize: "12px",
+          backgroundColor: "#f5f5f5",
+          padding: "0 5px"
+        }}>{totalCabinetsdeapth}mm</span>
+        <span style={{
+          position: "absolute",
+          bottom: 0,
+          left: "5px",
+          fontSize: "12px",
+          backgroundColor: "#f5f5f5",
+          padding: "0 5px"
+        }}>{remainingSpacedeapth}mm</span>
+        <div style={{
+          borderLeft: '1px solid #ccc',
+          height: '100%'
+        }} />
+      </div>
+
+
+      {/* horizontal */}
+      <div style={{ width: "100%" }}>
+        {/* Horizontal measurement line */}
+        <div style={{
+          position: 'relative',
+          height: "30px",
           width: "75%",
-          height: "400px",
-          border: isOver ? "2px dashed #00bfff" : "2px dashed #ccc",
-          backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
-          position: "relative",
-          padding: "10px",
-          textAlign: "center",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "9px",
-          alignContent: "flex-start",
-        }}
-      >
-        {droppedItems.map((item, index) => (
-          <Draggable key={item.id || index} position={{ x: item.x || 50, y: item.y || 50 }}
-            bounds="parent"
-            onStop={(e, data) => handlePositionChange(index, data)}>
-            <div
-              className="cabinet-item" // ✅ Added class for easy detection
-              style={{
-                position: "absolute",
-                cursor: "move",
-                transform: `rotate(${item.rotation}deg)`,
-                transition: "transform 0.3s ease-in-out",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItemIndex(index);
-              }}
-            >
-              <img
-                src={item.imageSrc}
-                alt={item.name}
-                onClick={() => handleCabinetClick(item)}
+          marginBottom: "15px"
+        }}>
+          <hr style={{
+            border: 'none',
+            // borderTop: '1px solid #ccc',
+            position: 'absolute',
+            width: '100%',
+            top: '50%',
+            borderTop: '2px solid #555'
+          }} />
+          <div style={{
+            position: 'absolute',
+            top: '0',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            padding: '0 20px'
+          }}>
+            <span style={{ fontSize: "12px", backgroundColor: '#f5f5f5', padding: '0 5px' }}>
+              {totalCabinetsWidth}mm
+            </span>
+            <span style={{ fontSize: "12px", backgroundColor: '#f5f5f5', padding: '0 5px' }}>
+              {remainingSpace}mm
+            </span>
+          </div>
+        </div>
+
+
+
+
+        {/* Drop Area */}
+        <div
+          ref={drop}
+          style={{
+            width: "75%",
+            height: "400px",
+            border: isOver ? "2px dashed #00bfff" : "2px dashed #ccc",
+            backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
+            position: "relative",
+            padding: "10px",
+            textAlign: "center",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "9px",
+            alignContent: "flex-start",
+          }}
+        >
+          {droppedItems.map((item, index) => (
+            <Draggable key={item.id || index} position={{ x: item.x || 50, y: item.y || 50 }}
+              bounds="parent"
+              onStop={(e, data) => handlePositionChange(index, data)}>
+
+              <div
+                className="cabinet-item" // ✅ Added class for easy detection
                 style={{
-                  width: "100px",
-                  height: "100px",
-                  objectFit: "cover",
-                  border: "1px solid #ccc",
-                  display: "block",
+                  position: "absolute",
+                  cursor: "move",
                   transform: `rotate(${item.rotation}deg)`,
                   transition: "transform 0.3s ease-in-out",
                 }}
-              />
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedItemIndex(index);
+                }}
+              >
 
-              {/* Show buttons only when selected */}
-              {(currentStep === "Base Layout" && selectedItemIndex === index) && (
-                <>
-                  {/* Rotate Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRotate(index);
-                    }}
-                    style={{
-                      position: "absolute",
-                      bottom: "5px",
-                      left: "5px",
-                      background: "#28a745",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "25px",
-                      height: "25px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    ↻
-                  </button>
 
-                  {/* Remove Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemove(index);
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "5px",
-                      right: "5px",
-                      background: "#0dcaf0",
-                      color: "#343a40",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    ×
-                  </button>
-                </>
-              )}
-            </div>
-          </Draggable>
-        ))}
+
+                <img
+                  src={item.imageSrc}
+                  alt={item.name}
+                  onClick={() => handleCabinetClick(item)}
+                  style={{
+                    width: "100px",
+                    height: "100px",
+                    objectFit: "cover",
+                    border: "1px solid #ccc",
+                    display: "block",
+                    transform: `rotate(${item.rotation}deg)`,
+                    transition: "transform 0.3s ease-in-out",
+                  }}
+                />
+
+
+
+
+
+                {/* Show buttons only when selected */}
+                {(currentStep === "Base Layout" && selectedItemIndex === index) && (
+                  <>
+                    {/* Rotate Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRotate(index);
+                      }}
+                      style={{
+                        position: "absolute",
+                        bottom: "5px",
+                        left: "5px",
+                        background: "#28a745",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "25px",
+                        height: "25px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ↻
+                    </button>
+
+                    {/* Remove Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(index);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "5px",
+                        right: "5px",
+                        background: "#0dcaf0",
+                        color: "#343a40",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "20px",
+                        height: "20px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ×
+                    </button>
+                  </>
+                )}
+              </div>
+            </Draggable>
+          ))}
+        </div>
       </div>
     </div>
   );

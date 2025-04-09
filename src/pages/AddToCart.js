@@ -9,17 +9,9 @@ const AddToCart = () => {
   const [cartData, setCartData] = useState([]);
   const [handleQty, setHandleQty] = useState(1);
   const [hingeQty, setHingeQty] = useState(2);
-  const [cabinetQty, setCabinetQty] = useState(1);
   const [showHandle, setShowHandle] = useState(true);
   const [showHinge, setShowHinge] = useState(true);
-  const [showCabinet, setShowCabinet] = useState(true);
 
-  // useEffect(() => {
-  //   const storedCartData = localStorage.getItem("cartData");
-  //   if (storedCartData) {
-  //     setCartData(JSON.parse(storedCartData));
-  //   }
-  // }, []);
 
   useEffect(() => {
     const storedCartData = localStorage.getItem("cartData");
@@ -57,15 +49,24 @@ const AddToCart = () => {
   };
 
 
+  const calculateDynamicPrice = (width) => {
+    const minWidth = 400;
+    const basePrice = 100;
+    const extraPrice = 0.2;
+    const extra = Math.max(0, width - minWidth);
+    return basePrice + (extra * extraPrice);
+  };
+
   // Calculate total price
   const calculateSubtotal = () => {
     let total = 0;
     cartData.forEach(cartItem => {
       cartItem.droppedItems.forEach(item => {
-        total += (item.price || 0) * (item.qty || 1);
+        const width = parseFloat(item?.width) || 0;
+        const qty = item?.qty || 1;
+        total += calculateDynamicPrice(width) * qty;
       });
     });
-    console.log(total)
     return total;
   };
 
@@ -155,82 +156,67 @@ const AddToCart = () => {
         <hr />
 
 
-        <div className="">
-          {cartData?.length === 0 ? (
+        <div>
+          {cartData.length === 0 ? (
             <p>Your cart is empty.</p>
           ) : (
-            cartData.map((item, index) => (
-              <div className="cart-item d-flex mt-5" id="item-1" key={index}>
-                <div>
-                  <img src={item?.droppedItems?.[0]?.imageSrc || "https://via.placeholder.com/120"} alt="Product" className="product-image" />
-                </div>
+            cartData.map((item, index) => {
+              const droppedItem = item.droppedItems?.[0];
+              const width = parseFloat(droppedItem?.width) || 0;
+              const qty = droppedItem?.qty || 1;
+              const pricePerItem = calculateDynamicPrice(width);
+              const totalPrice = pricePerItem * qty;
 
-                <div className="cart-details">
-                  <h2>{item.description}</h2>
-                  <p>
-                    <strong>Width:</strong>
-                    <span id="width">{item.width}mm</span>
-                  </p>
-                  <p>
-                    <strong>Depth:</strong>
-                    <span id="depth">{item.depth}mm</span>
-                  </p>
-                  <p>
-                    <strong>Feet Option:</strong>
-                    <span id="feet-option">Adjustable Feet</span>
-                  </p>
-
-                  <p>
-                    <strong>Handle Side:</strong> <span id="handle-side">Left</span>
-                  </p>
-                  <p>
-                    <strong>Hinge Type:</strong> <span id="hinge-type">Soft Close</span>
-                  </p>
-
-                  <button className="rembutton" id="remove-item" onClick={() => removeItem(index)}>Remove</button>
-
-                  <div className="d-flex">
-
-                    {/* <div className="quantity">
-                      <button onClick={() => updateQty(index, -1)}>-</button>
-                      <span>{item.qty || 1}</span>
-                      <button onClick={() => updateQty(index, 1)}>+</button>
-                    </div> */}
-
-                    <div className="quantity">
-                      <button onClick={() => updateQty(index, 0, -1)}>-</button>
-                      <span>{item.droppedItems?.[0]?.qty || 1}</span>
-                      <button onClick={() => updateQty(index, 0, 1)}>+</button>
-                    </div>
-
-                    {/* <p className="product-price">${(item?.droppedItems?.[0]?.price || 167).toFixed(2)}</p> */}
-                    <p className="product-price">
-                      ${(item.droppedItems?.[0]?.price || 167) * (item.droppedItems?.[0]?.qty || 1)}
-                    </p>
+              return (
+                <div className="cart-item d-flex mt-5" id="item-3" key={index}>
+                  <div>
+                    <img
+                      src={droppedItem?.imageSrc || "https://via.placeholder.com/120"}
+                      alt="Cabinet"
+                      className="product-image"
+                    />
                   </div>
-
+                  <div className="cart-details">
+                    <h2>{item.description || "Cabinet Item"}</h2>
+                    <p><strong>Width:</strong> {width}mm</p>
+                    <p><strong>Depth:</strong> {droppedItem?.height || "N/A"}mm</p>
+                    <p><strong>Feet Option:</strong> Adjustable Feet</p>
+                    <p><strong>Handle Side:</strong> Left</p>
+                    <p><strong>Hinge Type:</strong> Soft Close</p>
+                    <button className="rembutton" onClick={() => removeItem(index)}>Remove</button>
+                    <div className="d-flex">
+                      <div className="quantity">
+                        <button onClick={() => updateQty(index, 0, -1)}>-</button>
+                        <span>{qty}</span>
+                        <button onClick={() => updateQty(index, 0, 1)}>+</button>
+                      </div>
+                      <p className="product-price">${totalPrice.toFixed(2)}</p>
+                    </div>
+                  </div>
                 </div>
-
-
-
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
         <hr />
 
-        {/* check out  */}
-        {/* <div className="checkout-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <p>Sub Total: $186</p>
-          <button className="checkout-button" style={{ backgroundColor: "black", color: "white", marginTop: "10px", padding: "10px 20px" }}>Checkout</button>
-        </div> */}
-
-        <div className="checkout-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <p>Sub Total: ${calculateSubtotal().toFixed(2)}</p>
-          <button className="checkout-button"
+       
+  {/* Checkout Section */}
+  <div className="checkout-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+          <p><strong>Sub Total:</strong> ${calculateSubtotal().toFixed(2)}</p>
+          <button
+            className="checkout-button"
             onClick={() => navigate("/shipping-address")}
-           style={{ backgroundColor: "black", color: "white", marginTop: "10px", padding: "10px 20px" }}>Checkout</button>
+            style={{
+              backgroundColor: "black",
+              color: "white",
+              marginTop: "10px",
+              padding: "10px 20px"
+            }}
+          >
+            Checkout
+          </button>
         </div>
 
 
