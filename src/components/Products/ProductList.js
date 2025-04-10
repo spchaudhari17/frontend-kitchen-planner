@@ -1037,7 +1037,7 @@ const ProductList = () => {
 
 
               <Button
-                className="rbtn2 mt-4"
+                className="rbtn2"
                 style={{
                   padding: "10px 20px",
                   backgroundColor: globalButtonBg,

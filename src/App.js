@@ -26,6 +26,7 @@ import SavePlan from './pages/SavePlan';
 import AddToCart from './pages/AddToCart';
 import AddCabinet from './components/admin/AddCabinet';
 import Shipping from './components/Shipping/Shipping';
+import PaymentPage from './components/payment/PaymentPage';
 
 function App() {
   const { auth } = useAuthContext();
@@ -105,6 +106,8 @@ function App() {
                 <Route path="/cart" element={<AddToCart />} />
                 <Route path="/shipping-address" element={<Shipping />} />
                 <Route path="/admin-add-cabinates" element={<AddCabinet />} />
+                <Route path="/payment" element={<PaymentPage />} />
+
 
                 <Route element={<RequireRoles Roles={[ROLES.Staff, ROLES.Admin]} />}>
                   <Route path="/user" element={<User />} />
