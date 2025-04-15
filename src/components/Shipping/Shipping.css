@@ -1,0 +1,293 @@
+/* Checkout Header Styles */
+.CheckoutHeader {
+    /* max-width: 800px; */
+    /* margin: 0 auto; */
+    width: 70%;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* H2 Styles */
+.CheckoutHeader h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+/* Navigation Styles */
+.CheckoutHeader nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+}
+
+.CheckoutHeader nav ul li {
+    font-size: 14px;
+}
+
+.CheckoutHeader nav ul li.active {
+    color: #1773b0;
+}
+
+.CheckoutHeader nav ul>*:not(:first-child) {
+    margin-left: 8px;
+}
+
+.CheckoutHeader nav ul li span {
+    margin-right: 8px;
+}
+
+/* Contact Information Styles */
+.ContactInformation {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.ContactInformation a {
+    color: #1773b0 !important;
+    text-decoration: underline !important;
+    font-size: 14px;
+}
+
+.ContactInformation label {
+    margin-top: 5px;
+    font-size: 14px;
+    display: flex;
+}
+
+.ContactInformation p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+/* Button Styles */
+.CheckoutHeader button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.CheckoutHeader button:hover {
+    background-color: #0056b3;
+}
+
+/* Shipping Address Form Styles */
+.ShippingAddressForm h2 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.ShippingAddressForm p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+}
+
+.ShippingAddressForm form {
+    margin-top: 20px;
+    display: grid;
+    gap: 10px;
+}
+
+/* Input Styles */
+.ShippingAddressForm input,
+.ShippingAddressForm select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+.ShippingAddressForm .name-container {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 10px;
+}
+
+.ShippingAddressForm .fname,
+.lname {
+    width: 50%;
+}
+
+.ShippingAddressForm .city-region {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 10px;
+}
+
+.ShippingAddressForm .City,
+.Region,
+.Postal {
+    width: 33.33%;
+}
+
+.ShippingAddressForm label {
+    font-size: 14px;
+    display: flex;
+}
+
+/* Order Summary Styles */
+.OrderSummary {
+    /* margin-top: 20px; */
+    padding: 15px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.OrderSummary h3 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: normal;
+}
+
+/* Navigation Buttons Styles */
+.NavigationButtons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.NavigationButtons button {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.NavigationButtons button:last-child {
+    margin-right: 0;
+}
+
+.CheckoutMain {
+    display: flex;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #d6d6d6;
+    align-items: center;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.ItemIndex {
+    max-width: 40px;
+    font-weight: bold;
+}
+
+.ItemIndex img {
+    width: 100%;
+}
+
+.ItemName {
+    flex-grow: 1;
+    margin-left: 10px;
+}
+
+.ItemCost {
+    margin-left: 10px;
+    font-weight: 600;
+}
+
+.ItemDescription {
+    font-size: 0.8em;
+    color: #666;
+    /* margin-left: 50px;
+    display: flex; */
+}
+
+.DiscountCode {
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px;
+}
+
+.DiscountCode input {
+    padding: 10px;
+    width: 70%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.DiscountCode button {
+    padding: 10px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    width: 30%;
+}
+
+.DiscountCode button:hover {
+    background-color: #0056b3;
+}
+
+.total {
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.totals {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.shippings {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.FinalTotal {
+    margin-top: 10px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}
+
+.FinalTotal span {
+    color: #666;
+    font-size: 14px;
+}
+
+.innerProduct {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+    flex-grow: 1;
+}
+
+.innerProduct .ItemName {
+    margin: 0 !important;
+}
+
+.itmbreak {
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+}
+
+.shippings p {
+    margin: 0px;
+    font-size: 16px;
+    color: #666;
+}

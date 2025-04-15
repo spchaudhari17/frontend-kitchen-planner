@@ -30,7 +30,7 @@ const AddToCart = () => {
       }
     }
   }, []);
-  
+
 
   const removeItem = (index) => {
     const updatedCart = [...cartData];
@@ -70,7 +70,15 @@ const AddToCart = () => {
     return total;
   };
 
+  //gst 3 %
+  const calculateTotalWithGST = () => {
+    const subtotal = calculateSubtotal();
+    const gst = subtotal * 0.03; // 3% GST
+    return subtotal + gst;
+  };
 
+
+  console.log("Subtotal with GST:", calculateTotalWithGST().toFixed(2));
 
   return (
     <>
@@ -201,13 +209,30 @@ const AddToCart = () => {
 
         <hr />
 
-       
-  {/* Checkout Section */}
-  <div className="checkout-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <p><strong>Sub Total:</strong> ${calculateSubtotal().toFixed(2)}</p>
+
+        {/* Checkout Section */}
+        <div className="checkout-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+          {/* <p><strong>Sub Total:</strong> ${calculateSubtotal().toFixed(2)}</p> */}
+          <p><strong>Sub Total (incl. GST):</strong> ${calculateTotalWithGST().toFixed(2)}</p>
+
           <button
             className="checkout-button"
-            onClick={() => navigate("/shipping-address")}
+            // onClick={() => navigate("/shipping-address")}
+            onClick={() =>
+              navigate("/shipping-address", {
+  
+                state: {
+
+                  subtotal: calculateTotalWithGST().toFixed(2),
+                  cartItems: cartData,
+                  extras: {
+                    handle: showHandle ? { name: "Handle Upgrade", price: 0, qty: handleQty } : null,
+                    hinge: showHinge ? { name: "Soft Close Hinge", price: 4.8, qty: hingeQty } : null,
+                  }
+                }
+              })
+            }
+
             style={{
               backgroundColor: "black",
               color: "white",

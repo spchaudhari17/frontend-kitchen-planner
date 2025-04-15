@@ -1,29 +1,17 @@
 import React, { useState, useEffect } from "react";
-import {
-  Form,
-  Button,
-  Container,
-  Row,
-  Col,
-  Card,
-  ListGroup,
-  FormCheck
-} from "react-bootstrap";
-import AlertMessage from "../ui/AlertMessage";
-import { useNavigate } from "react-router-dom";
+import "./Shipping.css";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const ShippingAddressForm = () => {
-  const [useSavedAddress, setUseSavedAddress] = useState(true);
+const Shipping = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedSavedId, setSelectedSavedId] = useState(null);
-  const [alert, setAlert] = useState({
-    open: false,
-    message: "",
-    severity: "success"
-  });
+  const [useSavedAddress, setUseSavedAddress] = useState(true);
+  const [alert, setAlert] = useState({ open: false, message: "", severity: "success" });
 
-  const navigate = useNavigate();
 
   const [address, setAddress] = useState({
     firstName: "",
@@ -35,25 +23,27 @@ const ShippingAddressForm = () => {
     region: "",
     postalCode: "",
     phone: "",
-    receiveUpdates: false
+    receiveUpdates: false,
   });
 
-  // Fetch saved addresses
+
+  // Cart data from previous page
+  const subtotal = location.state?.subtotal || "0.00";
+  const cartItems = location.state?.cartItems || [];
+  const extras = location.state?.extras || {};
+
+  console.log("subtotal", subtotal)
+
+
   useEffect(() => {
     const fetchSavedAddresses = async () => {
       try {
         const response = await axios.get("http://localhost:3001/api/shipping");
         setSavedAddresses(response.data);
       } catch (err) {
-        console.error("Error fetching saved addresses:", err);
-        setAlert({
-          open: true,
-          message: "Failed to load addresses.",
-          severity: "error"
-        });
+        setAlert({ open: true, message: "Failed to load addresses.", severity: "error" });
       }
     };
-
     fetchSavedAddresses();
   }, []);
 
@@ -61,236 +51,244 @@ const ShippingAddressForm = () => {
     const { name, value, type, checked } = e.target;
     setAddress((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSubmit = async () => {
     try {
       const response = await axios.post("http://localhost:3001/api/shipping", address);
-      setAlert({
-        open: true,
-        message: "Address saved successfully!",
-        severity: "success"
-      });
-
-      // Add to saved list and switch view
       setSavedAddresses((prev) => [...prev, response.data.address]);
       setUseSavedAddress(true);
     } catch (err) {
-      console.error("Error saving address:", err);
-      setAlert({
-        open: true,
-        message: "Failed to save address.",
-        severity: "error"
-      });
+      setAlert({ open: true, message: "Failed to save address.", severity: "error" });
     }
   };
 
   const handleContinueToPayment = () => {
-    if (!selectedSavedId) {
-      setAlert({
-        open: true,
-        message: "Please select an address before proceeding.",
-        severity: "warning"
-      });
+    if (!selectedSavedId && useSavedAddress) {
+      setAlert({ open: true, message: "Please select an address before proceeding.", severity: "warning" });
       return;
     }
-
-    // Optional: Pass selected address ID to payment page
     navigate("/payment", {
-      state: { shippingAddressId: selectedSavedId }
+      state: { shippingAddressId: selectedSavedId || null },
     });
   };
 
   return (
-    <Container className="my-5">
-      <Card>
-        <Card.Body>
-          <Card.Title className="mb-4">Shipping Address</Card.Title>
+    <div className="CheckoutMain">
+      <div className="CheckoutHeader">
+        <h2>Kitchen Planner</h2>
+        <nav>
+          <ul>
+            <li className="active"><span>Cart</span></li>
+            <li><span>Information</span></li>
+            <li><span>Shipping</span></li>
+            <li><span>Payment</span></li>
+          </ul>
+        </nav>
 
-          {/* Alert Message */}
-          <AlertMessage
-            open={alert.open}
-            onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
-            message={alert.message}
-            severity={alert.severity}
-          />
+        <div className="ContactInformation">
+          <h2>Contact</h2>
+          <p>chatwithdummy@gmail.com</p>
+          <a>Log out</a>
+          <label>
+            <input type="checkbox" />
+            Email me with news and offers
+          </label>
+        </div>
 
-          {/* Address type toggle */}
-          <ListGroup className="mb-4">
-            <ListGroup.Item
-              active={useSavedAddress}
-              onClick={() => setUseSavedAddress(true)}
-              style={{ cursor: "pointer" }}
-            >
-              Saved Addresses
-            </ListGroup.Item>
-            <ListGroup.Item
-              active={!useSavedAddress}
-              onClick={() => setUseSavedAddress(false)}
-              style={{ cursor: "pointer" }}
-            >
-              Use a new address
-            </ListGroup.Item>
-          </ListGroup>
+        <div className="ShippingAddressForm">
+          <form>
+            <h2>Shipping address</h2>
+            <p>Select the address that matches your card method.</p>
+            <select onChange={(e) => setUseSavedAddress(e.target.value === "saved")}>
+              <option value="saved">Same as Shipping Address</option>
+              <option value="new">Use a new address</option>
+            </select>
 
-          {/* Saved Address List */}
-          {useSavedAddress ? (
-            <div className="mb-4">
-              <h5>Select a saved address</h5>
-              <Form>
+            {useSavedAddress ? (
+              <div style={{ marginTop: "10px" }}>
                 {savedAddresses.map((addr) => (
-                  <FormCheck
-                    key={addr._id}
-                    type="radio"
-                    name="savedAddress"
-                    id={`address-${addr._id}`}
-                    checked={selectedSavedId === addr._id}
-                    onChange={() => setSelectedSavedId(addr._id)}
-                    label={
-                      <div>
-                        <strong>{addr.firstName} {addr.lastName}</strong>
-                        <br />
-                        {addr.addressLine1}, {addr.city}, {addr.postalCode}
-                      </div>
-                    }
-                  />
+                  <label key={addr._id}>
+                    <input
+                      type="radio"
+                      name="savedAddress"
+                      checked={selectedSavedId === addr._id}
+                      onChange={() => setSelectedSavedId(addr._id)}
+                    />
+                    <span>
+                      {addr.firstName} {addr.lastName}, {addr.addressLine1}, {addr.city}
+                    </span>
+                  </label>
                 ))}
-              </Form>
-            </div>
-          ) : (
-            <Form>
-              <h5 className="mb-3">Country/Region</h5>
-              <Form.Group className="mb-3">
-                <Form.Control as="select" value="New Zealand" disabled>
-                  <option>New Zealand</option>
-                </Form.Control>
-              </Form.Group>
-
-              <Row className="mb-3">
-                <Col>
-                  <Form.Label>First name</Form.Label>
-                  <Form.Control
+              </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  name="country"
+                  value="New Zealand"
+                  disabled
+                />
+                <div className="name-container">
+                  <input
+                    type="text"
+                    className="fname"
+                    placeholder="First name"
                     name="firstName"
                     value={address.firstName}
                     onChange={handleChange}
-                    required
                   />
-                </Col>
-                <Col>
-                  <Form.Label>Last name</Form.Label>
-                  <Form.Control
+                  <input
+                    type="text"
+                    className="lname"
+                    placeholder="Last name"
                     name="lastName"
                     value={address.lastName}
                     onChange={handleChange}
-                    required
                   />
-                </Col>
-              </Row>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Company</Form.Label>
-                <Form.Control
+                </div>
+                <input
+                  type="text"
+                  placeholder="Company (optional)"
                   name="company"
                   value={address.company}
                   onChange={handleChange}
                 />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Address</Form.Label>
-                <Form.Control
+                <input
+                  type="text"
+                  placeholder="Address"
                   name="addressLine1"
                   value={address.addressLine1}
                   onChange={handleChange}
-                  required
                 />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Apartment, suite, etc.</Form.Label>
-                <Form.Control
+                <input
+                  type="text"
+                  placeholder="Apartment, suite, etc. (optional)"
                   name="addressLine2"
                   value={address.addressLine2}
                   onChange={handleChange}
                 />
-              </Form.Group>
-
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Label>City</Form.Label>
-                  <Form.Control
+                <div className="city-region">
+                  <input
+                    type="text"
+                    className="City"
+                    placeholder="City"
                     name="city"
                     value={address.city}
                     onChange={handleChange}
-                    required
                   />
-                </Col>
-                <Col md={3}>
-                  <Form.Label>Region</Form.Label>
-                  <Form.Control
+                  <input
+                    type="text"
+                    className="Region"
+                    placeholder="Region"
                     name="region"
                     value={address.region}
                     onChange={handleChange}
                   />
-                </Col>
-                <Col md={3}>
-                  <Form.Label>Postal Code</Form.Label>
-                  <Form.Control
+                  <input
+                    type="text"
+                    className="Postal"
+                    placeholder="Postal code"
                     name="postalCode"
                     value={address.postalCode}
                     onChange={handleChange}
-                    required
                   />
-                </Col>
-              </Row>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Mobile Phone</Form.Label>
-                <Form.Control
+                </div>
+                <input
+                  type="tel"
+                  placeholder="Mobile phone number"
                   name="phone"
                   value={address.phone}
                   onChange={handleChange}
-                  required
                 />
-              </Form.Group>
-
-              <Form.Check
-                type="checkbox"
-                id="receiveUpdates"
-                label="Receive shipping updates via text"
-                name="receiveUpdates"
-                checked={address.receiveUpdates}
-                onChange={handleChange}
-                className="mb-4"
-              />
-            </Form>
-          )}
-
-          <div className="d-flex justify-content-between">
-            <Button variant="outline-secondary" onClick={() => navigate("/cart")}>
-              Return to Cart
-            </Button>
-
-            {useSavedAddress ? (
-              <Button
-                variant="primary"
-                disabled={!selectedSavedId}
-                onClick={handleContinueToPayment}
-              >
-                Continue to Payment
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={handleSubmit}>
-                Save Address
-              </Button>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="receiveUpdates"
+                    checked={address.receiveUpdates}
+                    onChange={handleChange}
+                  />
+                  Receive updates on shipping details via text
+                </label>
+              </>
             )}
+          </form>
+        </div>
+
+        <div className="NavigationButtons">
+          <button onClick={() => navigate("/cart")}>Return to cart</button>
+          {useSavedAddress ? (
+            <button onClick={handleContinueToPayment}>Continue to shipping</button>
+          ) : (
+            <button onClick={handleSubmit}>Save Address</button>
+          )}
+        </div>
+      </div>
+
+      {/* Order Summary (kept from your new UI) */}
+      <div className="OrderSummary">
+        <div className="item">
+          <span className="ItemIndex">
+            <img src="https://placehold.co/400" alt="" />
+          </span>
+          <div className="innerProduct">
+            <span className="ItemName">Handle Upgrade</span>
+            <span className="ItemDescription">Standard</span>
           </div>
-        </Card.Body>
-      </Card>
-    </Container>
+          <span className="ItemCost">FREE</span>
+        </div>
+        <div className="item">
+          <span className="ItemIndex">
+            <img src="https://placehold.co/400" alt="" />
+          </span>
+          <span className="ItemName">Soft Close Hinge</span>
+          <span className="ItemCost">$9.60</span>
+        </div>
+        <div>
+          <div className="item itmbreak">
+            <span className="ItemIndex">
+              <img src="https://placehold.co/400" alt="" />
+            </span>
+            <div className="innerProduct">
+              <span className="ItemName">1 Door Base Cabinet COLOUR</span>
+              <span className="ItemDescription">
+                150mm / 585mm / Adjustable Feet<br />
+                Handle Side: Left<br />
+                Hinge Type: Soft Close<br />
+                Colour: Anthracite
+              </span>
+            </div>
+            <span className="ItemCost">$226.71</span>
+          </div>
+        </div>
+
+        <div className="DiscountCode">
+          <input type="text" placeholder="Discount code" />
+          <button>Apply</button>
+        </div>
+
+        <div className="total">
+          <div className="totals">
+            <div>Subtotal - 3 items</div>
+            <div>$236.31</div>
+          </div>
+          <div className="shippings">
+            <div>Shipping</div>
+            <p>Calculated at next step</p>
+          </div>
+          <div className="FinalTotal">
+            <div>
+              Total &nbsp;
+              <span style={{ fontWeight: "normal" }}>Including $30.82 in taxes</span>
+            </div>
+            <div>NZD $236.31</div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default ShippingAddressForm;
+export default Shipping;
