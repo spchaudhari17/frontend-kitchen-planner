@@ -19,6 +19,8 @@ const ProductList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { componentColors } = useColorContext(); // 👈 access context
+  const [completedSteps, setCompletedSteps] = useState([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const defaultColors = {
     background: '#ffffff',
@@ -156,12 +158,53 @@ const ProductList = () => {
 
   };
 
+  // const steps = [
+  //   { name: "Start", tooltip: "Start planning your kitchen.", canNavigate: true },
+  //   { name: "Room Layout", tooltip: "Enter room dimensions and details.", canNavigate: completedSteps.includes("Start") },
+  //   { name: "Base Layout", tooltip: "Design the base layout of your kitchen.", canNavigate: completedSteps.includes("Room Layout") },
+  //   { name: "Add Notes", tooltip: "Add notes or special instructions.", canNavigate: completedSteps.includes("Base Layout") },
+  //   { name: "Review", tooltip: "Review your plan before finalizing.", canNavigate: completedSteps.includes("Add Notes") },
+  // ];
+
   const steps = [
-    { name: "Start", tooltip: "Start planning your kitchen." },
-    { name: "Room Layout", tooltip: "Enter room dimensions and details." },
-    { name: "Base Layout", tooltip: "Design the base layout of your kitchen." },
-    { name: "Add Notes", tooltip: "Add notes or special instructions." },
-    { name: "Review", tooltip: "Review your plan before finalizing." },
+    {
+      name: "Start",
+      tooltip: "Start planning your kitchen.",
+      canNavigate: true
+    },
+    {
+      name: "Room Layout",
+      tooltip: "Enter room dimensions and details.",
+      canNavigate: (currentIndex, targetIndex) =>
+        // Can always go back, or forward if previous step completed
+        targetIndex < currentIndex ||
+        completedSteps.includes("Start") ||
+        hasSubmitted
+    },
+    {
+      name: "Base Layout",
+      tooltip: "Design the base layout of your kitchen.",
+      canNavigate: (currentIndex, targetIndex) =>
+        targetIndex < currentIndex ||
+        completedSteps.includes("Room Layout") ||
+        hasSubmitted
+    },
+    {
+      name: "Add Notes",
+      tooltip: "Add notes or special instructions.",
+      canNavigate: (currentIndex, targetIndex) =>
+        targetIndex < currentIndex ||
+        completedSteps.includes("Base Layout") ||
+        hasSubmitted
+    },
+    {
+      name: "Review",
+      tooltip: "Review your plan before finalizing.",
+      canNavigate: (currentIndex, targetIndex) =>
+        targetIndex < currentIndex ||
+        completedSteps.includes("Add Notes") ||
+        hasSubmitted
+    },
   ];
 
   const handleRoomSizeChange = (name, value) => {
@@ -172,35 +215,47 @@ const ProductList = () => {
 
   //sahi hai 
   // const handleDrop = (item) => {
-  //   setDroppedItems((prevItems) => [
-  //     ...prevItems,
-  //     { ...item, rotation: 0 }, // ✅ Default rotation 0°
-  //   ]);
-  //   setSelectedItem(item); // Drop kiya gaya item set karein
+  //   // Create a new item with unique ID and default rotation
+  //   const newItem = {
+  //     ...item,
+  //     id: item.id || Date.now(),
+  //     rotation: 0,
+  //     height: 0,    // Initialize dimensions to 0
+  //     width: 0,      // They'll be set in the modal
+  //     x: 50,          // Default position
+  //     y: 50,
+  //   };
+  //   // setDroppedItems((prevItems) => [
+  //   //   ...prevItems,
+  //   //   { ...item, rotation: 0 }, // ✅ Default rotation 0°
+  //   // ]);
+  //   // Set as selected item and show modal
+  //   // setDroppedItems(prev => [...prev, newItem]);
+  //   setSelectedItem(newItem);
   //   setShowModal(true);
+
+  //   // DO NOT add to droppedItems yet - wait for modal confirmation
   // };
 
+
   const handleDrop = (item) => {
-    // Create a new item with unique ID and default rotation
+    // Create a new item with dimensions from the product data
     const newItem = {
       ...item,
       id: item.id || Date.now(),
       rotation: 0,
-      height: 0,    // Initialize dimensions to 0
-      width: 0,      // They'll be set in the modal
-      x: 50,          // Default position
+      height: item.minDepth || 0,    // Initialize with min depth
+      width: item.minWidth || 0,     // Initialize with min width
+      x: 50,
       y: 50,
+      minWidth: item.minWidth,       // Store min width from API
+      maxWidth: item.maxWidth,       // Store max width from API
+      minDepth: item.minDepth,       // Store min depth from API
+      maxDepth: item.maxDepth        // Store max depth from API
     };
-    // setDroppedItems((prevItems) => [
-    //   ...prevItems,
-    //   { ...item, rotation: 0 }, // ✅ Default rotation 0°
-    // ]);
-    // Set as selected item and show modal
-    // setDroppedItems(prev => [...prev, newItem]);
+
     setSelectedItem(newItem);
     setShowModal(true);
-
-    // DO NOT add to droppedItems yet - wait for modal confirmation
   };
 
 
@@ -281,6 +336,7 @@ const ProductList = () => {
         setNotes({});
         setDroppedItems([]);
         setCurrentStep("Start"); // Automatically navigate to Base Layout after submission
+        setHasSubmitted(true);
       }
     } catch (error) {
       setAlert({
@@ -522,9 +578,28 @@ const ProductList = () => {
       );
     }
 
+    // const handleNextStep = () => {
+    //   // navigate("/base-layout"); // Navigate to Base Layout page
+    //   setCurrentStep("Base Layout");
+    // };
+
     const handleNextStep = () => {
-      // navigate("/base-layout"); // Navigate to Base Layout page
-      setCurrentStep("Base Layout");
+      // Mark current step as completed
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps([...completedSteps, currentStep]);
+      }
+
+      // Determine next step
+      let nextStep;
+      switch (currentStep) {
+        case "Start": nextStep = "Room Layout"; break;
+        case "Room Layout": nextStep = "Base Layout"; break;
+        case "Base Layout": nextStep = "Add Notes"; break;
+        case "Add Notes": nextStep = "Review"; break;
+        default: nextStep = currentStep;
+      }
+
+      setCurrentStep(nextStep);
     };
 
     if (currentStep === "Room Layout") {
@@ -735,10 +810,24 @@ const ProductList = () => {
               <DropZone {...commonDropZoneProps} roomSize={roomSize} />
 
             </div>
+
+            <div style={{ marginTop: "20px", textAlign: "center" }}>
+              <Button
+                variant="primary"
+                type="Button"
+                disabled={isLoading}
+                onClick={handleNextStep}
+              >
+                {isLoading ? "Saving..." : "Next Step"}
+              </Button>
+            </div>
           </div>
 
 
           {/* Modal for Item Dimensions */}
+
+
+
           <Modal show={showModal} onHide={() => setShowModal(false)}>
             <Modal.Header closeButton>
               <Modal.Title>Set Cabinet Dimensions</Modal.Title>
@@ -747,93 +836,79 @@ const ProductList = () => {
               <Form>
                 {/* Width Input and Slider */}
                 <Form.Group className="mb-3">
-                  <Form.Label>Width (mm)</Form.Label>
+                  <Form.Label>
+                    Width: {itemDimensions.width}mm
+                    (Range: {selectedItem?.minWidth}mm - {selectedItem?.maxWidth}mm)
+                  </Form.Label>
                   <Form.Control
                     type="number"
                     value={itemDimensions.width}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        width: e.target.value,
-                      })
-                    }
+                    min={selectedItem?.minWidth || 100}
+                    max={selectedItem?.maxWidth || 3000}
+                    onChange={(e) => setItemDimensions({
+                      ...itemDimensions,
+                      width: Math.min(
+                        Math.max(e.target.value, selectedItem?.minWidth || 100),
+                        selectedItem?.maxWidth || 3000
+                      )
+                    })}
                     placeholder="Enter width"
                   />
                   <Form.Range
-                    min={100}
-                    max={3000}
+                    min={selectedItem?.minWidth || 100}
+                    max={selectedItem?.maxWidth || 3000}
                     value={itemDimensions.width}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        width: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setItemDimensions({
+                      ...itemDimensions,
+                      width: e.target.value
+                    })}
                   />
                 </Form.Group>
 
-                {/* Height Input and Slider */}
+                {/* Depth Input and Slider */}
                 <Form.Group className="mb-3">
-                  <Form.Label>Depth (mm)</Form.Label>
+                  <Form.Label>
+                    Depth: {itemDimensions.height}mm
+                    (Range: {selectedItem?.minDepth}mm - {selectedItem?.maxDepth}mm)
+                  </Form.Label>
                   <Form.Control
                     type="number"
                     value={itemDimensions.height}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        height: e.target.value,
-                      })
-                    }
-                    placeholder="Enter Depth"
+                    min={selectedItem?.minDepth || 100}
+                    max={selectedItem?.maxDepth || 3000}
+                    onChange={(e) => setItemDimensions({
+                      ...itemDimensions,
+                      height: Math.min(
+                        Math.max(e.target.value, selectedItem?.minDepth || 100),
+                        selectedItem?.maxDepth || 3000
+                      )
+                    })}
+                    placeholder="Enter depth"
                   />
                   <Form.Range
-                    min={100}
-                    max={3000}
+                    min={selectedItem?.minDepth || 100}
+                    max={selectedItem?.maxDepth || 3000}
                     value={itemDimensions.height}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        height: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setItemDimensions({
+                      ...itemDimensions,
+                      height: e.target.value
+                    })}
                   />
                 </Form.Group>
 
-
-                {/* Handle Side Dropdown */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Handle Side</Form.Label>
-                  <Form.Select
-                    value={itemDimensions.handleSide || "left"}
-                    onChange={(e) =>
-                      setItemDimensions({
-                        ...itemDimensions,
-                        handleSide: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="left">Left</option>
-                    <option value="right">Right</option>
-                  </Form.Select>
-                </Form.Group>
 
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowModal(false)} style={{
-                backgroundColor: globalButtonBg,
-                color: globalButtonText,
-              }}>
+              <Button variant="secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleAddToDesign} style={{
-                backgroundColor: globalButtonBg,
-                color: globalButtonText,
-              }}>
+              <Button variant="primary" onClick={handleAddToDesign}>
                 Add to Design
               </Button>
             </Modal.Footer>
           </Modal>
+
         </DndProvider>
       );
     }
@@ -842,22 +917,23 @@ const ProductList = () => {
 
     if (currentStep === "Add Notes") {
       return (
-        <div
-          style={{ display: "flex", alignItems: "flex-start", height: "100%" }}
-          className="fldc"
-        >
-          <DndProvider backend={HTML5Backend}>
-            <div
-              style={{
-                width: "100%",
-                backgroundColor: "#fff",
-                padding: "20px",
-                borderRadius: "5px",
-              }}
-              className="sidemenu"
-            >
-              <h5>Plan Top View</h5>
-              {/* <DropZone
+        <>
+          <div
+            style={{ display: "flex", alignItems: "flex-start", height: "100%" }}
+            className="fldc"
+          >
+            <DndProvider backend={HTML5Backend}>
+              <div
+                style={{
+                  width: "100%",
+                  backgroundColor: "#fff",
+                  padding: "20px",
+                  borderRadius: "5px",
+                }}
+                className="sidemenu"
+              >
+                <h5>Plan Top View</h5>
+                {/* <DropZone
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
                 onRemove={handleRemove}
@@ -865,61 +941,76 @@ const ProductList = () => {
                 currentStep={currentStep}
               /> */}
 
-              <DropZone {...commonDropZoneProps} />
-            </div>
-          </DndProvider>
+                <DropZone {...commonDropZoneProps} />
+              </div>
+            </DndProvider>
 
-          {/* Notes Section */}
-          <div
-            style={{
-              width: '50%', // Fixed width for Notes
-              backgroundColor: plannerBg,
-              color: plannerText,
 
-              padding: '20px',
-              borderRadius: '5px',
-              // marginLeft: "20px",
-              // border:"2px solid black"
-            }}
-            className="sidemenu ml5"
-          >
-            <h5>Notes</h5>
-            <ul style={{ listStyleType: "decimal", paddingLeft: "20px" }}>
-              {Object.entries(notes).length > 0 ? (
-                Object.entries(notes).map(([cabinet, noteList]) => (
-                  <li key={cabinet}>
-                    {/* <strong>{cabinet}:</strong> */}
-                    <ul>
-                      {noteList.map((note, index) => (
-                        <li key={index}>{note}</li>
-                      ))}
-                    </ul>
-                  </li>
-                ))
-              ) : (
-                <li>No notes available</li>
-              )}
-            </ul>
-
-            {/* Delete All Notes Button */}
-            {Object.keys(notes).length > 0 && (
-              <Button
-                onClick={handleDeleteAllNotes}
+              {/* Notes Section */}
+            {/* <div>
+              <div
                 style={{
-                  // marginTop: "10px",
-                  // padding: "8px 12px",
-                  backgroundColor: "red",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
+                  width: '50%',
+                  backgroundColor: plannerBg,
+                  color: plannerText,
+                  padding: '20px',
+                  borderRadius: '5px',
                 }}
+                className="sidemenu ml5"
               >
-                Delete
-              </Button>
-            )}
+                <h5>Notes</h5>
+                <ul style={{ listStyleType: "decimal", paddingLeft: "20px" }}>
+                  {Object.entries(notes).length > 0 ? (
+                    Object.entries(notes).map(([cabinet, noteList]) => (
+                      <li key={cabinet}>
+                    
+                        <ul>
+                          {noteList.map((note, index) => (
+                            <li key={index}>{note}</li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))
+                  ) : (
+                    <li>No notes available</li>
+                  )}
+                </ul>
+
+
+                {Object.keys(notes).length > 0 && (
+                  <Button
+                    onClick={handleDeleteAllNotes}
+                    style={{
+                      backgroundColor: "red",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Delete
+                  </Button>
+                )}
+
+              </div>
+
+
+              <div style={{ marginTop: "20px", textAlign: "center" }}>
+                <Button
+                  variant="primary"
+                  type="Button"
+                  disabled={isLoading}
+                  onClick={handleNextStep}
+                >
+                  {isLoading ? "Saving..." : "Next Step"}
+                </Button>
+              </div>
+            </div> */}
+
           </div>
-        </div>
+
+        </>
+
       );
     }
 
@@ -1049,7 +1140,7 @@ const ProductList = () => {
                 }}
                 onClick={handleAddToCart}
               >
-                Add To Card
+                Add To Cart
               </Button>
             </div>
           </div>
@@ -1090,6 +1181,7 @@ const ProductList = () => {
     return products
       .filter((product) => product.cabinateType === type)
       .map((cabinet) => {
+        console.log("Cabinet Data:", cabinet);
         return (
 
           <DraggableCabinet
@@ -1097,11 +1189,51 @@ const ProductList = () => {
             id={cabinet._id}
             name={cabinet.cabinateName}
             imageSrc={cabinet.cabinateImage}
-            price={cabinet.price}
+            cabinateFrontImage={cabinet.cabinateFrontImage}
+            minWidth={cabinet.minWidth}
+            maxWidth={cabinet.maxWidth}
+            minDepth={cabinet.minDepth}
+            maxDepth={cabinet.maxDepth}
+
           />
         )
       });
   };
+
+
+  const validateStepNavigation = (targetStep) => {
+    const currentIndex = steps.findIndex(s => s.name === currentStep);
+    const targetIndex = steps.findIndex(s => s.name === targetStep);
+
+    if (typeof steps[targetIndex].canNavigate === 'function') {
+      return steps[targetIndex].canNavigate(currentIndex, targetIndex);
+    }
+    return steps[targetIndex].canNavigate;
+  };
+
+
+  // Use this when setting current step directly
+  const setCurrentStepWithValidation = (stepName) => {
+    if (validateStepNavigation(stepName)) {
+      setCurrentStep(stepName);
+    } else {
+      setAlert({
+        open: true,
+        message: `Please complete previous steps before accessing ${stepName}`,
+        severity: "error"
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (showModal && selectedItem) {
+      setItemDimensions({
+        width: selectedItem.minWidth || 100,
+        height: selectedItem.minDepth || 100,
+        handleSide: "left"
+      });
+    }
+  }, [showModal, selectedItem]);
 
 
   return (
@@ -1126,9 +1258,9 @@ const ProductList = () => {
           marginRight: "20px",
         }}
       >
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+        {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
           Kitchen Planner
-        </h2>
+        </h2> */}
 
         {/* Progress Bar */}
         <div
@@ -1138,7 +1270,7 @@ const ProductList = () => {
             marginBottom: "20px",
           }}
         >
-          {steps.map((step, index) => (
+          {/* {steps.map((step, index) => (
             <CustomTooltip key={index} message={step.tooltip}>
               <div
                 style={{
@@ -1171,7 +1303,55 @@ const ProductList = () => {
                 </p>
               </div>
             </CustomTooltip>
-          ))}
+          ))} */}
+
+
+          {steps.map((step, index) => {
+
+            const canNavigate = validateStepNavigation(step.name);
+            return (
+              <CustomTooltip key={index} message={step.tooltip}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    flex: 1,
+                    cursor: step.canNavigate ? "pointer" : "not-allowed",
+                    opacity: step.canNavigate ? 1 : 0.5
+                  }}
+                  onClick={() => canNavigate && setCurrentStep(step.name)}
+                >
+                  <div
+                    className="progitems"
+                    style={{
+                      width: "25px",
+                      height: "25px",
+                      borderRadius: "50%",
+                      backgroundColor: currentStep === step.name
+                        ? "#00bfff"
+                        : completedSteps.includes(step.name)
+                          ? "#4CAF50" // Green for completed
+                          : "#ccc",   // Gray for incomplete
+                      margin: "0 auto",
+                      lineHeight: "25px",
+                      color: "#fff",
+                    }}
+                  >
+                    {index + 1}
+                  </div>
+                  <p
+                    className="progtxt"
+                    style={{
+                      fontSize: "12px",
+                      marginTop: "5px",
+                      color: step.canNavigate ? plannerText : "#999"
+                    }}
+                  >
+                    {step.name}
+                  </p>
+                </div>
+              </CustomTooltip>
+            )
+          })}
         </div>
 
         {/* Dynamic Content */}

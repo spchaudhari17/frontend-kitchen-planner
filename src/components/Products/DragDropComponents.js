@@ -62,10 +62,26 @@ const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
 };
 
 // Draggable Cabinet Component
-export const DraggableCabinet = ({ name, imageSrc, id, price }) => {
+export const DraggableCabinet = ({  name, 
+  imageSrc, 
+  id, 
+  cabinateFrontImage,
+  minWidth,    // Add these props
+  maxWidth,
+  minDepth,
+  maxDepth }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CABINET",
-    item: { id, name, imageSrc, price },
+    item: { 
+      id, 
+      name, 
+      imageSrc,
+      minWidth,  // Include in drag item
+      maxWidth,
+      minDepth,
+      maxDepth,
+      frontImageSrc:cabinateFrontImage,
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -1158,7 +1174,7 @@ export const DropZone = ({
         <div
           ref={drop}
           style={{
-            width: "75%",
+            width: "100%",
             height: "400px",
             border: isOver ? "2px dashed #00bfff" : "2px dashed #ccc",
             backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
@@ -1192,7 +1208,7 @@ export const DropZone = ({
                 }}
               >
                 <img
-                  src={item.imageSrc}
+                  src={item?.frontImageSrc || item?.imageSrc}
                   alt={item.name}
                   onClick={() => handleCabinetClick(item)}
                   style={{
