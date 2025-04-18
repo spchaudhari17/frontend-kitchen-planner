@@ -16,6 +16,7 @@ import Button from "./ui/Button";
 import Modal from "./ui/Modal";
 import { FaUser } from "react-icons/fa";
 import { AiOutlineShoppingCart } from "react-icons/ai"; 
+import { FaClock } from "react-icons/fa";
 
 const Navbars = () => {
   const { logout } = useLogout();
@@ -131,8 +132,10 @@ const Navbars = () => {
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Navbar.Collapse className="justify-content-end">
-              <Nav>
-                {isAdmin && !["/login", "/signup", "/"].includes(location.pathname) && (
+            <Nav>
+              {/*  Admin-only buttons */}
+              {auth && isAdmin && !["/login", "/signup", "/"].includes(location.pathname) && (
+                <>
                   <Button
                     className="mx-3"
                     onClick={() => setShowModal(true)}
@@ -143,22 +146,7 @@ const Navbars = () => {
                   >
                     Color Picker
                   </Button>
-                )}
 
-                {auth && (
-                  <Button
-                    className="mx-3"
-                    onClick={() => logout(auth._id)}
-                    style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
-                      color: componentColors.Button?.text || "#ffffff",
-                    }}
-                  >
-                    Log Out
-                  </Button>
-                )}
-
-                {auth && (
                   <Button
                     className="mx-3"
                     onClick={() => navigate("/admin-add-cabinates")}
@@ -169,66 +157,92 @@ const Navbars = () => {
                   >
                     Add Cabinates
                   </Button>
-                )}
 
-                {/*profile icons */}
-                {auth && (
                   <Button
                     className="mx-3"
-                    onClick={() => navigate("/account")}
+                    onClick={() => navigate("/pending-transactions")}
                     style={{
                       backgroundColor: componentColors.Button?.background || "transparent",
                       color: componentColors.Button?.text || "#ffffff",
                     }}
+                    title="Pending Orders"
                   >
-                  <FaUser />
-                
+                    <FaClock />
                   </Button>
-                )}
+                </>
+              )}
 
-                {/* cart icon */}
-                {auth && (
-                  <Button
-                    className="mx-3"
-                    onClick={() => navigate("/cart")}
-                    style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
-                      color: componentColors.Button?.text || "#ffffff",
-                    }}
-                  >
-                  {/* <FaUser /> */}
-                  <AiOutlineShoppingCart />
-                
-                  </Button>
-                )}
+                  {/*  Logout button for all logged-in users */}
+                  {auth && (
+                    <Button
+                      className="mx-3"
+                      onClick={() => logout(auth._id)}
+                      style={{
+                        backgroundColor: componentColors.Button?.background || "transparent",
+                        color: componentColors.Button?.text || "#ffffff",
+                      }}
+                    >
+                      Log Out
+                    </Button>
+                  )}
 
-                {!auth && (
-            <>
-              <Button
-                variant="outline-primary"
-                className="mx-2"
-                onClick={() => (window.location.href = "/login")}
-                style={{
-                  backgroundColor: componentColors.Button?.background || "transparent",
-                  color: componentColors.Button?.text || "#ffffff",
-                }}
-              >
-                Login
-              </Button>
-              <Button
-                variant="outline-success"
-                className="mx-2"
-                onClick={() => (window.location.href = "/signup")}
-                style={{
-                  backgroundColor: componentColors.Button?.background || "transparent",
-                  color: componentColors.Button?.text || "#ffffff",
-                }}
-              >
-                Signup
-              </Button>
-            </>
-          )}
-              </Nav>
+                  {/*  Profile icon */}
+                  {auth && (
+                    <Button
+                      className="mx-3"
+                      onClick={() => navigate("/account")}
+                      style={{
+                        backgroundColor: componentColors.Button?.background || "transparent",
+                        color: componentColors.Button?.text || "#ffffff",
+                      }}
+                    >
+                      <FaUser />
+                    </Button>
+                  )}
+
+                  {/*  Cart icon */}
+                  {auth && (
+                    <Button
+                      className="mx-3"
+                      onClick={() => navigate("/cart")}
+                      style={{
+                        backgroundColor: componentColors.Button?.background || "transparent",
+                        color: componentColors.Button?.text || "#ffffff",
+                      }}
+                    >
+                      <AiOutlineShoppingCart />
+                    </Button>
+                  )}
+
+                  {/*  Login/Signup for non-authenticated users */}
+                  {!auth && (
+                    <>
+                      <Button
+                        variant="outline-primary"
+                        className="mx-2"
+                        onClick={() => (window.location.href = "/login")}
+                        style={{
+                          backgroundColor: componentColors.Button?.background || "transparent",
+                          color: componentColors.Button?.text || "#ffffff",
+                        }}
+                      >
+                        Login
+                      </Button>
+                      <Button
+                        variant="outline-success"
+                        className="mx-2"
+                        onClick={() => (window.location.href = "/signup")}
+                        style={{
+                          backgroundColor: componentColors.Button?.background || "transparent",
+                          color: componentColors.Button?.text || "#ffffff",
+                        }}
+                      >
+                        Signup
+                      </Button>
+                    </>
+                  )}
+                </Nav>
+
             </Navbar.Collapse>
           </Navbar.Collapse>
         </div>
