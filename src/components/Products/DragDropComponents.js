@@ -1221,7 +1221,7 @@ export const DropZone = ({
                     transition: "transform 0.3s ease-in-out",
                   }}
                 />
-                {currentStep === "Base Layout" &&
+                {currentStep === "Top View" &&
                   selectedItemIndex === index && (
                     <>
                       <button

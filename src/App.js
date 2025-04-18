@@ -105,13 +105,13 @@ function App() {
                 <Route path="/account" element={<SavePlan />} />
                 <Route path="/cart" element={<AddToCart />} />
                 <Route path="/shipping-address" element={<Shipping />} />
-                <Route path="/admin-add-cabinates" element={<AddCabinet />} />
                 <Route path="/payment" element={<PaymentPage />} />
 
 
                 <Route element={<RequireRoles Roles={[ROLES.Staff, ROLES.Admin]} />}>
                   <Route path="/user" element={<User />} />
                   <Route path="/assign" element={<Assign />} />
+                  <Route path="/admin-add-cabinates" element={<AddCabinet />} />
                 </Route>
               </Route>
             </Route>

@@ -182,8 +182,8 @@ const ProductList = () => {
         hasSubmitted
     },
     {
-      name: "Base Layout",
-      tooltip: "Design the base layout of your kitchen.",
+      name: "Top View",
+      tooltip: "Design the top view of your kitchen.",
       canNavigate: (currentIndex, targetIndex) =>
         targetIndex < currentIndex ||
         completedSteps.includes("Room Layout") ||
@@ -194,7 +194,7 @@ const ProductList = () => {
       tooltip: "Add notes or special instructions.",
       canNavigate: (currentIndex, targetIndex) =>
         targetIndex < currentIndex ||
-        completedSteps.includes("Base Layout") ||
+        completedSteps.includes("Top View") ||
         hasSubmitted
     },
     {
@@ -593,8 +593,8 @@ const ProductList = () => {
       let nextStep;
       switch (currentStep) {
         case "Start": nextStep = "Room Layout"; break;
-        case "Room Layout": nextStep = "Base Layout"; break;
-        case "Base Layout": nextStep = "Add Notes"; break;
+        case "Room Layout": nextStep = "Top View"; break;
+        case "Top View": nextStep = "Add Notes"; break;
         case "Add Notes": nextStep = "Review"; break;
         default: nextStep = currentStep;
       }
@@ -781,7 +781,7 @@ const ProductList = () => {
       );
     }
 
-    if (currentStep === "Base Layout") {
+    if (currentStep === "Top View") {
       return (
 
         <DndProvider backend={HTML5Backend}>
@@ -789,7 +789,7 @@ const ProductList = () => {
             <div
               style={{
                 flex: 3,
-                backgroundColor: plannerBg,
+                // backgroundColor: plannerBg,
                 color: plannerText,
                 padding: '20px',
                 borderRadius: '5px',
@@ -798,7 +798,7 @@ const ProductList = () => {
               className="remmar"
             >
               {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Kitchen Planner</h2> */}
-              <h5>Plan Top View</h5>
+    
               {/* <DropZone
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
@@ -825,9 +825,6 @@ const ProductList = () => {
 
 
           {/* Modal for Item Dimensions */}
-
-
-
           <Modal show={showModal} onHide={() => setShowModal(false)}>
             <Modal.Header closeButton>
               <Modal.Title>Set Cabinet Dimensions</Modal.Title>
@@ -915,102 +912,156 @@ const ProductList = () => {
 
 
 
+    // if (currentStep === "Add Notes") {
+    //   return (
+    //     <>
+    //       <div
+    //         style={{ display: "flex", alignItems: "flex-start", height: "100%" }}
+    //         className="fldc"
+    //       >
+    //         <DndProvider backend={HTML5Backend}>
+    //           <div
+    //             style={{
+    //               width: "100%",
+    //               backgroundColor: "#fff",
+    //               padding: "20px",
+    //               borderRadius: "5px",
+    //             }}
+    //             className="sidemenu"
+    //           >
+
+    //             {/* <DropZone
+    //             onDrop={handleDrop}
+    //             droppedItems={droppedItems}
+    //             onRemove={handleRemove}
+    //             onRotate={handleRotate}
+    //             currentStep={currentStep}
+    //           /> */}
+
+    //             <DropZone {...commonDropZoneProps} />
+    //           </div>
+    //         </DndProvider>
+
+
+    //           {/* Notes Section */}
+    //         {/* <div>
+    //           <div
+    //             style={{
+    //               width: '50%',
+    //               backgroundColor: plannerBg,
+    //               color: plannerText,
+    //               padding: '20px',
+    //               borderRadius: '5px',
+    //             }}
+    //             className="sidemenu ml5"
+    //           >
+    //             <h5>Notes</h5>
+    //             <ul style={{ listStyleType: "decimal", paddingLeft: "20px" }}>
+    //               {Object.entries(notes).length > 0 ? (
+    //                 Object.entries(notes).map(([cabinet, noteList]) => (
+    //                   <li key={cabinet}>
+                    
+    //                     <ul>
+    //                       {noteList.map((note, index) => (
+    //                         <li key={index}>{note}</li>
+    //                       ))}
+    //                     </ul>
+    //                   </li>
+    //                 ))
+    //               ) : (
+    //                 <li>No notes available</li>
+    //               )}
+    //             </ul>
+
+
+    //             {Object.keys(notes).length > 0 && (
+    //               <Button
+    //                 onClick={handleDeleteAllNotes}
+    //                 style={{
+    //                   backgroundColor: "red",
+    //                   color: "white",
+    //                   border: "none",
+    //                   borderRadius: "5px",
+    //                   cursor: "pointer",
+    //                 }}
+    //               >
+    //                 Delete
+    //               </Button>
+    //             )}
+
+    //           </div>
+
+
+    //           <div style={{ marginTop: "20px", textAlign: "center" }}>
+    //             <Button
+    //               variant="primary"
+    //               type="Button"
+    //               disabled={isLoading}
+    //               onClick={handleNextStep}
+    //             >
+    //               {isLoading ? "Saving..." : "Next Step"}
+    //             </Button>
+    //           </div>
+    //         </div> */}
+
+
+    //         <div style={{ marginTop: "20px", textAlign: "center" }}>
+    //           <Button
+    //             variant="primary"
+    //             type="Button"
+    //             disabled={isLoading}
+    //             onClick={handleNextStep}
+    //           >
+    //             {isLoading ? "Saving..." : "Next Step"}
+    //           </Button>
+    //         </div>
+
+    //       </div>
+
+    //     </>
+
+    //   );
+    // }
+
+
     if (currentStep === "Add Notes") {
       return (
-        <>
-          <div
-            style={{ display: "flex", alignItems: "flex-start", height: "100%" }}
-            className="fldc"
-          >
-            <DndProvider backend={HTML5Backend}>
-              <div
-                style={{
-                  width: "100%",
-                  backgroundColor: "#fff",
-                  padding: "20px",
-                  borderRadius: "5px",
-                }}
-                className="sidemenu"
-              >
-                <h5>Plan Top View</h5>
-                {/* <DropZone
-                onDrop={handleDrop}
-                droppedItems={droppedItems}
-                onRemove={handleRemove}
-                onRotate={handleRotate}
-                currentStep={currentStep}
-              /> */}
-
-                <DropZone {...commonDropZoneProps} />
-              </div>
-            </DndProvider>
-
-
-              {/* Notes Section */}
-            {/* <div>
-              <div
-                style={{
-                  width: '50%',
-                  backgroundColor: plannerBg,
-                  color: plannerText,
-                  padding: '20px',
-                  borderRadius: '5px',
-                }}
-                className="sidemenu ml5"
-              >
-                <h5>Notes</h5>
-                <ul style={{ listStyleType: "decimal", paddingLeft: "20px" }}>
-                  {Object.entries(notes).length > 0 ? (
-                    Object.entries(notes).map(([cabinet, noteList]) => (
-                      <li key={cabinet}>
-                    
-                        <ul>
-                          {noteList.map((note, index) => (
-                            <li key={index}>{note}</li>
-                          ))}
-                        </ul>
-                      </li>
-                    ))
-                  ) : (
-                    <li>No notes available</li>
-                  )}
-                </ul>
-
-
-                {Object.keys(notes).length > 0 && (
-                  <Button
-                    onClick={handleDeleteAllNotes}
-                    style={{
-                      backgroundColor: "red",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Delete
-                  </Button>
-                )}
-
-              </div>
-
-
-              <div style={{ marginTop: "20px", textAlign: "center" }}>
-                <Button
-                  variant="primary"
-                  type="Button"
-                  disabled={isLoading}
-                  onClick={handleNextStep}
-                >
-                  {isLoading ? "Saving..." : "Next Step"}
-                </Button>
-              </div>
-            </div> */}
-
+        <div className="notes-container" style={{ width: '100%' }}>
+          <DndProvider backend={HTML5Backend}>
+            <div
+              style={{
+                width: "100%",
+                backgroundColor: "#fff",
+                padding: "20px",
+                borderRadius: "5px",
+                marginBottom: "20px" // Add some space below the drop zone
+              }}
+              className="sidemenu"
+            >
+              <DropZone {...commonDropZoneProps} />
+            </div>
+          </DndProvider>
+    
+          {/* Notes Section - if you want to add it back */}
+          {/* <div style={{ width: '100%', marginBottom: '20px' }}>
+            ... your notes content ...
+          </div> */}
+    
+          <div style={{ 
+            width: '100%', 
+            textAlign: 'center',
+            marginTop: '20px'
+          }}>
+            <Button
+              variant="primary"
+              type="Button"
+              disabled={isLoading}
+              onClick={handleNextStep}
+            >
+              {isLoading ? "Saving..." : "Next Step"}
+            </Button>
           </div>
-
-        </>
-
+        </div>
       );
     }
 
@@ -1021,7 +1072,7 @@ const ProductList = () => {
             <div
               style={{
                 flex: 3,
-                backgroundColor: plannerBg,
+                // backgroundColor: plannerBg,
                 color: plannerText,
 
                 padding: '20px',
@@ -1031,7 +1082,7 @@ const ProductList = () => {
               className="sidemenu remmar"
             >
               {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Kitchen Planner</h2> */}
-              <h5>Plan Top View</h5>
+      
               {/* <DropZone
                 onDrop={handleDrop}
                 droppedItems={droppedItems}
