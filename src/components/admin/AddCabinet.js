@@ -181,7 +181,7 @@ const AddCabinet = () => {
             minWidth: '100px'
         },
         {
-            name: 'Front Image',
+            name: 'Top Image',
             selector: (row) => row.cabinateImage ? <img src={row.cabinateFrontImage} alt="Cabinet" width="50" /> : 'N/A',
             sortable: false,
             minWidth: '100px'
@@ -243,70 +243,51 @@ const AddCabinet = () => {
             {/* Add Cabinet Modal */}
             <Modal show={showAddModal} centered onHide={handleCloseAdd}>
                 <Modal.Body className="text-center px-md-5 py-5">
+
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: "0",
+                            right: "0",
+                            margin: "10px",
+                            cursor: "pointer"
+                        }}
+                        onClick={handleCloseAdd}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="13"
+                            height="13"
+                            viewBox="0 0 13 13"
+                        >
+                            <g
+                                fill="none"
+                                fill-rule="evenodd"
+                                stroke-linecap="square"
+                                stroke-width="2"
+                            >
+                                <path
+                                    stroke="#B7B7B7"
+                                    d="M0 6.525L13 6.478"
+                                    transform="rotate(45 6.5 6.5)"
+                                ></path>
+                                <path
+                                    stroke="#4C4C4C"
+                                    d="M6.428 0L6.563 12.999"
+                                    transform="rotate(45 6.5 6.5)"
+                                ></path>
+                                <path
+                                    stroke="#B7B7B7"
+                                    d="M6.428 0L6.563 12.999"
+                                    transform="rotate(45 6.5 6.5)"
+                                ></path>
+                            </g>
+                        </svg>
+                    </div>
+
                     <h2 className="text-center mb-4 mt-3">Add Cabinet</h2>
                     {message && <div className="alert alert-info">{message}</div>}
-                    {/* <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet Name" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
 
-                        <div className="mb-3">
-                            <select id="cabinetType" placeholder="Cabinet Type" className="form-control" required value={cabinetType} onChange={(e) => setCabinetType(e.target.value)}>
-                                <option value="">Select Cabinet Type</option>
-                                <option value="base">Base Cabinets</option>
-                                <option value="tall">Tall Cabinets</option>
-                                <option value="finishing">Finishing Panels</option>
-                                <option value="wall">Wall Cabinets</option>
-                            </select>
-                        </div>
-
-
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet Min Width" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet Max Width" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet Min depth" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet Max depth" className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet No Of Hinges " className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet No Of Handles  " className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="text" id="title" placeholder="Cabinet No Of Drawers   " className="form-control" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="file" id="cabinetImage" required className="form-control" accept="image/*" onChange={(e) => setCabinetImage(e.target.files[0])} />
-                        </div>
-
-                        <div className="mb-3">
-                            <input type="file" id="cabinetFrontImage" required className="form-control" accept="image/*" onChange={(e) => setCabinetImage(e.target.files[0])} />
-                        </div>
-
-                        <Button
-                            type="submit"
-                            className="w-100"
-                            disabled={loading}
-                            style={{ backgroundColor: globalButtonBg, color: globalButtonText }}
-                        >
-                            {loading ? "Submitting..." : "Submit"}
-                        </Button>
-
-                    </form> */}
 
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
@@ -315,7 +296,13 @@ const AddCabinet = () => {
                         </div>
 
                         <div className="mb-3">
-                            <select placeholder="Cabinet Type" className="form-control" required
+                            <select style={{
+                                backgroundImage:
+                                    "url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNSIgaGVpZ2h0PSIyNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2U9IiNiYmIiPjxwYXRoIGQ9Ik02IDlsNiA2IDYtNiIvPjwvc3ZnPg==)",
+                                backgroundRepeat: "no-repeat",
+                                position: "relative",
+                                backgroundPosition: "right",
+                            }} placeholder="Cabinet Type" className="form-control" required
                                 value={cabinetType} onChange={(e) => setCabinetType(e.target.value)}>
                                 <option value="">Select Cabinet Type</option>
                                 <option value="base">Base Cabinets</option>
@@ -363,13 +350,13 @@ const AddCabinet = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label>Top View Image</label>
+                            <label>Cabinate Image</label>
                             <input type="file" className="form-control" required
                                 accept="image/*" onChange={(e) => setCabinetImage(e.target.files[0])} />
                         </div>
 
                         <div className="mb-3">
-                            <label>Front View Image</label>
+                            <label>Top View Image</label>
                             <input type="file" className="form-control" required
                                 accept="image/*" onChange={(e) => setCabinetFrontImage(e.target.files[0])} />
                         </div>
