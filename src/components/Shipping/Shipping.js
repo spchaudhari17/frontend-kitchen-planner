@@ -73,8 +73,8 @@ const Shipping = () => {
     navigate("/payment", {
       state: { shippingAddressId: selectedSavedId || null },
     });
-    
-    
+
+
   };
 
   return (
@@ -249,60 +249,60 @@ const Shipping = () => {
           <span className="ItemCost">$9.60</span>
         </div> */}
         {extras?.handle && (
-  <div className="item">
-    <span className="ItemIndex">
-      <img src="https://placehold.co/400" alt="" />
-    </span>
-    <div className="innerProduct">
-      <span className="ItemName">{extras.handle.name}</span>
-      <span className="ItemDescription">Standard</span>
-    </div>
-    <span className="ItemCost">
-      ${extras.handle.price * extras.handle.qty}
-    </span>
-  </div>
-)}
+          <div className="item">
+            <span className="ItemIndex">
+              <img src="https://placehold.co/400" alt="" />
+            </span>
+            <div className="innerProduct">
+              <span className="ItemName">{extras.handle.name}</span>
+              <span className="ItemDescription">Standard</span>
+            </div>
+            <span className="ItemCost">
+              ${extras.handle.price * extras.handle.qty}
+            </span>
+          </div>
+        )}
 
-{extras?.hinge && (
-  <div className="item">
-    <span className="ItemIndex">
-      <img src="https://placehold.co/400" alt="" />
-    </span>
-    <span className="ItemName">{extras.hinge.name}</span>
-    <span className="ItemCost">
-      ${(extras.hinge.price * extras.hinge.qty).toFixed(2)}
-    </span>
-  </div>
-)}
+        {extras?.hinge && (
+          <div className="item">
+            <span className="ItemIndex">
+              <img src="https://placehold.co/400" alt="" />
+            </span>
+            <span className="ItemName">{extras.hinge.name}</span>
+            <span className="ItemCost">
+              ${(extras.hinge.price * extras.hinge.qty).toFixed(2)}
+            </span>
+          </div>
+        )}
 
         <div>
-        {cartItems.map((cartItem, index) => {
-  const item = cartItem.droppedItems?.[0];
-  const width = parseFloat(item?.width) || 0;
-  const qty = item?.qty || 1;
-  const price = 100 + Math.max(0, width - 400) * 0.2;
-  const totalPrice = price * qty;
+          {cartItems.map((cartItem, index) => {
+            const item = cartItem.droppedItems?.[0];
+            const width = parseFloat(item?.width) || 0;
+            const qty = item?.qty || 1;
+            const price = 100 + Math.max(0, width - 400) * 0.2;
+            const totalPrice = price * qty;
 
-  return (
-    <div className="item itmbreak" key={index}>
-      <span className="ItemIndex">
-        <img src={item?.imageSrc || "https://placehold.co/400"} alt="" />
-      </span>
-      <div className="innerProduct">
-        <span className="ItemName">
-          {cartItem.description || "Cabinet Item"}
-        </span>
-        <span className="ItemDescription">
-          {width}mm / {item?.height || "N/A"}mm / Adjustable Feet
-          <br />
-          Handle Side: Left<br />
-          Hinge Type: Soft Close
-        </span>
-      </div>
-      <span className="ItemCost">${totalPrice.toFixed(2)}</span>
-    </div>
-  );
-})}
+            return (
+              <div className="item itmbreak" key={index}>
+                <span className="ItemIndex">
+                  <img src={item?.imageSrc || "https://placehold.co/400"} alt="" />
+                </span>
+                <div className="innerProduct">
+                  <span className="ItemName">
+                    {cartItem.description || "Cabinet Item"}
+                  </span>
+                  <span className="ItemDescription">
+                    {width}mm / {item?.height || "N/A"}mm / Adjustable Feet
+                    <br />
+                    Handle Side: Left<br />
+                    Hinge Type: Soft Close
+                  </span>
+                </div>
+                <span className="ItemCost">${totalPrice.toFixed(2)}</span>
+              </div>
+            );
+          })}
 
         </div>
 
@@ -321,12 +321,12 @@ const Shipping = () => {
             <p>Calculated at next step</p>
           </div>
           <div className="FinalTotal">
-  <div>
-    Total &nbsp;
-    <span style={{ fontWeight: "normal" }}>(incl. GST)</span>
-  </div>
-  <div>NZD ${subtotal}</div>
-</div>
+            <div>
+              Total &nbsp;
+              <span style={{ fontWeight: "normal" }}>(incl. GST)</span>
+            </div>
+            <div>NZD ${subtotal}</div>
+          </div>
 
         </div>
       </div>

@@ -244,8 +244,8 @@ const ProductList = () => {
       ...item,
       id: item.id || Date.now(),
       rotation: 0,
-      height: item.minDepth || 0,    // Initialize with min depth
-      width: item.minWidth || 0,     // Initialize with min width
+      height: item.minDepth || 300,    // Initialize with min depth
+      width: item.minWidth || 500,     // Initialize with min width
       x: 50,
       y: 50,
       minWidth: item.minWidth,       // Store min width from API
