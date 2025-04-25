@@ -6,6 +6,7 @@ import {
   useStripe,
   useElements,
   Elements,
+  AuBankAccountElement 
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -19,16 +20,21 @@ import {
   Spinner,
 } from "react-bootstrap";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { useLocation } from "react-router-dom"; // ✅ add this
+
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY );
 
 const PaymentForm = () => {
+  const location = useLocation(); // ✅ use the location hook to access state
   const axiosPrivate = useAxiosPrivate();
   const stripe = useStripe();
   const elements = useElements();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const initialAmount = parseFloat(location.state?.subtotal || 0).toFixed(2);
 
-  const [amount, setAmount] = useState("");
+
+  const [amount, setAmount] = useState(initialAmount.toString());
   const [alert, setAlert] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [bankDetails, setBankDetails] = useState({
@@ -129,44 +135,69 @@ const PaymentForm = () => {
   };
   
 
-  const handleBankTransfer = async (e) => {
+  const handleBankPayment = async (e) => {
     e.preventDefault();
   
-    if (!/^\d{9,18}$/.test(bankDetails.accountNumber)) {
-      return setAlert({ type: "danger", message: "Invalid account number" });
-    }
-    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bankDetails.ifscCode)) {
-      return setAlert({ type: "danger", message: "Invalid IFSC code" });
+    if (!stripe || !elements) {
+      setAlert({ type: "danger", message: "Stripe is not loaded yet." });
+      return;
     }
   
     setLoading(true);
-    try {
-      const res = await axiosPrivate.post(
-        "http://localhost:3001/api/payment/bank-transfer",
-        {
-          userId: user._id,
-          amount: parseFloat(amount),
-          accountNumber: bankDetails.accountNumber,
-          ifscCode: bankDetails.ifscCode,
-        }
-      );
+    setAlert({ type: "", message: "" }); // Clear previous alerts
   
-      if (res.data.success) {
-        setAlert({
-          type: "success",
-          message: "Bank transfer submitted. Awaiting approval.",
-        });
-        resetForm();
+    try {
+      // 1. Create payment intent from backend
+      const { data } = await axiosPrivate.post('http://localhost:3001/api/payment/bank-transfer', {
+        userId: user._id,
+        amount,
+        email: user.email,
+        name: user.name,
+      });
+  
+      // 2. Get the Stripe bank account element
+      const bankAccountElement = elements.getElement(AuBankAccountElement);
+      if (!bankAccountElement) {
+        setAlert({ type: "danger", message: "Bank account element not found" });
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error("Bank Transfer Error:", err);
+  
+      // 3. Confirm the BECS debit payment
+      const result = await stripe.confirmAuBecsDebitPayment(data.clientSecret, {
+        payment_method: {
+          au_becs_debit: bankAccountElement,
+          billing_details: {
+            name: user.name,
+            email: user.email,
+          },
+        },
+      });
+  
+      // 4. Handle the result
+      if (result.error) {
+        console.error("Stripe BECS Error:", result.error);
+        setAlert({ type: "danger", message: result.error.message });
+      } else if (result.paymentIntent?.status === "succeeded") {
+        setAlert({ type: "success", message: "Bank payment successful!" });
+        resetForm();
+      } else {
+        setAlert({
+          type: "warning",
+          message: "Payment submitted but status: " + result.paymentIntent?.status,
+        });
+      }
+    } catch (error) {
+      console.error("Bank Transfer Error:", error);
       setAlert({
         type: "danger",
-        message: "Failed to submit bank transfer.",
+        message: "Failed to submit bank transfer. Please try again.",
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+  
   
 
   return (
@@ -191,7 +222,7 @@ const PaymentForm = () => {
               <Card.Title>Pay with Card</Card.Title>
               <Form onSubmit={handleCardPayment}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Amount (USD)</Form.Label>
+                  <Form.Label>Amount (NZD)</Form.Label>
                   <Form.Control
                     type="number"
                     value={amount}
@@ -240,61 +271,33 @@ const PaymentForm = () => {
           <Card className="shadow-sm mb-4">
             <Card.Body>
               <Card.Title>Pay via Bank Transfer</Card.Title>
-              <Form onSubmit={handleBankTransfer}>
+                  <Form onSubmit={handleBankPayment}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Amount (USD)</Form.Label>
+                  <Form.Label>Amount (NZD)</Form.Label>
                   <Form.Control
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="Enter amount"
-                    required
-                  />
+  type="number"
+  value={amount}
+  readOnly // ✅ this prevents editing
+  required
+/>
+
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Account Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={bankDetails.accountNumber}
-                    onChange={(e) =>
-                      setBankDetails((prev) => ({
-                        ...prev,
-                        accountNumber: e.target.value,
-                      }))
-                    }
-                    required
-                  />
+                  <Form.Label>Bank Account</Form.Label>
+                  <div className="p-2 border rounded">
+                  <AuBankAccountElement
+                options={{ style: { base: { fontSize: '16px' } } }}
+                onReady={() => console.log('Ready')}
+                onChange={(e) => console.log('Change', e)}
+              />
+                  </div>
                 </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>IFSC Code</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={bankDetails.ifscCode}
-                    onChange={(e) =>
-                      setBankDetails((prev) => ({
-                        ...prev,
-                        ifscCode: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </Form.Group>
-
-                <Button
-                  type="submit"
-                  variant="success"
-                  className="w-100"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Spinner animation="border" size="sm" />
-                  ) : (
-                    "Submit Bank Transfer"
-                  )}
-                </Button>
-              </Form>
+          <Button type="submit" variant="success" disabled={!stripe || loading}>
+            {loading ? <Spinner animation="border" size="sm" /> : 'Pay with Bank Account'}
+          </Button>
+        </Form>
             </Card.Body>
           </Card>
         </Col>
@@ -310,3 +313,4 @@ const PaymentPage = () => (
 );
 
 export default PaymentPage;
+	

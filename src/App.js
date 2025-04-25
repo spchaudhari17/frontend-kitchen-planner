@@ -27,6 +27,7 @@ import AddToCart from './pages/AddToCart';
 import AddCabinet from './components/admin/AddCabinet';
 import Shipping from './components/Shipping/Shipping';
 import PaymentPage from './components/payment/PaymentPage';
+import PendingTransactions from './components/payment/pendingTransactions';
 
 function App() {
   const { auth } = useAuthContext();
@@ -106,6 +107,7 @@ function App() {
                 <Route path="/cart" element={<AddToCart />} />
                 <Route path="/shipping-address" element={<Shipping />} />
                 <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/pending-transactions" element={<PendingTransactions />} />
 
 
                 <Route element={<RequireRoles Roles={[ROLES.Staff, ROLES.Admin]} />}>

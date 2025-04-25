@@ -71,7 +71,9 @@ const Shipping = () => {
       return;
     }
     navigate("/payment", {
-      state: { shippingAddressId: selectedSavedId || null },
+      state: {
+        subtotal: subtotal // or calculateTotalWithGST() if needed
+      }
     });
 
 
