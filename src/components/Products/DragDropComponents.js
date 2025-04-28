@@ -947,6 +947,510 @@ export const DraggableCabinet = ({ name,
 // };
 
 
+// export const DropZone = ({
+//   onDrop,
+//   droppedItems,
+//   onRemove,
+//   onRotate,
+//   currentStep,
+//   setDroppedItems,
+//   roomSize = { width: 3000, depth: 2000 },
+// }) => {
+//   const dropRef = useRef(null);
+//   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+//   const [horizontalMeasurements, setHorizontalMeasurements] = useState([]);
+//   const [verticalMeasurements, setVerticalMeasurements] = useState([]);
+//   const [totalWidth, setTotalWidth] = useState(0);
+//   const [totalDepth, setTotalDepth] = useState(0);
+//   const [isDragging, setIsDragging] = useState(false);
+//   const [draggingIndex, setDraggingIndex] = useState(null);
+
+//   const calculateMeasurements = (items) => {
+//     if (dropRef.current && items.length > 0) {
+//       const dropZoneWidth = dropRef.current.offsetWidth;
+//       const dropZoneHeight = dropRef.current.offsetHeight;
+//       const mmPerPixelWidth = roomSize.width / dropZoneWidth;
+//       const mmPerPixelHeight = roomSize.depth / dropZoneHeight;
+
+//       // Calculate measurements only for the selected cabinet if one is selected
+//       if (selectedItemIndex !== null && selectedItemIndex < items.length) {
+//         const selectedItem = items[selectedItemIndex];
+//         const newHorizontalMeasurements = [];
+//         const newVerticalMeasurements = [];
+
+//         // Horizontal measurements for selected cabinet
+//         // Left wall to cabinet
+//         const leftWallMeasurement = Math.round(selectedItem.x * mmPerPixelWidth);
+//         if (leftWallMeasurement > 0) {
+//           newHorizontalMeasurements.push({
+//             type: 'wall-to-cabinet',
+//             value: leftWallMeasurement,
+//             position: selectedItem.x / 2,
+//             from: 0,
+//             to: selectedItem.x,
+//             itemIndex: selectedItemIndex,
+//           });
+//         }
+
+//         // Cabinet width
+//         newHorizontalMeasurements.push({
+//           type: 'cabinet-width',
+//           value: selectedItem.width,
+//           position: selectedItem.x + (selectedItem.width / mmPerPixelWidth / 2),
+//           from: selectedItem.x,
+//           to: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
+//           itemIndex: selectedItemIndex,
+//         });
+
+//         // Right wall
+//         const rightWallMeasurement = roomSize.width - Math.round((selectedItem.x * mmPerPixelWidth) + selectedItem.width);
+//         if (rightWallMeasurement > 0) {
+//           newHorizontalMeasurements.push({
+//             type: 'cabinet-to-wall',
+//             value: rightWallMeasurement,
+//             position: selectedItem.x + (selectedItem.width / mmPerPixelWidth) + ((dropZoneWidth - (selectedItem.x + (selectedItem.width / mmPerPixelWidth)))) / 2,
+//             from: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
+//             to: dropZoneWidth,
+//             itemIndex: selectedItemIndex,
+//           });
+//         }
+
+//         setHorizontalMeasurements(newHorizontalMeasurements);
+//         setTotalWidth(leftWallMeasurement + selectedItem.width + rightWallMeasurement);
+
+//         // Vertical measurements for selected cabinet
+//         // Floor to cabinet
+//         const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
+//         if (floorToCabinet > 0) {
+//           newVerticalMeasurements.push({
+//             type: 'floor-to-cabinet',
+//             value: floorToCabinet,
+//             position: selectedItem.y / 2,
+//             from: 0,
+//             to: selectedItem.y,
+//             itemIndex: selectedItemIndex,
+//             vertical: true
+//           });
+//         }
+
+//         // Cabinet height
+//         newVerticalMeasurements.push({
+//           type: 'cabinet-height',
+//           value: selectedItem.height,
+//           position: selectedItem.y + (selectedItem.height / mmPerPixelHeight / 2),
+//           from: selectedItem.y,
+//           to: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
+//           itemIndex: selectedItemIndex,
+//           vertical: true
+//         });
+
+//         // Ceiling space
+//         const ceilingSpace = roomSize.depth - Math.round((selectedItem.y * mmPerPixelHeight) + selectedItem.height);
+//         if (ceilingSpace > 0) {
+//           newVerticalMeasurements.push({
+//             type: 'cabinet-to-ceiling',
+//             value: ceilingSpace,
+//             position: selectedItem.y + (selectedItem.height / mmPerPixelHeight) + ((dropZoneHeight - (selectedItem.y + (selectedItem.height / mmPerPixelHeight))) / 2),
+//             from: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
+//             to: dropZoneHeight,
+//             itemIndex: selectedItemIndex,
+//             vertical: true
+//           });
+//         }
+
+//         setVerticalMeasurements(newVerticalMeasurements);
+//         setTotalDepth(floorToCabinet + selectedItem.height + ceilingSpace);
+//       } else {
+//         // No cabinet selected, show no measurements
+//         setHorizontalMeasurements([]);
+//         setVerticalMeasurements([]);
+//         setTotalWidth(0);
+//         setTotalDepth(0);
+//       }
+//     } else {
+//       setHorizontalMeasurements([]);
+//       setVerticalMeasurements([]);
+//       setTotalWidth(0);
+//       setTotalDepth(0);
+//     }
+//   };
+
+//   useEffect(() => {
+//     calculateMeasurements(droppedItems);
+//   }, [droppedItems, roomSize.width, roomSize.depth, selectedItemIndex]);
+
+//   const [{ isOver }, drop] = useDrop(() => ({
+//     accept: "CABINET",
+//     drop: (item, monitor) => {
+//       const clientOffset = monitor.getClientOffset();
+//       const dropZoneNode = dropRef.current;
+//       if (clientOffset && dropZoneNode) {
+//         const dropZoneRect = dropZoneNode.getBoundingClientRect();
+//         const x = clientOffset.x - dropZoneRect.left;
+//         const y = clientOffset.y - dropZoneRect.top;
+
+//         const SNAP_THRESHOLD = 20;
+//         let snappedX = x;
+//         let snappedY = y;
+
+//         // Snap to other cabinets or walls
+//         droppedItems.forEach(cabinet => {
+//           if (Math.abs(x - cabinet.x) < SNAP_THRESHOLD) {
+//             snappedX = cabinet.x;
+//           }
+//           if (Math.abs(x - (cabinet.x + cabinet.width)) < SNAP_THRESHOLD) {
+//             snappedX = cabinet.x + cabinet.width;
+//           }
+//           if (Math.abs(y - cabinet.y) < SNAP_THRESHOLD) {
+//             snappedY = cabinet.y;
+//           }
+//           if (Math.abs(y - (cabinet.y + cabinet.height)) < SNAP_THRESHOLD) {
+//             snappedY = cabinet.y + cabinet.height;
+//           }
+//         });
+
+//         // Snap to walls
+//         if (x < SNAP_THRESHOLD) snappedX = 0;
+//         if (x > dropZoneRect.width - SNAP_THRESHOLD) {
+//           snappedX = dropZoneRect.width - (item.width || 300);
+//         }
+//         if (y < SNAP_THRESHOLD) snappedY = 0;
+//         if (y > dropZoneRect.height - SNAP_THRESHOLD) {
+//           snappedY = dropZoneRect.height - (item.height || 600);
+//         }
+
+//         const itemWidth = item.minWidth || item.width || 300;
+//         const itemHeight = item.minDepth || item.height || 600;
+
+//         // Prevent overlapping with other cabinets
+//         let finalX = snappedX;
+//         let finalY = snappedY;
+//         for (const cabinet of droppedItems) {
+//           if (
+//             finalX < cabinet.x + cabinet.width &&
+//             finalX + itemWidth > cabinet.x &&
+//             finalY < cabinet.y + cabinet.height &&
+//             finalY + itemHeight > cabinet.y
+//           ) {
+//             // Collision detected, move to the right of the existing cabinet
+//             finalX = cabinet.x + cabinet.width;
+//             finalY = cabinet.y;
+//           }
+//         }
+
+//         // Ensure we stay within bounds
+//         finalX = Math.max(0, Math.min(finalX, dropZoneRect.width - itemWidth));
+//         finalY = Math.max(0, Math.min(finalY, dropZoneRect.height - itemHeight));
+
+//         onDrop({
+//           ...item,
+//           x: finalX,
+//           y: finalY,
+//           rotation: 0,
+//           width: itemWidth,
+//           height: itemHeight,
+//         });
+//       }
+//     },
+//     collect: (monitor) => ({ isOver: !!monitor.isOver() }),
+//   }));
+
+//   const handlePositionChange = (index, position) => {
+//     const item = droppedItems[index];
+//     const itemWidth = item.width;
+//     const itemHeight = item.height;
+//     const dropZoneNode = dropRef.current;
+//     if (!dropZoneNode) return;
+
+//     let newX = position.x;
+//     let newY = position.y;
+//     const SNAP_THRESHOLD = 15;
+
+//     // Check for collisions with other cabinets
+//     for (let i = 0; i < droppedItems.length; i++) {
+//       if (i === index) continue;
+
+//       const otherItem = droppedItems[i];
+//       const otherItemWidth = otherItem.width;
+//       const otherItemHeight = otherItem.height;
+
+//       // Collision check
+//       if (
+//         newX < otherItem.x + otherItemWidth &&
+//         newX + itemWidth > otherItem.x &&
+//         newY < otherItem.y + otherItemHeight &&
+//         newY + itemHeight > otherItem.y
+//       ) {
+//         // Collision detected, adjust position
+//         if (newX < otherItem.x) {
+//           newX = otherItem.x - itemWidth - SNAP_THRESHOLD / 2;
+//         } else {
+//           newX = otherItem.x + otherItemWidth + SNAP_THRESHOLD / 2;
+//         }
+//         if (newY < otherItem.y) {
+//           newY = otherItem.y - itemHeight - SNAP_THRESHOLD / 2;
+//         } else {
+//           newY = otherItem.y + otherItemHeight + SNAP_THRESHOLD / 2;
+//         }
+//         break;
+//       }
+//     }
+
+//     // Keep within dropzone boundaries
+//     if (newX < SNAP_THRESHOLD) newX = 0;
+//     if (newX > dropZoneNode.offsetWidth - itemWidth - SNAP_THRESHOLD) {
+//       newX = dropZoneNode.offsetWidth - itemWidth;
+//     }
+//     if (newY < SNAP_THRESHOLD) newY = 0;
+//     if (newY > dropZoneNode.offsetHeight - itemHeight - SNAP_THRESHOLD) {
+//       newY = dropZoneNode.offsetHeight - itemHeight;
+//     }
+
+//     setDroppedItems(prev => {
+//       const updated = [...prev];
+//       updated[index] = {
+//         ...updated[index],
+//         x: newX,
+//         y: newY
+//       };
+//       return updated;
+//     });
+//   };
+
+//   const handleDrag = (index, data) => {
+//     const tempItems = [...droppedItems];
+//     tempItems[index] = { ...tempItems[index], x: data.x, y: data.y };
+//     // Don't recalculate measurements during drag to improve performance
+//   };
+
+//   // Handle click outside cabinets
+//   const handleDropZoneClick = (e) => {
+//     if (e.target === dropRef.current) {
+//       setSelectedItemIndex(null);
+//     }
+//   };
+
+//   return (
+//     <div style={{ position: "relative", width: "100%", padding: "10px" }}>
+//       {/* Horizontal measurements at the top */}
+//       <div style={{ height: "40px", position: "relative", marginBottom: "10px", borderBottom: "1px solid #ddd" }}>
+//         {horizontalMeasurements.map((m, i) => (
+//           <Fragment key={`h-${i}`}>
+//             <div
+//               style={{
+//                 position: "absolute",
+//                 left: `${m.from}px`,
+//                 width: `${m.to - m.from}px`,
+//                 height: "20px",
+//                 top: "10px",
+//                 borderTop: "1px solid #666",
+//                 borderLeft: m.type.includes('wall') ? "1px solid #666" : "none",
+//                 borderRight: m.type.includes('wall') ? "1px solid #666" : "none",
+//                 borderColor: "#007bff",
+//                 borderWidth: "2px",
+//               }}
+//             />
+//             <div
+//               style={{
+//                 position: "absolute",
+//                 left: `${m.position}px`,
+//                 top: "0",
+//                 transform: 'translateX(-50%)',
+//                 backgroundColor: "#e0f7fa",
+//                 padding: '2px 6px',
+//                 borderRadius: '4px',
+//                 fontSize: '12px',
+//                 border: "1px solid #00bcd4",
+//                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+//                 whiteSpace: 'nowrap',
+//                 fontWeight: "bold",
+//               }}
+//             >
+//               {m.value}mm
+//             </div>
+//           </Fragment>
+//         ))}
+//       </div>
+
+//       <div
+//         ref={(node) => {
+//           drop(node);
+//           dropRef.current = node;
+//         }}
+//         onClick={handleDropZoneClick}
+//         style={{
+//           width: "100%",
+//           height: "500px",
+//           border: isOver ? "2px dashed #00bfff" : "2px dashed #adb5bd",
+//           backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
+//           position: "relative",
+//           borderRadius: "4px",
+//           overflow: "hidden",
+//           cursor: "default",
+//         }}
+//       >
+//         {/* Vertical measurements on the left side */}
+//         <div style={{
+//           position: "absolute",
+//           left: "0",
+//           top: "0",
+//           bottom: "0",
+//           width: "40px",
+//           borderRight: "1px solid #ddd",
+//           zIndex: 0
+//         }}>
+//           {verticalMeasurements.map((m, i) => (
+//             <Fragment key={`v-${i}`}>
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   top: `${m.from}px`,
+//                   height: `${m.to - m.from}px`,
+//                   width: "20px",
+//                   left: "10px",
+//                   borderLeft: "1px solid #666",
+//                   borderTop: m.type.includes('floor') ? "1px solid #666" : "none",
+//                   borderBottom: m.type.includes('ceiling') ? "1px solid #666" : "none",
+//                   borderColor: "#007bff",
+//                   borderWidth: "2px",
+//                 }}
+//               />
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   top: `${m.position}px`,
+//                   left: "25px",
+//                   transform: 'translateY(-50%) rotate(-90deg)',
+//                   transformOrigin: 'left center',
+//                   backgroundColor: "#e0f7fa",
+//                   padding: '2px 6px',
+//                   borderRadius: '4px',
+//                   fontSize: '12px',
+//                   border: "1px solid #00bcd4",
+//                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+//                   whiteSpace: 'nowrap',
+//                   fontWeight: "bold",
+//                 }}
+//               >
+//                 {m.value}mm
+//               </div>
+//             </Fragment>
+//           ))}
+//         </div>
+
+//         {/* Rest of the drop zone content */}
+//         {droppedItems.map((item, index) => (
+//           <Fragment key={item.id || index}>
+//             <Draggable
+//               position={{ x: item.x || 0, y: item.y || 0 }}
+//               bounds="parent"
+//               onStart={() => {
+//                 setIsDragging(true);
+//                 setDraggingIndex(index);
+//               }}
+//               onDrag={(e, data) => handleDrag(index, data)}
+//               onStop={(e, data) => {
+//                 setIsDragging(false);
+//                 setDraggingIndex(null);
+//                 handlePositionChange(index, data);
+//               }}
+//             >
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   cursor: "move",
+//                   borderRadius: "3px",
+//                   padding: "2px",
+//                   boxShadow: selectedItemIndex === index
+//                     ? "0 0 0 2px #007bff, 0 2px 4px rgba(0,0,0,0.1)"
+//                     : "0 2px 4px rgba(0,0,0,0.1)",
+//                   transform: `rotate(${item.rotation}deg)`,
+//                   zIndex: selectedItemIndex === index ? 10 : 1,
+//                   display: "flex",
+//                   flexDirection: "column",
+//                   alignItems: "center",
+//                   backgroundColor: selectedItemIndex === index ? "rgba(0, 123, 255, 0.1)" : "transparent",
+//                 }}
+//                 onClick={(e) => {
+//                   e.stopPropagation();
+//                   setSelectedItemIndex(index);
+//                 }}
+//               >
+//                 {/* Cabinet image and controls */}
+//                 <img
+//                   src={item.imageSrc}
+//                   alt={item.name}
+//                   style={{
+//                     width: `${item.width}px`,
+//                     height: `${item.height}px`,
+//                     objectFit: "contain",
+//                     display: "block"
+//                   }}
+//                 />
+
+//                 {selectedItemIndex === index && (
+//                   <div style={{
+//                     position: "absolute",
+//                     top: "-30px",
+//                     width: "100%",
+//                     display: "flex",
+//                     justifyContent: "center",
+//                     gap: "10px"
+//                   }}>
+//                     <button
+//                       onClick={(e) => {
+//                         e.stopPropagation();
+//                         onRotate(index);
+//                       }}
+//                       style={{
+//                         background: "#28a745",
+//                         color: "#fff",
+//                         border: "none",
+//                         borderRadius: "50%",
+//                         width: "25px",
+//                         height: "25px",
+//                         cursor: "pointer",
+//                         display: "flex",
+//                         alignItems: "center",
+//                         justifyContent: "center"
+//                       }}
+//                       title="Rotate 90°"
+//                     >↻</button>
+
+//                     <button
+//                       onClick={(e) => {
+//                         e.stopPropagation();
+//                         onRemove(index);
+//                       }}
+//                       style={{
+//                         background: "#dc3545",
+//                         color: "#fff",
+//                         border: "none",
+//                         borderRadius: "50%",
+//                         width: "25px",
+//                         height: "25px",
+//                         cursor: "pointer",
+//                         display: "flex",
+//                         alignItems: "center",
+//                         justifyContent: "center"
+//                       }}
+//                       title="Remove cabinet"
+//                     >×</button>
+//                   </div>
+//                 )}
+//               </div>
+//             </Draggable>
+//           </Fragment>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+
+
+
+
 export const DropZone = ({
   onDrop,
   droppedItems,
@@ -965,108 +1469,92 @@ export const DropZone = ({
   const [isDragging, setIsDragging] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState(null);
 
-  const calculateMeasurements = (items) => {
+  const calculateMeasurements = (items, index) => {
     if (dropRef.current && items.length > 0) {
       const dropZoneWidth = dropRef.current.offsetWidth;
       const dropZoneHeight = dropRef.current.offsetHeight;
       const mmPerPixelWidth = roomSize.width / dropZoneWidth;
       const mmPerPixelHeight = roomSize.depth / dropZoneHeight;
 
-      // Calculate measurements only for the selected cabinet if one is selected
-      if (selectedItemIndex !== null && selectedItemIndex < items.length) {
-        const selectedItem = items[selectedItemIndex];
-        const newHorizontalMeasurements = [];
-        const newVerticalMeasurements = [];
+      const selectedItem = items[index];
+      const newHorizontalMeasurements = [];
+      const newVerticalMeasurements = [];
 
-        // Horizontal measurements for selected cabinet
-        // Left wall to cabinet
-        const leftWallMeasurement = Math.round(selectedItem.x * mmPerPixelWidth);
-        if (leftWallMeasurement > 0) {
-          newHorizontalMeasurements.push({
-            type: 'wall-to-cabinet',
-            value: leftWallMeasurement,
-            position: selectedItem.x / 2,
-            from: 0,
-            to: selectedItem.x,
-            itemIndex: selectedItemIndex,
-          });
-        }
-
-        // Cabinet width
+      // Horizontal measurements for selected cabinet
+      const leftWallMeasurement = Math.round(selectedItem.x * mmPerPixelWidth);
+      if (leftWallMeasurement > 0) {
         newHorizontalMeasurements.push({
-          type: 'cabinet-width',
-          value: selectedItem.width,
-          position: selectedItem.x + (selectedItem.width / mmPerPixelWidth / 2),
-          from: selectedItem.x,
-          to: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
-          itemIndex: selectedItemIndex,
+          type: 'wall-to-cabinet',
+          value: leftWallMeasurement,
+          position: selectedItem.x / 2,
+          from: 0,
+          to: selectedItem.x,
+          itemIndex: index,
         });
-
-        // Right wall
-        const rightWallMeasurement = roomSize.width - Math.round((selectedItem.x * mmPerPixelWidth) + selectedItem.width);
-        if (rightWallMeasurement > 0) {
-          newHorizontalMeasurements.push({
-            type: 'cabinet-to-wall',
-            value: rightWallMeasurement,
-            position: selectedItem.x + (selectedItem.width / mmPerPixelWidth) + ((dropZoneWidth - (selectedItem.x + (selectedItem.width / mmPerPixelWidth)))) / 2,
-            from: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
-            to: dropZoneWidth,
-            itemIndex: selectedItemIndex,
-          });
-        }
-
-        setHorizontalMeasurements(newHorizontalMeasurements);
-        setTotalWidth(leftWallMeasurement + selectedItem.width + rightWallMeasurement);
-
-        // Vertical measurements for selected cabinet
-        // Floor to cabinet
-        const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
-        if (floorToCabinet > 0) {
-          newVerticalMeasurements.push({
-            type: 'floor-to-cabinet',
-            value: floorToCabinet,
-            position: selectedItem.y / 2,
-            from: 0,
-            to: selectedItem.y,
-            itemIndex: selectedItemIndex,
-            vertical: true
-          });
-        }
-
-        // Cabinet height
-        newVerticalMeasurements.push({
-          type: 'cabinet-height',
-          value: selectedItem.height,
-          position: selectedItem.y + (selectedItem.height / mmPerPixelHeight / 2),
-          from: selectedItem.y,
-          to: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
-          itemIndex: selectedItemIndex,
-          vertical: true
-        });
-
-        // Ceiling space
-        const ceilingSpace = roomSize.depth - Math.round((selectedItem.y * mmPerPixelHeight) + selectedItem.height);
-        if (ceilingSpace > 0) {
-          newVerticalMeasurements.push({
-            type: 'cabinet-to-ceiling',
-            value: ceilingSpace,
-            position: selectedItem.y + (selectedItem.height / mmPerPixelHeight) + ((dropZoneHeight - (selectedItem.y + (selectedItem.height / mmPerPixelHeight))) / 2),
-            from: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
-            to: dropZoneHeight,
-            itemIndex: selectedItemIndex,
-            vertical: true
-          });
-        }
-
-        setVerticalMeasurements(newVerticalMeasurements);
-        setTotalDepth(floorToCabinet + selectedItem.height + ceilingSpace);
-      } else {
-        // No cabinet selected, show no measurements
-        setHorizontalMeasurements([]);
-        setVerticalMeasurements([]);
-        setTotalWidth(0);
-        setTotalDepth(0);
       }
+
+      newHorizontalMeasurements.push({
+        type: 'cabinet-width',
+        value: selectedItem.width,
+        position: selectedItem.x + (selectedItem.width / mmPerPixelWidth / 2),
+        from: selectedItem.x,
+        to: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
+        itemIndex: index,
+      });
+
+      const rightWallMeasurement = roomSize.width - Math.round((selectedItem.x * mmPerPixelWidth) + selectedItem.width);
+      if (rightWallMeasurement > 0) {
+        newHorizontalMeasurements.push({
+          type: 'cabinet-to-wall',
+          value: rightWallMeasurement,
+          position: selectedItem.x + (selectedItem.width / mmPerPixelWidth) + ((dropZoneWidth - (selectedItem.x + (selectedItem.width / mmPerPixelWidth)))) / 2,
+          from: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
+          to: dropZoneWidth,
+          itemIndex: index,
+        });
+      }
+
+      setHorizontalMeasurements(newHorizontalMeasurements);
+      setTotalWidth(leftWallMeasurement + selectedItem.width + rightWallMeasurement);
+
+      const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
+      if (floorToCabinet > 0) {
+        newVerticalMeasurements.push({
+          type: 'floor-to-cabinet',
+          value: floorToCabinet,
+          position: selectedItem.y / 2,
+          from: 0,
+          to: selectedItem.y,
+          itemIndex: index,
+          vertical: true,
+        });
+      }
+
+      newVerticalMeasurements.push({
+        type: 'cabinet-height',
+        value: selectedItem.height,
+        position: selectedItem.y + (selectedItem.height / mmPerPixelHeight / 2),
+        from: selectedItem.y,
+        to: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
+        itemIndex: index,
+        vertical: true,
+      });
+
+      const ceilingSpace = roomSize.depth - Math.round((selectedItem.y * mmPerPixelHeight) + selectedItem.height);
+      if (ceilingSpace > 0) {
+        newVerticalMeasurements.push({
+          type: 'cabinet-to-ceiling',
+          value: ceilingSpace,
+          position: selectedItem.y + (selectedItem.height / mmPerPixelHeight) + ((dropZoneHeight - (selectedItem.y + (selectedItem.height / mmPerPixelHeight))) / 2),
+          from: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
+          to: dropZoneHeight,
+          itemIndex: index,
+          vertical: true,
+        });
+      }
+
+      setVerticalMeasurements(newVerticalMeasurements);
+      setTotalDepth(floorToCabinet + selectedItem.height + ceilingSpace);
     } else {
       setHorizontalMeasurements([]);
       setVerticalMeasurements([]);
@@ -1076,11 +1564,13 @@ export const DropZone = ({
   };
 
   useEffect(() => {
-    calculateMeasurements(droppedItems);
+    if (selectedItemIndex !== null) {
+      calculateMeasurements(droppedItems, selectedItemIndex);
+    }
   }, [droppedItems, roomSize.width, roomSize.depth, selectedItemIndex]);
 
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: "CABINET",
+    accept: 'CABINET',
     drop: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
       const dropZoneNode = dropRef.current;
@@ -1089,63 +1579,13 @@ export const DropZone = ({
         const x = clientOffset.x - dropZoneRect.left;
         const y = clientOffset.y - dropZoneRect.top;
 
-        const SNAP_THRESHOLD = 20;
-        let snappedX = x;
-        let snappedY = y;
-
-        // Snap to other cabinets or walls
-        droppedItems.forEach(cabinet => {
-          if (Math.abs(x - cabinet.x) < SNAP_THRESHOLD) {
-            snappedX = cabinet.x;
-          }
-          if (Math.abs(x - (cabinet.x + cabinet.width)) < SNAP_THRESHOLD) {
-            snappedX = cabinet.x + cabinet.width;
-          }
-          if (Math.abs(y - cabinet.y) < SNAP_THRESHOLD) {
-            snappedY = cabinet.y;
-          }
-          if (Math.abs(y - (cabinet.y + cabinet.height)) < SNAP_THRESHOLD) {
-            snappedY = cabinet.y + cabinet.height;
-          }
-        });
-
-        // Snap to walls
-        if (x < SNAP_THRESHOLD) snappedX = 0;
-        if (x > dropZoneRect.width - SNAP_THRESHOLD) {
-          snappedX = dropZoneRect.width - (item.width || 300);
-        }
-        if (y < SNAP_THRESHOLD) snappedY = 0;
-        if (y > dropZoneRect.height - SNAP_THRESHOLD) {
-          snappedY = dropZoneRect.height - (item.height || 600);
-        }
-
         const itemWidth = item.minWidth || item.width || 300;
         const itemHeight = item.minDepth || item.height || 600;
 
-        // Prevent overlapping with other cabinets
-        let finalX = snappedX;
-        let finalY = snappedY;
-        for (const cabinet of droppedItems) {
-          if (
-            finalX < cabinet.x + cabinet.width &&
-            finalX + itemWidth > cabinet.x &&
-            finalY < cabinet.y + cabinet.height &&
-            finalY + itemHeight > cabinet.y
-          ) {
-            // Collision detected, move to the right of the existing cabinet
-            finalX = cabinet.x + cabinet.width;
-            finalY = cabinet.y;
-          }
-        }
-
-        // Ensure we stay within bounds
-        finalX = Math.max(0, Math.min(finalX, dropZoneRect.width - itemWidth));
-        finalY = Math.max(0, Math.min(finalY, dropZoneRect.height - itemHeight));
-
         onDrop({
           ...item,
-          x: finalX,
-          y: finalY,
+          x,
+          y,
           rotation: 0,
           width: itemWidth,
           height: itemHeight,
@@ -1154,6 +1594,15 @@ export const DropZone = ({
     },
     collect: (monitor) => ({ isOver: !!monitor.isOver() }),
   }));
+
+  const handleDrag = (index, data) => {
+    const tempItems = [...droppedItems];
+    tempItems[index] = { ...tempItems[index], x: data.x, y: data.y };
+    setDroppedItems(tempItems);
+
+    // Live update of measurements as the cabinet is dragged
+    calculateMeasurements(tempItems, index);
+  };
 
   const handlePositionChange = (index, position) => {
     const item = droppedItems[index];
@@ -1166,7 +1615,7 @@ export const DropZone = ({
     let newY = position.y;
     const SNAP_THRESHOLD = 15;
 
-    // Check for collisions with other cabinets
+    // Collision check
     for (let i = 0; i < droppedItems.length; i++) {
       if (i === index) continue;
 
@@ -1174,14 +1623,12 @@ export const DropZone = ({
       const otherItemWidth = otherItem.width;
       const otherItemHeight = otherItem.height;
 
-      // Collision check
       if (
         newX < otherItem.x + otherItemWidth &&
         newX + itemWidth > otherItem.x &&
         newY < otherItem.y + otherItemHeight &&
         newY + itemHeight > otherItem.y
       ) {
-        // Collision detected, adjust position
         if (newX < otherItem.x) {
           newX = otherItem.x - itemWidth - SNAP_THRESHOLD / 2;
         } else {
@@ -1196,15 +1643,8 @@ export const DropZone = ({
       }
     }
 
-    // Keep within dropzone boundaries
-    if (newX < SNAP_THRESHOLD) newX = 0;
-    if (newX > dropZoneNode.offsetWidth - itemWidth - SNAP_THRESHOLD) {
-      newX = dropZoneNode.offsetWidth - itemWidth;
-    }
-    if (newY < SNAP_THRESHOLD) newY = 0;
-    if (newY > dropZoneNode.offsetHeight - itemHeight - SNAP_THRESHOLD) {
-      newY = dropZoneNode.offsetHeight - itemHeight;
-    }
+    newX = Math.max(0, Math.min(newX, dropZoneNode.offsetWidth - itemWidth));
+    newY = Math.max(0, Math.min(newY, dropZoneNode.offsetHeight - itemHeight));
 
     setDroppedItems(prev => {
       const updated = [...prev];
@@ -1215,55 +1655,61 @@ export const DropZone = ({
       };
       return updated;
     });
+
+    // Update measurements live when position changes
+    calculateMeasurements(droppedItems, index);
   };
 
-  const handleDrag = (index, data) => {
-    const tempItems = [...droppedItems];
-    tempItems[index] = { ...tempItems[index], x: data.x, y: data.y };
-    // Don't recalculate measurements during drag to improve performance
+  const handleDragStart = (index) => {
+    setIsDragging(true);
+    setDraggingIndex(index);
   };
 
-  // Handle click outside cabinets
-  const handleDropZoneClick = (e) => {
-    if (e.target === dropRef.current) {
-      setSelectedItemIndex(null);
-    }
+  const handleDragStop = (index) => {
+    setIsDragging(false);
+    setDraggingIndex(null);
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", padding: "10px" }}>
-      {/* Horizontal measurements at the top */}
-      <div style={{ height: "40px", position: "relative", marginBottom: "10px", borderBottom: "1px solid #ddd" }}>
+    <div style={{ position: 'relative', width: '100%', padding: '10px' }}>
+      <div
+        style={{
+          height: '40px',
+          position: 'relative',
+          marginBottom: '10px',
+          borderBottom: '1px solid #ddd',
+        }}
+      >
         {horizontalMeasurements.map((m, i) => (
           <Fragment key={`h-${i}`}>
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 left: `${m.from}px`,
                 width: `${m.to - m.from}px`,
-                height: "20px",
-                top: "10px",
-                borderTop: "1px solid #666",
-                borderLeft: m.type.includes('wall') ? "1px solid #666" : "none",
-                borderRight: m.type.includes('wall') ? "1px solid #666" : "none",
-                borderColor: "#007bff",
-                borderWidth: "2px",
+                height: '20px',
+                top: '10px',
+                borderTop: '1px solid #666',
+                borderLeft: m.type.includes('wall') ? '1px solid #666' : 'none',
+                borderRight: m.type.includes('wall') ? '1px solid #666' : 'none',
+                borderColor: '#007bff',
+                borderWidth: '2px',
               }}
             />
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 left: `${m.position}px`,
-                top: "0",
+                top: '0',
                 transform: 'translateX(-50%)',
-                backgroundColor: "#e0f7fa",
+                backgroundColor: '#e0f7fa',
                 padding: '2px 6px',
                 borderRadius: '4px',
                 fontSize: '12px',
-                border: "1px solid #00bcd4",
+                border: '1px solid #00bcd4',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 whiteSpace: 'nowrap',
-                fontWeight: "bold",
+                fontWeight: 'bold',
               }}
             >
               {m.value}mm
@@ -1277,59 +1723,64 @@ export const DropZone = ({
           drop(node);
           dropRef.current = node;
         }}
-        onClick={handleDropZoneClick}
+        onClick={(e) => {
+          if (e.target === dropRef.current) {
+            setSelectedItemIndex(null);
+          }
+        }}
         style={{
-          width: "100%",
-          height: "500px",
-          border: isOver ? "2px dashed #00bfff" : "2px dashed #adb5bd",
-          backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
-          position: "relative",
-          borderRadius: "4px",
-          overflow: "hidden",
-          cursor: "default",
+          width: '100%',
+          height: '500px',
+          border: isOver ? '2px dashed #00bfff' : '2px dashed #adb5bd',
+          backgroundColor: isOver ? '#e6f7ff' : '#f9f9f9',
+          position: 'relative',
+          borderRadius: '4px',
+          overflow: 'hidden',
+          cursor: 'default',
         }}
       >
-        {/* Vertical measurements on the left side */}
-        <div style={{
-          position: "absolute",
-          left: "0",
-          top: "0",
-          bottom: "0",
-          width: "40px",
-          borderRight: "1px solid #ddd",
-          zIndex: 0
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            left: '0',
+            top: '0',
+            bottom: '0',
+            width: '40px',
+            borderRight: '1px solid #ddd',
+            zIndex: 0,
+          }}
+        >
           {verticalMeasurements.map((m, i) => (
             <Fragment key={`v-${i}`}>
               <div
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   top: `${m.from}px`,
                   height: `${m.to - m.from}px`,
-                  width: "20px",
-                  left: "10px",
-                  borderLeft: "1px solid #666",
-                  borderTop: m.type.includes('floor') ? "1px solid #666" : "none",
-                  borderBottom: m.type.includes('ceiling') ? "1px solid #666" : "none",
-                  borderColor: "#007bff",
-                  borderWidth: "2px",
+                  width: '20px',
+                  left: '10px',
+                  borderLeft: '1px solid #666',
+                  borderTop: m.type.includes('floor') ? '1px solid #666' : 'none',
+                  borderBottom: m.type.includes('ceiling') ? '1px solid #666' : 'none',
+                  borderColor: '#007bff',
+                  borderWidth: '2px',
                 }}
               />
               <div
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   top: `${m.position}px`,
-                  left: "25px",
+                  left: '25px',
                   transform: 'translateY(-50%) rotate(-90deg)',
                   transformOrigin: 'left center',
-                  backgroundColor: "#e0f7fa",
+                  backgroundColor: '#e0f7fa',
                   padding: '2px 6px',
                   borderRadius: '4px',
                   fontSize: '12px',
-                  border: "1px solid #00bcd4",
+                  border: '1px solid #00bcd4',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   whiteSpace: 'nowrap',
-                  fontWeight: "bold",
+                  fontWeight: 'bold',
                 }}
               >
                 {m.value}mm
@@ -1338,56 +1789,50 @@ export const DropZone = ({
           ))}
         </div>
 
-        {/* Rest of the drop zone content */}
         {droppedItems.map((item, index) => (
           <Fragment key={item.id || index}>
             <Draggable
               position={{ x: item.x || 0, y: item.y || 0 }}
               bounds="parent"
-              onStart={() => {
-                setIsDragging(true);
-                setDraggingIndex(index);
-              }}
+              onStart={() => handleDragStart(index)}
               onDrag={(e, data) => handleDrag(index, data)}
               onStop={(e, data) => {
-                setIsDragging(false);
-                setDraggingIndex(null);
+                handleDragStop(index);
                 handlePositionChange(index, data);
               }}
             >
               <div
                 style={{
-                  position: "absolute",
-                  cursor: "move",
-                  borderRadius: "3px",
-                  padding: "2px",
-                  boxShadow: selectedItemIndex === index
-                    ? "0 0 0 2px #007bff, 0 2px 4px rgba(0,0,0,0.1)"
-                    : "0 2px 4px rgba(0,0,0,0.1)",
+                  position: 'absolute',
+                  cursor: 'move',
+                  borderRadius: '3px',
+                  padding: '2px',
+                  boxShadow:
+                    selectedItemIndex === index
+                      ? '0 0 0 2px #007bff, 0 2px 4px rgba(0,0,0,0.1)'
+                      : '0 2px 4px rgba(0,0,0,0.1)',
                   transform: `rotate(${item.rotation}deg)`,
                   zIndex: selectedItemIndex === index ? 10 : 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  backgroundColor: selectedItemIndex === index ? "rgba(0, 123, 255, 0.1)" : "transparent",
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  backgroundColor: selectedItemIndex === index ? 'rgba(0, 123, 255, 0.1)' : 'transparent',
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedItemIndex(index);
                 }}
               >
-                {/* Cabinet image and controls */}
                 <img
                   src={item.imageSrc}
                   alt={item.name}
                   style={{
                     width: `${item.width}px`,
                     height: `${item.height}px`,
-                    objectFit: "contain",
-                    display: "block"
+                    objectFit: 'contain',
+                    display: 'block',
                   }}
                 />
-
                 {selectedItemIndex === index && (
                   <div style={{
                     position: "absolute",
@@ -1438,7 +1883,7 @@ export const DropZone = ({
                     >×</button>
                   </div>
                 )}
-              </div>
+                </div>
             </Draggable>
           </Fragment>
         ))}
@@ -1446,6 +1891,11 @@ export const DropZone = ({
     </div>
   );
 };
+
+
+
+
+
 
 
 // Function to retrieve notes from any file
