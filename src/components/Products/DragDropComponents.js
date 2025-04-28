@@ -421,6 +421,532 @@ export const DraggableCabinet = ({ name,
 
 
 // showing height and width ******
+// export const DropZone = ({
+//   onDrop,
+//   droppedItems,
+//   onRemove,
+//   onRotate,
+//   currentStep,
+//   setDroppedItems,
+//   roomSize = { width: 3000, depth: 2000 },
+// }) => {
+//   const dropRef = useRef(null);
+//   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+//   const [horizontalMeasurements, setHorizontalMeasurements] = useState([]);
+//   const [verticalMeasurements, setVerticalMeasurements] = useState([]);
+//   const [totalWidth, setTotalWidth] = useState(0);
+//   const [totalDepth, setTotalDepth] = useState(0);
+//   const [isDragging, setIsDragging] = useState(false);
+//   const [draggingIndex, setDraggingIndex] = useState(null);
+
+//   const calculateMeasurements = (items) => {
+//     if (dropRef.current && items.length > 0) {
+//       const dropZoneWidth = dropRef.current.offsetWidth;
+//       const dropZoneHeight = dropRef.current.offsetHeight;
+//       const mmPerPixelWidth = roomSize.width / dropZoneWidth;
+//       const mmPerPixelHeight = roomSize.depth / dropZoneHeight;
+
+//       // Sort items by x position for horizontal measurements
+//       const sortedItems = [...items].sort((a, b) => a.x - b.x);
+
+//       // Calculate horizontal measurements (width)
+//       const newHorizontalMeasurements = [];
+//       let calculatedTotalWidth = 0;
+
+//       // Left wall to first cabinet
+//       if (sortedItems.length > 0) {
+//         const leftWallMeasurement = Math.round(sortedItems[0].x * mmPerPixelWidth);
+//         if (leftWallMeasurement > 0) {
+//           newHorizontalMeasurements.push({
+//             type: 'wall-to-cabinet',
+//             value: leftWallMeasurement,
+//             position: sortedItems[0].x / 2,
+//             from: 0,
+//             to: sortedItems[0].x,
+//             itemIndex: 0,
+//           });
+//           calculatedTotalWidth += leftWallMeasurement;
+//         }
+//       }
+
+//       // Cabinet widths and gaps
+//       sortedItems.forEach((item, index) => {
+//         const cabinetWidth = item.width;
+//         newHorizontalMeasurements.push({
+//           type: 'cabinet-width',
+//           value: cabinetWidth,
+//           position: item.x + (item.width / mmPerPixelWidth / 2),
+//           from: item.x,
+//           to: item.x + (item.width / mmPerPixelWidth),
+//           itemIndex: index,
+//         });
+//         calculatedTotalWidth += cabinetWidth;
+
+//         if (index < sortedItems.length - 1) {
+//           const nextItem = sortedItems[index + 1];
+//           const gapPixels = nextItem.x - (item.x + (item.width / mmPerPixelWidth));
+//           const gap = Math.round(gapPixels * mmPerPixelWidth);
+//           if (gap > 0) {
+//             newHorizontalMeasurements.push({
+//               type: 'cabinet-to-cabinet',
+//               value: gap,
+//               position: item.x + (item.width / mmPerPixelWidth) + (gapPixels / 2),
+//               from: item.x + (item.width / mmPerPixelWidth),
+//               to: nextItem.x,
+//               itemIndex: index,
+//             });
+//             calculatedTotalWidth += gap;
+//           }
+//         }
+//       });
+
+//       // Right wall
+//       if (sortedItems.length > 0) {
+//         const lastIndex = sortedItems.length - 1;
+//         const lastItem = sortedItems[lastIndex];
+//         const rightWallMeasurement = roomSize.width - Math.round((lastItem.x * mmPerPixelWidth) + lastItem.width);
+//         if (rightWallMeasurement > 0) {
+//           newHorizontalMeasurements.push({
+//             type: 'cabinet-to-wall',
+//             value: rightWallMeasurement,
+//             position: lastItem.x + (lastItem.width / mmPerPixelWidth) + ((dropZoneWidth - (lastItem.x + (lastItem.width / mmPerPixelWidth))) / 2),
+//             from: lastItem.x + (lastItem.width / mmPerPixelWidth),
+//             to: dropZoneWidth,
+//             itemIndex: lastIndex,
+//           });
+//           calculatedTotalWidth += rightWallMeasurement;
+//         }
+//       }
+
+//       setHorizontalMeasurements(newHorizontalMeasurements);
+//       setTotalWidth(calculatedTotalWidth);
+
+//       // Calculate vertical measurements (depth/height)
+//       const newVerticalMeasurements = [];
+//       let calculatedTotalDepth = 0;
+
+//       // For each cabinet, calculate floor-to-cabinet and cabinet height measurements
+//       items.forEach((item, index) => {
+//         const cabinetHeight = item.height;
+
+//         // Floor to bottom of cabinet
+//         const floorToCabinet = Math.round(item.y * mmPerPixelHeight);
+//         if (floorToCabinet > 0) {
+//           newVerticalMeasurements.push({
+//             type: 'floor-to-cabinet',
+//             value: floorToCabinet,
+//             position: item.y / 2,
+//             from: 0,
+//             to: item.y,
+//             itemIndex: index,
+//             vertical: true
+//           });
+//           calculatedTotalDepth += floorToCabinet;
+//         }
+
+//         // Cabinet height
+//         newVerticalMeasurements.push({
+//           type: 'cabinet-height',
+//           value: cabinetHeight,
+//           position: item.y + (cabinetHeight / mmPerPixelHeight / 2),
+//           from: item.y,
+//           to: item.y + (cabinetHeight / mmPerPixelHeight),
+//           itemIndex: index,
+//           vertical: true
+//         });
+//         calculatedTotalDepth += cabinetHeight;
+
+//         // Ceiling space (top of cabinet to ceiling)
+//         const ceilingSpace = roomSize.depth - Math.round((item.y * mmPerPixelHeight) + cabinetHeight);
+//         if (ceilingSpace > 0) {
+//           newVerticalMeasurements.push({
+//             type: 'cabinet-to-ceiling',
+//             value: ceilingSpace,
+//             position: item.y + (cabinetHeight / mmPerPixelHeight) + ((dropZoneHeight - (item.y + (cabinetHeight / mmPerPixelHeight))) / 2),
+//             from: item.y + (cabinetHeight / mmPerPixelHeight),
+//             to: dropZoneHeight,
+//             itemIndex: index,
+//             vertical: true
+//           });
+//           calculatedTotalDepth += ceilingSpace;
+//         }
+//       });
+
+//       setVerticalMeasurements(newVerticalMeasurements);
+//       setTotalDepth(calculatedTotalDepth);
+//     } else {
+//       setHorizontalMeasurements([]);
+//       setVerticalMeasurements([]);
+//       setTotalWidth(0);
+//       setTotalDepth(0);
+//     }
+//   };
+
+//   useEffect(() => {
+//     calculateMeasurements(droppedItems);
+//   }, [droppedItems, roomSize.width, roomSize.depth]);
+
+//   const [{ isOver }, drop] = useDrop(() => ({
+//     accept: "CABINET",
+//     drop: (item, monitor) => {
+//       const clientOffset = monitor.getClientOffset();
+//       const dropZoneNode = dropRef.current;
+//       if (clientOffset && dropZoneNode) {
+//         const dropZoneRect = dropZoneNode.getBoundingClientRect();
+//         const x = clientOffset.x - dropZoneRect.left;
+//         const y = clientOffset.y - dropZoneRect.top;
+
+//         const SNAP_THRESHOLD = 20;
+//         let snappedX = x;
+//         let snappedY = y;
+
+//         // Snap to other cabinets or walls
+//         droppedItems.forEach(cabinet => {
+//           if (Math.abs(x - cabinet.x) < SNAP_THRESHOLD) {
+//             snappedX = cabinet.x;
+//           }
+//           if (Math.abs(x - (cabinet.x + cabinet.width)) < SNAP_THRESHOLD) {
+//             snappedX = cabinet.x + cabinet.width;
+//           }
+//           if (Math.abs(y - cabinet.y) < SNAP_THRESHOLD) {
+//             snappedY = cabinet.y;
+//           }
+//           if (Math.abs(y - (cabinet.y + cabinet.height)) < SNAP_THRESHOLD) {
+//             snappedY = cabinet.y + cabinet.height;
+//           }
+//         });
+
+//         // Snap to walls
+//         if (x < SNAP_THRESHOLD) snappedX = 0;
+//         if (x > dropZoneRect.width - SNAP_THRESHOLD) {
+//           snappedX = dropZoneRect.width - (item.width || 300);
+//         }
+//         if (y < SNAP_THRESHOLD) snappedY = 0;
+//         if (y > dropZoneRect.height - SNAP_THRESHOLD) {
+//           snappedY = dropZoneRect.height - (item.height || 600);
+//         }
+
+//         const itemWidth = item.minWidth || item.width || 300;
+//         const itemHeight = item.minDepth || item.height || 600;
+
+//         // Prevent overlapping with other cabinets
+//         let finalX = snappedX;
+//         let finalY = snappedY;
+//         for (const cabinet of droppedItems) {
+//           if (
+//             finalX < cabinet.x + cabinet.width &&
+//             finalX + itemWidth > cabinet.x &&
+//             finalY < cabinet.y + cabinet.height &&
+//             finalY + itemHeight > cabinet.y
+//           ) {
+//             // Collision detected, move to the right of the existing cabinet
+//             finalX = cabinet.x + cabinet.width;
+//             finalY = cabinet.y;
+//           }
+//         }
+
+//         // Ensure we stay within bounds
+//         finalX = Math.max(0, Math.min(finalX, dropZoneRect.width - itemWidth));
+//         finalY = Math.max(0, Math.min(finalY, dropZoneRect.height - itemHeight));
+
+//         onDrop({
+//           ...item,
+//           x: finalX,
+//           y: finalY,
+//           rotation: 0,
+//           width: itemWidth,
+//           height: itemHeight,
+//         });
+//       }
+//     },
+//     collect: (monitor) => ({ isOver: !!monitor.isOver() }),
+//   }));
+
+//   const handlePositionChange = (index, position) => {
+//     const item = droppedItems[index];
+//     const itemWidth = item.width;
+//     const itemHeight = item.height;
+//     const dropZoneNode = dropRef.current;
+//     if (!dropZoneNode) return;
+
+//     let newX = position.x;
+//     let newY = position.y;
+//     const SNAP_THRESHOLD = 15;
+
+//     // Check for collisions with other cabinets
+//     for (let i = 0; i < droppedItems.length; i++) {
+//       if (i === index) continue;
+
+//       const otherItem = droppedItems[i];
+//       const otherItemWidth = otherItem.width;
+//       const otherItemHeight = otherItem.height;
+
+//       // Collision check
+//       if (
+//         newX < otherItem.x + otherItemWidth &&
+//         newX + itemWidth > otherItem.x &&
+//         newY < otherItem.y + otherItemHeight &&
+//         newY + itemHeight > otherItem.y
+//       ) {
+//         // Collision detected, adjust position
+//         if (newX < otherItem.x) {
+//           newX = otherItem.x - itemWidth - SNAP_THRESHOLD / 2;
+//         } else {
+//           newX = otherItem.x + otherItemWidth + SNAP_THRESHOLD / 2;
+//         }
+//         if (newY < otherItem.y) {
+//           newY = otherItem.y - itemHeight - SNAP_THRESHOLD / 2;
+//         } else {
+//           newY = otherItem.y + otherItemHeight + SNAP_THRESHOLD / 2;
+//         }
+//         break;
+//       }
+//     }
+
+//     // Keep within dropzone boundaries
+//     if (newX < SNAP_THRESHOLD) newX = 0;
+//     if (newX > dropZoneNode.offsetWidth - itemWidth - SNAP_THRESHOLD) {
+//       newX = dropZoneNode.offsetWidth - itemWidth;
+//     }
+//     if (newY < SNAP_THRESHOLD) newY = 0;
+//     if (newY > dropZoneNode.offsetHeight - itemHeight - SNAP_THRESHOLD) {
+//       newY = dropZoneNode.offsetHeight - itemHeight;
+//     }
+
+//     setDroppedItems(prev => {
+//       const updated = [...prev];
+//       updated[index] = {
+//         ...updated[index],
+//         x: newX,
+//         y: newY
+//       };
+//       return updated;
+//     });
+
+//     calculateMeasurements(droppedItems);
+//   };
+
+//   const handleDrag = (index, data) => {
+//     const tempItems = [...droppedItems];
+//     tempItems[index] = { ...tempItems[index], x: data.x, y: data.y };
+//     calculateMeasurements(tempItems);
+//   };
+
+//   return (
+//     <div style={{ position: "relative", width: "100%", padding: "10px" }}>
+//       {/* Horizontal measurements at the top */}
+//       <div style={{ height: "40px", position: "relative", marginBottom: "10px", borderBottom: "1px solid #ddd" }}>
+//         {horizontalMeasurements.map((m, i) => (
+//           <Fragment key={`h-${i}`}>
+//             <div
+//               style={{
+//                 position: "absolute",
+//                 left: `${m.from}px`,
+//                 width: `${m.to - m.from}px`,
+//                 height: "20px",
+//                 top: "10px",
+//                 borderTop: "1px solid #666",
+//                 borderLeft: m.type.includes('wall') ? "1px solid #666" : "none",
+//                 borderRight: m.type.includes('wall') ? "1px solid #666" : "none",
+//                 borderColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#007bff" : "#666",
+//                 borderWidth: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "2px" : "1px",
+//                 zIndex: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? 1 : 0,
+//               }}
+//             />
+//             <div
+//               style={{
+//                 position: "absolute",
+//                 left: `${m.position}px`,
+//                 top: "0",
+//                 transform: 'translateX(-50%)',
+//                 backgroundColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#e0f7fa" : "#fff",
+//                 padding: '2px 6px',
+//                 borderRadius: '4px',
+//                 fontSize: '12px',
+//                 border: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "1px solid #00bcd4" : "1px solid #ddd",
+//                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+//                 whiteSpace: 'nowrap',
+//                 fontWeight: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "bold" : "normal",
+//               }}
+//             >
+//               {m.value}mm
+//             </div>
+//           </Fragment>
+//         ))}
+//       </div>
+
+//       <div
+//         ref={(node) => {
+//           drop(node);
+//           dropRef.current = node;
+//         }}
+//         style={{
+//           width: "100%",
+//           height: "500px",
+//           border: isOver ? "2px dashed #00bfff" : "2px dashed #adb5bd",
+//           backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
+//           position: "relative",
+//           borderRadius: "4px",
+//           overflow: "hidden"
+//         }}
+//       >
+//         {/* Vertical measurements on the left side */}
+//         <div style={{
+//           position: "absolute",
+//           left: "50",
+//           top: "0",
+//           bottom: "0",
+//           width: "40px",
+//           borderRight: "1px solid #ddd",
+//           zIndex: 0
+//         }}>
+//           {verticalMeasurements.map((m, i) => (
+//             <Fragment key={`v-${i}`}>
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   top: `${m.from}px`,
+//                   height: `${m.to - m.from}px`,
+//                   width: "20px",
+//                   left: "10px",
+//                   borderLeft: "1px solid #666",
+//                   borderTop: m.type.includes('floor') ? "1px solid #666" : "none",
+//                   borderBottom: m.type.includes('ceiling') ? "1px solid #666" : "none",
+//                   borderColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#007bff" : "#666",
+//                   borderWidth: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "2px" : "1px",
+//                   zIndex: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? 1 : 0,
+//                 }}
+//               />
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   top: `${m.position}px`,
+//                   left: "25px",
+//                   transform: 'translateY(-50%) rotate(-90deg)',
+//                   transformOrigin: 'left center',
+//                   backgroundColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#e0f7fa" : "#fff",
+//                   padding: '2px 6px',
+//                   borderRadius: '4px',
+//                   fontSize: '12px',
+//                   border: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "1px solid #00bcd4" : "1px solid #ddd",
+//                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+//                   whiteSpace: 'nowrap',
+//                   fontWeight: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "bold" : "normal",
+//                 }}
+//               >
+//                 {m.value}mm
+//               </div>
+//             </Fragment>
+//           ))}
+//         </div>
+
+//         {/* Rest of the drop zone content */}
+//         {droppedItems.map((item, index) => (
+//           <Fragment key={item.id || index}>
+//             <Draggable
+//               position={{ x: item.x || 0, y: item.y || 0 }}
+//               bounds="parent"
+//               onStart={() => {
+//                 setIsDragging(true);
+//                 setDraggingIndex(index);
+//               }}
+//               onDrag={(e, data) => handleDrag(index, data)}
+//               onStop={(e, data) => {
+//                 setIsDragging(false);
+//                 setDraggingIndex(null);
+//                 handlePositionChange(index, data);
+//               }}
+//             >
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   cursor: "move",
+//                   borderRadius: "3px",
+//                   padding: "2px",
+//                   boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+//                   transform: `rotate(${item.rotation}deg)`,
+//                   zIndex: selectedItemIndex === index ? 10 : 1,
+//                   display: "flex",
+//                   flexDirection: "column",
+//                   alignItems: "center"
+//                 }}
+//                 onClick={(e) => {
+//                   e.stopPropagation();
+//                   setSelectedItemIndex(index);
+//                 }}
+//               >
+//                 {/* Cabinet image and controls */}
+//                 <img
+//                   src={item.imageSrc}
+//                   alt={item.name}
+//                   style={{
+//                     width: `${item.width}px`,
+//                     height: `${item.height}px`,
+//                     objectFit: "contain",
+//                     display: "block"
+//                   }}
+//                 />
+
+//                 {selectedItemIndex === index && (
+//                   <div style={{
+//                     position: "absolute",
+//                     top: "-30px",
+//                     width: "100%",
+//                     display: "flex",
+//                     justifyContent: "center",
+//                     gap: "10px"
+//                   }}>
+//                     <button
+//                       onClick={(e) => {
+//                         e.stopPropagation();
+//                         onRotate(index);
+//                       }}
+//                       style={{
+//                         background: "#28a745",
+//                         color: "#fff",
+//                         border: "none",
+//                         borderRadius: "50%",
+//                         width: "25px",
+//                         height: "25px",
+//                         cursor: "pointer",
+//                         display: "flex",
+//                         alignItems: "center",
+//                         justifyContent: "center"
+//                       }}
+//                       title="Rotate 90°"
+//                     >↻</button>
+
+//                     <button
+//                       onClick={(e) => {
+//                         e.stopPropagation();
+//                         onRemove(index);
+//                       }}
+//                       style={{
+//                         background: "#dc3545",
+//                         color: "#fff",
+//                         border: "none",
+//                         borderRadius: "50%",
+//                         width: "25px",
+//                         height: "25px",
+//                         cursor: "pointer",
+//                         display: "flex",
+//                         alignItems: "center",
+//                         justifyContent: "center"
+//                       }}
+//                       title="Remove cabinet"
+//                     >×</button>
+//                   </div>
+//                 )}
+//               </div>
+//             </Draggable>
+//           </Fragment>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+
 export const DropZone = ({
   onDrop,
   droppedItems,
@@ -446,134 +972,101 @@ export const DropZone = ({
       const mmPerPixelWidth = roomSize.width / dropZoneWidth;
       const mmPerPixelHeight = roomSize.depth / dropZoneHeight;
 
-      // Sort items by x position for horizontal measurements
-      const sortedItems = [...items].sort((a, b) => a.x - b.x);
+      // Calculate measurements only for the selected cabinet if one is selected
+      if (selectedItemIndex !== null && selectedItemIndex < items.length) {
+        const selectedItem = items[selectedItemIndex];
+        const newHorizontalMeasurements = [];
+        const newVerticalMeasurements = [];
 
-      // Calculate horizontal measurements (width)
-      const newHorizontalMeasurements = [];
-      let calculatedTotalWidth = 0;
-
-      // Left wall to first cabinet
-      if (sortedItems.length > 0) {
-        const leftWallMeasurement = Math.round(sortedItems[0].x * mmPerPixelWidth);
+        // Horizontal measurements for selected cabinet
+        // Left wall to cabinet
+        const leftWallMeasurement = Math.round(selectedItem.x * mmPerPixelWidth);
         if (leftWallMeasurement > 0) {
           newHorizontalMeasurements.push({
             type: 'wall-to-cabinet',
             value: leftWallMeasurement,
-            position: sortedItems[0].x / 2,
+            position: selectedItem.x / 2,
             from: 0,
-            to: sortedItems[0].x,
-            itemIndex: 0,
+            to: selectedItem.x,
+            itemIndex: selectedItemIndex,
           });
-          calculatedTotalWidth += leftWallMeasurement;
         }
-      }
 
-      // Cabinet widths and gaps
-      sortedItems.forEach((item, index) => {
-        const cabinetWidth = item.width;
+        // Cabinet width
         newHorizontalMeasurements.push({
           type: 'cabinet-width',
-          value: cabinetWidth,
-          position: item.x + (item.width / mmPerPixelWidth / 2),
-          from: item.x,
-          to: item.x + (item.width / mmPerPixelWidth),
-          itemIndex: index,
+          value: selectedItem.width,
+          position: selectedItem.x + (selectedItem.width / mmPerPixelWidth / 2),
+          from: selectedItem.x,
+          to: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
+          itemIndex: selectedItemIndex,
         });
-        calculatedTotalWidth += cabinetWidth;
 
-        if (index < sortedItems.length - 1) {
-          const nextItem = sortedItems[index + 1];
-          const gapPixels = nextItem.x - (item.x + (item.width / mmPerPixelWidth));
-          const gap = Math.round(gapPixels * mmPerPixelWidth);
-          if (gap > 0) {
-            newHorizontalMeasurements.push({
-              type: 'cabinet-to-cabinet',
-              value: gap,
-              position: item.x + (item.width / mmPerPixelWidth) + (gapPixels / 2),
-              from: item.x + (item.width / mmPerPixelWidth),
-              to: nextItem.x,
-              itemIndex: index,
-            });
-            calculatedTotalWidth += gap;
-          }
-        }
-      });
-
-      // Right wall
-      if (sortedItems.length > 0) {
-        const lastIndex = sortedItems.length - 1;
-        const lastItem = sortedItems[lastIndex];
-        const rightWallMeasurement = roomSize.width - Math.round((lastItem.x * mmPerPixelWidth) + lastItem.width);
+        // Right wall
+        const rightWallMeasurement = roomSize.width - Math.round((selectedItem.x * mmPerPixelWidth) + selectedItem.width);
         if (rightWallMeasurement > 0) {
           newHorizontalMeasurements.push({
             type: 'cabinet-to-wall',
             value: rightWallMeasurement,
-            position: lastItem.x + (lastItem.width / mmPerPixelWidth) + ((dropZoneWidth - (lastItem.x + (lastItem.width / mmPerPixelWidth))) / 2),
-            from: lastItem.x + (lastItem.width / mmPerPixelWidth),
+            position: selectedItem.x + (selectedItem.width / mmPerPixelWidth) + ((dropZoneWidth - (selectedItem.x + (selectedItem.width / mmPerPixelWidth)))) / 2,
+            from: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
             to: dropZoneWidth,
-            itemIndex: lastIndex,
+            itemIndex: selectedItemIndex,
           });
-          calculatedTotalWidth += rightWallMeasurement;
         }
-      }
 
-      setHorizontalMeasurements(newHorizontalMeasurements);
-      setTotalWidth(calculatedTotalWidth);
+        setHorizontalMeasurements(newHorizontalMeasurements);
+        setTotalWidth(leftWallMeasurement + selectedItem.width + rightWallMeasurement);
 
-      // Calculate vertical measurements (depth/height)
-      const newVerticalMeasurements = [];
-      let calculatedTotalDepth = 0;
-
-      // For each cabinet, calculate floor-to-cabinet and cabinet height measurements
-      items.forEach((item, index) => {
-        const cabinetHeight = item.height;
-
-        // Floor to bottom of cabinet
-        const floorToCabinet = Math.round(item.y * mmPerPixelHeight);
+        // Vertical measurements for selected cabinet
+        // Floor to cabinet
+        const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
         if (floorToCabinet > 0) {
           newVerticalMeasurements.push({
             type: 'floor-to-cabinet',
             value: floorToCabinet,
-            position: item.y / 2,
+            position: selectedItem.y / 2,
             from: 0,
-            to: item.y,
-            itemIndex: index,
+            to: selectedItem.y,
+            itemIndex: selectedItemIndex,
             vertical: true
           });
-          calculatedTotalDepth += floorToCabinet;
         }
 
         // Cabinet height
         newVerticalMeasurements.push({
           type: 'cabinet-height',
-          value: cabinetHeight,
-          position: item.y + (cabinetHeight / mmPerPixelHeight / 2),
-          from: item.y,
-          to: item.y + (cabinetHeight / mmPerPixelHeight),
-          itemIndex: index,
+          value: selectedItem.height,
+          position: selectedItem.y + (selectedItem.height / mmPerPixelHeight / 2),
+          from: selectedItem.y,
+          to: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
+          itemIndex: selectedItemIndex,
           vertical: true
         });
-        calculatedTotalDepth += cabinetHeight;
 
-        // Ceiling space (top of cabinet to ceiling)
-        const ceilingSpace = roomSize.depth - Math.round((item.y * mmPerPixelHeight) + cabinetHeight);
+        // Ceiling space
+        const ceilingSpace = roomSize.depth - Math.round((selectedItem.y * mmPerPixelHeight) + selectedItem.height);
         if (ceilingSpace > 0) {
           newVerticalMeasurements.push({
             type: 'cabinet-to-ceiling',
             value: ceilingSpace,
-            position: item.y + (cabinetHeight / mmPerPixelHeight) + ((dropZoneHeight - (item.y + (cabinetHeight / mmPerPixelHeight))) / 2),
-            from: item.y + (cabinetHeight / mmPerPixelHeight),
+            position: selectedItem.y + (selectedItem.height / mmPerPixelHeight) + ((dropZoneHeight - (selectedItem.y + (selectedItem.height / mmPerPixelHeight))) / 2),
+            from: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
             to: dropZoneHeight,
-            itemIndex: index,
+            itemIndex: selectedItemIndex,
             vertical: true
           });
-          calculatedTotalDepth += ceilingSpace;
         }
-      });
 
-      setVerticalMeasurements(newVerticalMeasurements);
-      setTotalDepth(calculatedTotalDepth);
+        setVerticalMeasurements(newVerticalMeasurements);
+        setTotalDepth(floorToCabinet + selectedItem.height + ceilingSpace);
+      } else {
+        // No cabinet selected, show no measurements
+        setHorizontalMeasurements([]);
+        setVerticalMeasurements([]);
+        setTotalWidth(0);
+        setTotalDepth(0);
+      }
     } else {
       setHorizontalMeasurements([]);
       setVerticalMeasurements([]);
@@ -584,7 +1077,7 @@ export const DropZone = ({
 
   useEffect(() => {
     calculateMeasurements(droppedItems);
-  }, [droppedItems, roomSize.width, roomSize.depth]);
+  }, [droppedItems, roomSize.width, roomSize.depth, selectedItemIndex]);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "CABINET",
@@ -722,14 +1215,19 @@ export const DropZone = ({
       };
       return updated;
     });
-
-    calculateMeasurements(droppedItems);
   };
 
   const handleDrag = (index, data) => {
     const tempItems = [...droppedItems];
     tempItems[index] = { ...tempItems[index], x: data.x, y: data.y };
-    calculateMeasurements(tempItems);
+    // Don't recalculate measurements during drag to improve performance
+  };
+
+  // Handle click outside cabinets
+  const handleDropZoneClick = (e) => {
+    if (e.target === dropRef.current) {
+      setSelectedItemIndex(null);
+    }
   };
 
   return (
@@ -748,9 +1246,8 @@ export const DropZone = ({
                 borderTop: "1px solid #666",
                 borderLeft: m.type.includes('wall') ? "1px solid #666" : "none",
                 borderRight: m.type.includes('wall') ? "1px solid #666" : "none",
-                borderColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#007bff" : "#666",
-                borderWidth: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "2px" : "1px",
-                zIndex: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? 1 : 0,
+                borderColor: "#007bff",
+                borderWidth: "2px",
               }}
             />
             <div
@@ -759,14 +1256,14 @@ export const DropZone = ({
                 left: `${m.position}px`,
                 top: "0",
                 transform: 'translateX(-50%)',
-                backgroundColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#e0f7fa" : "#fff",
+                backgroundColor: "#e0f7fa",
                 padding: '2px 6px',
                 borderRadius: '4px',
                 fontSize: '12px',
-                border: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "1px solid #00bcd4" : "1px solid #ddd",
+                border: "1px solid #00bcd4",
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 whiteSpace: 'nowrap',
-                fontWeight: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "bold" : "normal",
+                fontWeight: "bold",
               }}
             >
               {m.value}mm
@@ -780,6 +1277,7 @@ export const DropZone = ({
           drop(node);
           dropRef.current = node;
         }}
+        onClick={handleDropZoneClick}
         style={{
           width: "100%",
           height: "500px",
@@ -787,13 +1285,14 @@ export const DropZone = ({
           backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
           position: "relative",
           borderRadius: "4px",
-          overflow: "hidden"
+          overflow: "hidden",
+          cursor: "default",
         }}
       >
         {/* Vertical measurements on the left side */}
         <div style={{
           position: "absolute",
-          left: "50",
+          left: "0",
           top: "0",
           bottom: "0",
           width: "40px",
@@ -812,9 +1311,8 @@ export const DropZone = ({
                   borderLeft: "1px solid #666",
                   borderTop: m.type.includes('floor') ? "1px solid #666" : "none",
                   borderBottom: m.type.includes('ceiling') ? "1px solid #666" : "none",
-                  borderColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#007bff" : "#666",
-                  borderWidth: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "2px" : "1px",
-                  zIndex: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? 1 : 0,
+                  borderColor: "#007bff",
+                  borderWidth: "2px",
                 }}
               />
               <div
@@ -824,14 +1322,14 @@ export const DropZone = ({
                   left: "25px",
                   transform: 'translateY(-50%) rotate(-90deg)',
                   transformOrigin: 'left center',
-                  backgroundColor: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "#e0f7fa" : "#fff",
+                  backgroundColor: "#e0f7fa",
                   padding: '2px 6px',
                   borderRadius: '4px',
                   fontSize: '12px',
-                  border: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "1px solid #00bcd4" : "1px solid #ddd",
+                  border: "1px solid #00bcd4",
                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   whiteSpace: 'nowrap',
-                  fontWeight: selectedItemIndex !== null && m.itemIndex === selectedItemIndex ? "bold" : "normal",
+                  fontWeight: "bold",
                 }}
               >
                 {m.value}mm
@@ -863,12 +1361,15 @@ export const DropZone = ({
                   cursor: "move",
                   borderRadius: "3px",
                   padding: "2px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  boxShadow: selectedItemIndex === index
+                    ? "0 0 0 2px #007bff, 0 2px 4px rgba(0,0,0,0.1)"
+                    : "0 2px 4px rgba(0,0,0,0.1)",
                   transform: `rotate(${item.rotation}deg)`,
                   zIndex: selectedItemIndex === index ? 10 : 1,
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "center"
+                  alignItems: "center",
+                  backgroundColor: selectedItemIndex === index ? "rgba(0, 123, 255, 0.1)" : "transparent",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -945,9 +1446,6 @@ export const DropZone = ({
     </div>
   );
 };
-
-
-
 
 
 // Function to retrieve notes from any file
