@@ -160,7 +160,7 @@ const Navbars = () => {
 
                   <Button
                     className="mx-3"
-                    onClick={() => navigate("/pending-transactions")}
+                    onClick={() => navigate("/transactions")}
                     style={{
                       backgroundColor: componentColors.Button?.background || "transparent",
                       color: componentColors.Button?.text || "#ffffff",

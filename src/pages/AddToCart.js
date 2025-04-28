@@ -16,10 +16,12 @@ const AddToCart = () => {
   useEffect(() => {
     const storedCartData = localStorage.getItem("cartData");
     if (storedCartData) {
+      console.log("Stored cartData:", storedCartData);
       try {
         const parsedData = JSON.parse(storedCartData);
         if (Array.isArray(parsedData)) {
           setCartData(parsedData);
+
         } else {
           console.warn("cartData is not an array:", parsedData);
           setCartData([]); // fallback to empty array
@@ -230,6 +232,7 @@ const AddToCart = () => {
                     hinge: showHinge ? { name: "Soft Close Hinge", price: 4.8, qty: hingeQty } : null,
                   }
                 }
+                
               })
             }
 

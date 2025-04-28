@@ -8,6 +8,7 @@ import { DraggableCabinet, DropZone, getNotes } from "./DragDropComponents";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import axios from "axios";
+ 
 
 import { useAuthContext } from "../../context/auth";
 import { useColorContext } from '../../context/colorcontext';
@@ -18,7 +19,7 @@ const ProductList = () => {
   const { auth } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const { componentColors } = useColorContext(); // 👈 access context
+  const { componentColors } = useColorContext();  
   const [completedSteps, setCompletedSteps] = useState([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
@@ -158,14 +159,7 @@ const ProductList = () => {
 
   };
 
-  // const steps = [
-  //   { name: "Start", tooltip: "Start planning your kitchen.", canNavigate: true },
-  //   { name: "Room Layout", tooltip: "Enter room dimensions and details.", canNavigate: completedSteps.includes("Start") },
-  //   { name: "Base Layout", tooltip: "Design the base layout of your kitchen.", canNavigate: completedSteps.includes("Room Layout") },
-  //   { name: "Add Notes", tooltip: "Add notes or special instructions.", canNavigate: completedSteps.includes("Base Layout") },
-  //   { name: "Review", tooltip: "Review your plan before finalizing.", canNavigate: completedSteps.includes("Add Notes") },
-  // ];
-
+ 
   const steps = [
     {
       name: "Start",
@@ -210,42 +204,44 @@ const ProductList = () => {
   const handleRoomSizeChange = (name, value) => {
     setRoomSize((prev) => ({ ...prev, [name]: value }));
   };
-
-
-
-  //sahi hai 
-  // const handleDrop = (item) => {
-  //   // Create a new item with unique ID and default rotation
-  //   const newItem = {
-  //     ...item,
-  //     id: item.id || Date.now(),
-  //     rotation: 0,
-  //     height: 0,    // Initialize dimensions to 0
-  //     width: 0,      // They'll be set in the modal
-  //     x: 50,          // Default position
-  //     y: 50,
-  //   };
-  //   // setDroppedItems((prevItems) => [
-  //   //   ...prevItems,
-  //   //   { ...item, rotation: 0 }, // ✅ Default rotation 0°
-  //   // ]);
-  //   // Set as selected item and show modal
-  //   // setDroppedItems(prev => [...prev, newItem]);
-  //   setSelectedItem(newItem);
-  //   setShowModal(true);
-
-  //   // DO NOT add to droppedItems yet - wait for modal confirmation
-  // };
-
-
+ 
   const handleDrop = (item) => {
-    // Create a new item with dimensions from the product data
+    const CABINET_WIDTH = item.minWidth || 200;
+    const CABINET_HEIGHT = item.minDepth || 200;
+    const SPACING = 20;
+  
+    // Find a non-overlapping position (simple row layout for now)
+    let newX = 50;
+    let newY = 50;
+  
+    const occupiedPositions = droppedItems.map(i => ({
+      x: i.x,
+      y: i.y,
+      width: i.width,
+      height: i.height
+    }));
+  
+    while (
+      occupiedPositions.some(pos =>
+        newX < pos.x + pos.width + SPACING &&
+        newX + CABINET_WIDTH > pos.x &&
+        newY < pos.y + pos.height + SPACING &&
+        newY + CABINET_HEIGHT > pos.y
+      )
+    ) {
+      newX += CABINET_WIDTH + SPACING;
+      if (newX + CABINET_WIDTH > roomSize.width) {
+        newX = 50;
+        newY += CABINET_HEIGHT + SPACING;
+      }
+    }
+  
     const newItem = {
       ...item,
       id: item.id || Date.now(),
       rotation: 0,
-      height: item.minDepth || 300,    // Initialize with min depth
-      width: item.minWidth || 500,     // Initialize with min width
+      height: item.minDepth || 0,    // Initialize with min depth
+      width: item.minWidth || 0,     // Initialize with min width
       x: 50,
       y: 50,
       minWidth: item.minWidth,       // Store min width from API
@@ -253,10 +249,11 @@ const ProductList = () => {
       minDepth: item.minDepth,       // Store min depth from API
       maxDepth: item.maxDepth        // Store max depth from API
     };
-
+  
     setSelectedItem(newItem);
     setShowModal(true);
   };
+  
 
 
 
@@ -314,7 +311,7 @@ const ProductList = () => {
           user_id: userInfo._id,
           width: roomSize.width,
           depth: roomSize.depth,
-          description,
+            description,
           subdescription,
           notes,
           droppedItems,
@@ -578,10 +575,7 @@ const ProductList = () => {
       );
     }
 
-    // const handleNextStep = () => {
-    //   // navigate("/base-layout"); // Navigate to Base Layout page
-    //   setCurrentStep("Base Layout");
-    // };
+ 
 
     const handleNextStep = () => {
       // Mark current step as completed
@@ -785,6 +779,7 @@ const ProductList = () => {
       return (
 
         <DndProvider backend={HTML5Backend}>
+     
           <div style={{}}>
             <div
               style={{
@@ -797,15 +792,7 @@ const ProductList = () => {
               }}
               className="remmar"
             >
-              {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Kitchen Planner</h2> */}
-    
-              {/* <DropZone
-                onDrop={handleDrop}
-                droppedItems={droppedItems}
-                onRemove={handleRemove}
-                onRotate={handleRotate}
-                currentStep={currentStep}
-              /> */}
+     
 
               <DropZone {...commonDropZoneProps} roomSize={roomSize} />
 
@@ -909,120 +896,7 @@ const ProductList = () => {
         </DndProvider>
       );
     }
-
-
-
-    // if (currentStep === "Add Notes") {
-    //   return (
-    //     <>
-    //       <div
-    //         style={{ display: "flex", alignItems: "flex-start", height: "100%" }}
-    //         className="fldc"
-    //       >
-    //         <DndProvider backend={HTML5Backend}>
-    //           <div
-    //             style={{
-    //               width: "100%",
-    //               backgroundColor: "#fff",
-    //               padding: "20px",
-    //               borderRadius: "5px",
-    //             }}
-    //             className="sidemenu"
-    //           >
-
-    //             {/* <DropZone
-    //             onDrop={handleDrop}
-    //             droppedItems={droppedItems}
-    //             onRemove={handleRemove}
-    //             onRotate={handleRotate}
-    //             currentStep={currentStep}
-    //           /> */}
-
-    //             <DropZone {...commonDropZoneProps} />
-    //           </div>
-    //         </DndProvider>
-
-
-    //           {/* Notes Section */}
-    //         {/* <div>
-    //           <div
-    //             style={{
-    //               width: '50%',
-    //               backgroundColor: plannerBg,
-    //               color: plannerText,
-    //               padding: '20px',
-    //               borderRadius: '5px',
-    //             }}
-    //             className="sidemenu ml5"
-    //           >
-    //             <h5>Notes</h5>
-    //             <ul style={{ listStyleType: "decimal", paddingLeft: "20px" }}>
-    //               {Object.entries(notes).length > 0 ? (
-    //                 Object.entries(notes).map(([cabinet, noteList]) => (
-    //                   <li key={cabinet}>
-                    
-    //                     <ul>
-    //                       {noteList.map((note, index) => (
-    //                         <li key={index}>{note}</li>
-    //                       ))}
-    //                     </ul>
-    //                   </li>
-    //                 ))
-    //               ) : (
-    //                 <li>No notes available</li>
-    //               )}
-    //             </ul>
-
-
-    //             {Object.keys(notes).length > 0 && (
-    //               <Button
-    //                 onClick={handleDeleteAllNotes}
-    //                 style={{
-    //                   backgroundColor: "red",
-    //                   color: "white",
-    //                   border: "none",
-    //                   borderRadius: "5px",
-    //                   cursor: "pointer",
-    //                 }}
-    //               >
-    //                 Delete
-    //               </Button>
-    //             )}
-
-    //           </div>
-
-
-    //           <div style={{ marginTop: "20px", textAlign: "center" }}>
-    //             <Button
-    //               variant="primary"
-    //               type="Button"
-    //               disabled={isLoading}
-    //               onClick={handleNextStep}
-    //             >
-    //               {isLoading ? "Saving..." : "Next Step"}
-    //             </Button>
-    //           </div>
-    //         </div> */}
-
-
-    //         <div style={{ marginTop: "20px", textAlign: "center" }}>
-    //           <Button
-    //             variant="primary"
-    //             type="Button"
-    //             disabled={isLoading}
-    //             onClick={handleNextStep}
-    //           >
-    //             {isLoading ? "Saving..." : "Next Step"}
-    //           </Button>
-    //         </div>
-
-    //       </div>
-
-    //     </>
-
-    //   );
-    // }
-
+ 
 
     if (currentStep === "Add Notes") {
       return (
@@ -1081,14 +955,7 @@ const ProductList = () => {
               }}
               className="sidemenu remmar"
             >
-              {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Kitchen Planner</h2> */}
-      
-              {/* <DropZone
-                onDrop={handleDrop}
-                droppedItems={droppedItems}
-                onRemove={handleRemove}
-                onRotate={handleRotate}
-              /> */}
+            
 
               <DropZone {...commonDropZoneProps} />
             </div>
@@ -1276,15 +1143,19 @@ const ProductList = () => {
     }
   };
 
-  useEffect(() => {
-    if (showModal && selectedItem) {
-      setItemDimensions({
-        width: selectedItem.minWidth || 100,
-        height: selectedItem.minDepth || 100,
-        handleSide: "left"
-      });
-    }
-  }, [showModal, selectedItem]);
+useEffect(() => {
+  if (showModal && selectedItem) {
+    setItemDimensions({
+      width: selectedItem.minWidth || 100,
+      height: selectedItem.minDepth || 100,
+      minWidth: selectedItem.minWidth,
+      maxWidth: selectedItem.maxWidth,
+      minDepth: selectedItem.minDepth,
+      maxDepth: selectedItem.maxDepth,
+    });
+  }
+}, [showModal, selectedItem]);
+
 
 
   return (
@@ -1309,9 +1180,7 @@ const ProductList = () => {
           marginRight: "20px",
         }}
       >
-        {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-          Kitchen Planner
-        </h2> */}
+       
 
         {/* Progress Bar */}
         <div
@@ -1321,40 +1190,7 @@ const ProductList = () => {
             marginBottom: "20px",
           }}
         >
-          {/* {steps.map((step, index) => (
-            <CustomTooltip key={index} message={step.tooltip}>
-              <div
-                style={{
-                  textAlign: "center",
-                  flex: 1,
-                  cursor: "pointer",
-                }}
-                onClick={() => setCurrentStep(step.name)}
-              >
-                <div
-                  className="progitems"
-                  style={{
-                    width: "25px",
-                    height: "25px",
-                    borderRadius: "50%",
-                    backgroundColor:
-                      currentStep === step.name ? "#00bfff" : "#ccc",
-                    margin: "0 auto",
-                    lineHeight: "25px",
-                    color: "#fff",
-                  }}
-                >
-                  {index + 1}
-                </div>
-                <p
-                  className="progtxt"
-                  style={{ fontSize: "12px", marginTop: "5px" }}
-                >
-                  {step.name}
-                </p>
-              </div>
-            </CustomTooltip>
-          ))} */}
+           
 
 
           {steps.map((step, index) => {
