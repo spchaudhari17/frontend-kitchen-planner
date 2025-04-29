@@ -32,6 +32,7 @@ const PaymentForm = () => {
   const elements = useElements();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const initialAmount = parseFloat(location.state?.subtotal || 0).toFixed(2);
+  const selectedProducts = location.state?.cartItems || [];
 
 
   const [amount, setAmount] = useState(initialAmount.toString());
@@ -41,6 +42,25 @@ const PaymentForm = () => {
     accountNumber: "",
     ifscCode: "",
   });
+  const calculateDynamicPrice = (width) => {
+    const minWidth = 400;
+    const basePrice = 100;
+    const extraPrice = 0.2;
+    const extra = Math.max(0, width - minWidth);
+    return basePrice + (extra * extraPrice);
+  };
+  
+  const formattedProducts = selectedProducts.map((item) => {
+    const droppedItem = item.droppedItems?.[0];
+    return {
+      productId: droppedItem?._id || null,
+      name: item.description || "Cabinet Item",
+      priceAtPurchase: calculateDynamicPrice(droppedItem?.width || 0),
+      quantity: droppedItem?.qty || 1,
+      image: droppedItem?.imageSrc || "",
+    };
+  });
+  
 
   const resetForm = () => {
     setAmount("");
@@ -58,6 +78,7 @@ const PaymentForm = () => {
         {
           userId: user._id,
           amount: parseFloat(amount) * 100,
+          products: formattedProducts ,
         }
       );
   
@@ -89,6 +110,7 @@ const PaymentForm = () => {
             await axiosPrivate.post("http://localhost:3001/api/payment/update-transaction", {
               transaction_id: result.paymentIntent.id,
               userId: user._id,
+                 products: formattedProducts  ,
             });
             setAlert({ type: "success", message: "Card payment successful!" });
             resetForm();

@@ -72,7 +72,8 @@ const Shipping = () => {
     }
     navigate("/payment", {
       state: {
-        subtotal: subtotal // or calculateTotalWithGST() if needed
+        subtotal: subtotal ,// or calculateTotalWithGST() if needed
+        cartItems: cartItems
       }
     });
 
