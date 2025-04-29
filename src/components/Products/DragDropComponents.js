@@ -62,21 +62,23 @@ const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
 };
 
 // Draggable Cabinet Component
-export const DraggableCabinet = ({ name,
+export const DraggableCabinet = ({
+  name,
   imageSrc,
   id,
   cabinateFrontImage,
-  minWidth,    // Add these props
+  minWidth, // Add these props
   maxWidth,
   minDepth,
-  maxDepth }) => {
+  maxDepth,
+}) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CABINET",
     item: {
       id,
       name,
       imageSrc,
-      minWidth,  // Include in drag item
+      minWidth, // Include in drag item
       maxWidth,
       minDepth,
       maxDepth,
@@ -106,622 +108,663 @@ export const DraggableCabinet = ({ name,
           border: "1px solid #ccc",
         }}
       />
-
     </div>
   );
 };
-
-
-
 
 //pushing this code, but problem is 2000mm tolerence
-export const DropZone = ({
-  onDrop,
-  droppedItems,
-  onRemove,
-  onRotate,
-  currentStep,
-  setDroppedItems,
-  roomSize = { width: 3000, depth: 2000 },
-}) => {
-  const dropRef = useRef(null);
-  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
-  const [horizontalMeasurements, setHorizontalMeasurements] = useState([]);
-  const [verticalMeasurements, setVerticalMeasurements] = useState([]);
-  const [totalWidth, setTotalWidth] = useState(0);
-  const [totalDepth, setTotalDepth] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [draggingIndex, setDraggingIndex] = useState(null);
+// export const DropZone = ({
+//   onDrop,
+//   droppedItems,
+//   onRemove,
+//   onRotate,
+//   currentStep,
+//   setDroppedItems,
+//   roomSize = { width: 3000, depth: 2000 },
+// }) => {
+//   const dropRef = useRef(null);
+//   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+//   const [selectedItem, setSelectedItem] = useState(null);
+//   const [isModalOpen, setModalOpen] = useState(false);
+//   const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
+//   const [horizontalMeasurements, setHorizontalMeasurements] = useState([]);
+//   const [verticalMeasurements, setVerticalMeasurements] = useState([]);
+//   const [totalWidth, setTotalWidth] = useState(0);
+//   const [totalDepth, setTotalDepth] = useState(0);
+//   const [isDragging, setIsDragging] = useState(false);
+//   const [draggingIndex, setDraggingIndex] = useState(null);
 
-  const {
-    item: draggingItem,
-    isDragging: isDragLayerDragging,
-    clientOffset: dragLayerOffset,
-  } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
-    isDragging: monitor.isDragging(),
-    clientOffset: monitor.getClientOffset(),
-  }));
+//   const {
+//     item: draggingItem,
+//     isDragging: isDragLayerDragging,
+//     clientOffset: dragLayerOffset,
+//   } = useDragLayer((monitor) => ({
+//     item: monitor.getItem(),
+//     isDragging: monitor.isDragging(),
+//     clientOffset: monitor.getClientOffset(),
+//   }));
 
-  // Load and save notes to localStorage
-  useEffect(() => {
-    saveNotesToLocalStorage(notesMap);
-  }, [notesMap]);
+//   // Load and save notes to localStorage
+//   useEffect(() => {
+//     saveNotesToLocalStorage(notesMap);
+//   }, [notesMap]);
 
-  // Handle click outside cabinets
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".cabinet-item") && !event.target.closest(".measurement-label")) {
-        setSelectedItemIndex(null);
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+//   // Handle click outside cabinets
+//   useEffect(() => {
+//     const handleClickOutside = (event) => {
+//       if (
+//         !event.target.closest(".cabinet-item") &&
+//         !event.target.closest(".measurement-label")
+//       ) {
+//         setSelectedItemIndex(null);
+//       }
+//     };
+//     document.addEventListener("click", handleClickOutside);
+//     return () => document.removeEventListener("click", handleClickOutside);
+//   }, []);
 
-  const isOverlapping = (newItem, existingItems) => {
-    return existingItems.some((item) => {
-      const buffer = 5; // Optional buffer for spacing
-      return (
-        newItem.x < item.x + item.width + buffer &&
-        newItem.x + newItem.width > item.x - buffer &&
-        newItem.y < item.y + item.height + buffer &&
-        newItem.y + newItem.height > item.y - buffer
-      );
-    });
-  };
+//   const isOverlapping = (newItem, existingItems) => {
+//     return existingItems.some((item) => {
+//       const buffer = 5; // Optional buffer for spacing
+//       return (
+//         newItem.x < item.x + item.width + buffer &&
+//         newItem.x + newItem.width > item.x - buffer &&
+//         newItem.y < item.y + item.height + buffer &&
+//         newItem.y + newItem.height > item.y - buffer
+//       );
+//     });
+//   };
 
-  const calculateMeasurements = (items) => {
-    if (dropRef.current && items.length > 0) {
-      const dropZoneWidth = dropRef.current.offsetWidth;
-      const dropZoneHeight = dropRef.current.offsetHeight;
-      const mmPerPixelWidth = roomSize.width / dropZoneWidth;
-      const mmPerPixelHeight = roomSize.depth / dropZoneHeight;
+//   const calculateMeasurements = (items) => {
+//     if (dropRef.current && items.length > 0) {
+//       const dropZoneWidth = dropRef.current.offsetWidth;
+//       const dropZoneHeight = dropRef.current.offsetHeight;
+//       const mmPerPixelWidth = roomSize.width / dropZoneWidth;
+//       const mmPerPixelHeight = roomSize.depth / dropZoneHeight;
 
-      // Calculate measurements only for the selected cabinet if one is selected
-      if (selectedItemIndex !== null && selectedItemIndex < items.length) {
-        const selectedItem = items[selectedItemIndex];
-        const newHorizontalMeasurements = [];
-        const newVerticalMeasurements = [];
+//       // Calculate measurements only for the selected cabinet if one is selected
+//       if (selectedItemIndex !== null && selectedItemIndex < items.length) {
+//         const selectedItem = items[selectedItemIndex];
+//         const newHorizontalMeasurements = [];
+//         const newVerticalMeasurements = [];
 
-        // Horizontal measurements for selected cabinet
-        // Left wall to cabinet
-        const leftWallMeasurement = Math.round(selectedItem.x * mmPerPixelWidth);
-        if (leftWallMeasurement > 0) {
-          newHorizontalMeasurements.push({
-            type: 'wall-to-cabinet',
-            value: leftWallMeasurement,
-            position: selectedItem.x / 2,
-            from: 0,
-            to: selectedItem.x,
-            itemIndex: selectedItemIndex,
-          });
-        }
+//         // Horizontal measurements for selected cabinet
+//         // Left wall to cabinet
+//         const leftWallMeasurement = Math.round(
+//           selectedItem.x * mmPerPixelWidth
+//         );
+//         if (leftWallMeasurement > 0) {
+//           newHorizontalMeasurements.push({
+//             type: "wall-to-cabinet",
+//             value: leftWallMeasurement,
+//             position: selectedItem.x / 2,
+//             from: 0,
+//             to: selectedItem.x,
+//             itemIndex: selectedItemIndex,
+//           });
+//         }
 
-        // Cabinet width
-        newHorizontalMeasurements.push({
-          type: 'cabinet-width',
-          value: selectedItem.width,
-          position: selectedItem.x + (selectedItem.width / mmPerPixelWidth / 2),
-          from: selectedItem.x,
-          to: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
-          itemIndex: selectedItemIndex,
-        });
+//         // Cabinet width
+//         // Corrected Cabinet width measurement
+//         const cabinetStartX = selectedItem.x;
+//         const cabinetWidthMM = Math.round(selectedItem.width * mmPerPixelWidth);
+//         const cabinetEndX =
+//           selectedItem.x + selectedItem.width / mmPerPixelWidth;
 
-        // Right wall
-        const rightWallMeasurement = roomSize.width - Math.round((selectedItem.x * mmPerPixelWidth) + selectedItem.width);
-        if (rightWallMeasurement > 0) {
-          newHorizontalMeasurements.push({
-            type: 'cabinet-to-wall',
-            value: rightWallMeasurement,
-            position: selectedItem.x + (selectedItem.width / mmPerPixelWidth) + ((dropZoneWidth - (selectedItem.x + (selectedItem.width / mmPerPixelWidth)))) / 2,
-            from: selectedItem.x + (selectedItem.width / mmPerPixelWidth),
-            to: dropZoneWidth,
-            itemIndex: selectedItemIndex,
-          });
-        }
+//         newHorizontalMeasurements.push({
+//           type: "cabinet-width",
+//           value: cabinetWidthMM,
+//           position: cabinetStartX + selectedItem.width / mmPerPixelWidth / 2,
+//           from: cabinetStartX,
+//           to: cabinetEndX,
+//           itemIndex: selectedItemIndex,
+//         });
 
-        setHorizontalMeasurements(newHorizontalMeasurements);
-        setTotalWidth(leftWallMeasurement + selectedItem.width + rightWallMeasurement);
+//         // Corrected Right wall gap
+//         const rightWallGapMM =
+//           roomSize.width -
+//           Math.round(cabinetStartX * mmPerPixelWidth + cabinetWidthMM);
+//         if (rightWallGapMM > 0) {
+//           newHorizontalMeasurements.push({
+//             type: "cabinet-to-wall",
+//             value: rightWallGapMM,
+//             position: cabinetEndX + (dropZoneWidth - cabinetEndX) / 2,
+//             from: cabinetEndX,
+//             to: dropZoneWidth,
+//             itemIndex: selectedItemIndex,
+//           });
+//         }
 
-        // Vertical measurements for selected cabinet
-        // Floor to cabinet
-        const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
-        if (floorToCabinet > 0) {
-          newVerticalMeasurements.push({
-            type: 'floor-to-cabinet',
-            value: floorToCabinet,
-            position: selectedItem.y / 2,
-            from: 0,
-            to: selectedItem.y,
-            itemIndex: selectedItemIndex,
-            vertical: true
-          });
-        }
+//         setHorizontalMeasurements(newHorizontalMeasurements);
+//         setTotalWidth(leftWallMeasurement + cabinetWidthMM + rightWallGapMM);
 
-        // Cabinet height
-        newVerticalMeasurements.push({
-          type: 'cabinet-height',
-          value: selectedItem.height,
-          position: selectedItem.y + (selectedItem.height / mmPerPixelHeight / 2),
-          from: selectedItem.y,
-          to: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
-          itemIndex: selectedItemIndex,
-          vertical: true
-        });
 
-        // Ceiling space
-        const ceilingSpace = roomSize.depth - Math.round((selectedItem.y * mmPerPixelHeight) + selectedItem.height);
-        if (ceilingSpace > 0) {
-          newVerticalMeasurements.push({
-            type: 'cabinet-to-ceiling',
-            value: ceilingSpace,
-            position: selectedItem.y + (selectedItem.height / mmPerPixelHeight) + ((dropZoneHeight - (selectedItem.y + (selectedItem.height / mmPerPixelHeight))) / 2),
-            from: selectedItem.y + (selectedItem.height / mmPerPixelHeight),
-            to: dropZoneHeight,
-            itemIndex: selectedItemIndex,
-            vertical: true
-          });
-        }
+//         // Vertical measurements for selected cabinet
+//         // Floor to cabinet
+//         const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
+//         if (floorToCabinet > 0) {
+//           newVerticalMeasurements.push({
+//             type: "floor-to-cabinet",
+//             value: floorToCabinet,
+//             position: selectedItem.y / 2,
+//             from: 0,
+//             to: selectedItem.y,
+//             itemIndex: selectedItemIndex,
+//             vertical: true,
+//           });
+//         }
 
-        setVerticalMeasurements(newVerticalMeasurements);
-        setTotalDepth(floorToCabinet + selectedItem.height + ceilingSpace);
-      } else {
-        // No cabinet selected, show no measurements
-        setHorizontalMeasurements([]);
-        setVerticalMeasurements([]);
-        setTotalWidth(0);
-        setTotalDepth(0);
-      }
-    } else {
-      setHorizontalMeasurements([]);
-      setVerticalMeasurements([]);
-      setTotalWidth(0);
-      setTotalDepth(0);
-    }
-  };
+//         // Cabinet height
+//         newVerticalMeasurements.push({
+//           type: "cabinet-height",
+//           value: selectedItem.height,
+//           position: selectedItem.y + selectedItem.height / mmPerPixelHeight / 2,
+//           from: selectedItem.y,
+//           to: selectedItem.y + selectedItem.height / mmPerPixelHeight,
+//           itemIndex: selectedItemIndex,
+//           vertical: true,
+//         });
 
-  useEffect(() => {
-    calculateMeasurements(droppedItems);
-  }, [droppedItems, roomSize.width, roomSize.depth, selectedItemIndex]);
+//         // Ceiling space
+//         const ceilingSpace =
+//           roomSize.depth -
+//           Math.round(selectedItem.y * mmPerPixelHeight + selectedItem.height);
+//         if (ceilingSpace > 0) {
+//           newVerticalMeasurements.push({
+//             type: "cabinet-to-ceiling",
+//             value: ceilingSpace,
+//             position:
+//               selectedItem.y +
+//               selectedItem.height / mmPerPixelHeight +
+//               (dropZoneHeight -
+//                 (selectedItem.y + selectedItem.height / mmPerPixelHeight)) /
+//                 2,
+//             from: selectedItem.y + selectedItem.height / mmPerPixelHeight,
+//             to: dropZoneHeight,
+//             itemIndex: selectedItemIndex,
+//             vertical: true,
+//           });
+//         }
 
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: "CABINET",
-    drop: (item, monitor) => {
-      const clientOffset = monitor.getClientOffset();
-      const dropZoneNode = dropRef.current;
-      if (clientOffset && dropZoneNode) {
-        const dropZoneRect = dropZoneNode.getBoundingClientRect();
-        const x = clientOffset.x - dropZoneRect.left;
-        const y = clientOffset.y - dropZoneRect.top;
+//         setVerticalMeasurements(newVerticalMeasurements);
+//         setTotalDepth(floorToCabinet + selectedItem.height + ceilingSpace);
+//       } else {
+//         // No cabinet selected, show no measurements
+//         setHorizontalMeasurements([]);
+//         setVerticalMeasurements([]);
+//         setTotalWidth(0);
+//         setTotalDepth(0);
+//       }
+//     } else {
+//       setHorizontalMeasurements([]);
+//       setVerticalMeasurements([]);
+//       setTotalWidth(0);
+//       setTotalDepth(0);
+//     }
+//   };
 
-        const SNAP_THRESHOLD = 20;
-        let snappedX = x;
-        let snappedY = y;
+//   useEffect(() => {
+//     calculateMeasurements(droppedItems);
+//   }, [droppedItems, roomSize.width, roomSize.depth, selectedItemIndex]);
 
-        // Snap to other cabinets or walls
-        droppedItems.forEach(cabinet => {
-          if (Math.abs(x - cabinet.x) < SNAP_THRESHOLD) {
-            snappedX = cabinet.x;
-          }
-          if (Math.abs(x - (cabinet.x + cabinet.width)) < SNAP_THRESHOLD) {
-            snappedX = cabinet.x + cabinet.width;
-          }
-          if (Math.abs(y - cabinet.y) < SNAP_THRESHOLD) {
-            snappedY = cabinet.y;
-          }
-          if (Math.abs(y - (cabinet.y + cabinet.height)) < SNAP_THRESHOLD) {
-            snappedY = cabinet.y + cabinet.height;
-          }
-        });
+//   const [{ isOver }, drop] = useDrop(() => ({
+//     accept: "CABINET",
+//     drop: (item, monitor) => {
+//       const clientOffset = monitor.getClientOffset();
+//       const dropZoneNode = dropRef.current;
+//       if (clientOffset && dropZoneNode) {
+//         const dropZoneRect = dropZoneNode.getBoundingClientRect();
+//         const x = clientOffset.x - dropZoneRect.left;
+//         const y = clientOffset.y - dropZoneRect.top;
 
-        // Snap to walls
-        if (x < SNAP_THRESHOLD) snappedX = 0;
-        if (x > dropZoneRect.width - SNAP_THRESHOLD) {
-          snappedX = dropZoneRect.width - (item.width || 300);
-        }
-        if (y < SNAP_THRESHOLD) snappedY = 0;
-        if (y > dropZoneRect.height - SNAP_THRESHOLD) {
-          snappedY = dropZoneRect.height - (item.height || 600);
-        }
+//         const SNAP_THRESHOLD = 20;
+//         let snappedX = x;
+//         let snappedY = y;
 
-        const itemWidth = item.minWidth || item.width || 300;
-        const itemHeight = item.minDepth || item.height || 600;
+//         // Snap to other cabinets or walls
+//         droppedItems.forEach((cabinet) => {
+//           if (Math.abs(x - cabinet.x) < SNAP_THRESHOLD) {
+//             snappedX = cabinet.x;
+//           }
+//           if (Math.abs(x - (cabinet.x + cabinet.width)) < SNAP_THRESHOLD) {
+//             snappedX = cabinet.x + cabinet.width;
+//           }
+//           if (Math.abs(y - cabinet.y) < SNAP_THRESHOLD) {
+//             snappedY = cabinet.y;
+//           }
+//           if (Math.abs(y - (cabinet.y + cabinet.height)) < SNAP_THRESHOLD) {
+//             snappedY = cabinet.y + cabinet.height;
+//           }
+//         });
 
-        // Prevent overlapping with other cabinets
-        let finalX = snappedX;
-        let finalY = snappedY;
-        for (const cabinet of droppedItems) {
-          if (
-            finalX < cabinet.x + cabinet.width &&
-            finalX + itemWidth > cabinet.x &&
-            finalY < cabinet.y + cabinet.height &&
-            finalY + itemHeight > cabinet.y
-          ) {
-            // Collision detected, move to the right of the existing cabinet
-            finalX = cabinet.x + cabinet.width;
-            finalY = cabinet.y;
-          }
-        }
+//         // Snap to walls
+//         if (x < SNAP_THRESHOLD) snappedX = 0;
+//         if (x > dropZoneRect.width - SNAP_THRESHOLD) {
+//           snappedX = dropZoneRect.width - (item.width || 300);
+//         }
+//         if (y < SNAP_THRESHOLD) snappedY = 0;
+//         if (y > dropZoneRect.height - SNAP_THRESHOLD) {
+//           snappedY = dropZoneRect.height - (item.height || 600);
+//         }
 
-        // Ensure we stay within bounds
-        finalX = Math.max(0, Math.min(finalX, dropZoneRect.width - itemWidth));
-        finalY = Math.max(0, Math.min(finalY, dropZoneRect.height - itemHeight));
+//         const itemWidth = item.minWidth || item.width || 300;
+//         const itemHeight = item.minDepth || item.height || 600;
 
-        const newItem = {
-          ...item,
-          x: finalX,
-          y: finalY,
-          rotation: 0,
-          width: itemWidth,
-          height: itemHeight,
-          id: Date.now(),
-        };
+//         // Prevent overlapping with other cabinets
+//         let finalX = snappedX;
+//         let finalY = snappedY;
+//         for (const cabinet of droppedItems) {
+//           if (
+//             finalX < cabinet.x + cabinet.width &&
+//             finalX + itemWidth > cabinet.x &&
+//             finalY < cabinet.y + cabinet.height &&
+//             finalY + itemHeight > cabinet.y
+//           ) {
+//             // Collision detected, move to the right of the existing cabinet
+//             finalX = cabinet.x + cabinet.width;
+//             finalY = cabinet.y;
+//           }
+//         }
 
-        if (!isOverlapping(newItem, droppedItems)) {
-          onDrop(newItem);
-        } else {
-          console.warn("Drop ignored due to overlap");
-        }
-      }
-    },
-    collect: (monitor) => ({ isOver: !!monitor.isOver() }),
-  }));
+//         // Ensure we stay within bounds
+//         finalX = Math.max(0, Math.min(finalX, dropZoneRect.width - itemWidth));
+//         finalY = Math.max(
+//           0,
+//           Math.min(finalY, dropZoneRect.height - itemHeight)
+//         );
 
-  const handlePositionChange = (index, position) => {
-    const item = droppedItems[index];
-    const itemWidth = item.width;
-    const itemHeight = item.height;
-    const dropZoneNode = dropRef.current;
-    if (!dropZoneNode) return;
+//         const newItem = {
+//           ...item,
+//           x: finalX,
+//           y: finalY,
+//           rotation: 0,
+//           width: itemWidth,
+//           height: itemHeight,
+//           id: Date.now(),
+//         };
 
-    let newX = position.x;
-    let newY = position.y;
-    const SNAP_THRESHOLD = 15;
+//         if (!isOverlapping(newItem, droppedItems)) {
+//           onDrop(newItem);
+//         } else {
+//           console.warn("Drop ignored due to overlap");
+//         }
+//       }
+//     },
+//     collect: (monitor) => ({ isOver: !!monitor.isOver() }),
+//   }));
 
-    // Check for collisions with other cabinets
-    for (let i = 0; i < droppedItems.length; i++) {
-      if (i === index) continue;
+//   const handlePositionChange = (index, position) => {
+//     const item = droppedItems[index];
+//     const itemWidth = item.width;
+//     const itemHeight = item.height;
+//     const dropZoneNode = dropRef.current;
+//     if (!dropZoneNode) return;
 
-      const otherItem = droppedItems[i];
-      const otherItemWidth = otherItem.width;
-      const otherItemHeight = otherItem.height;
+//     let newX = position.x;
+//     let newY = position.y;
+//     const SNAP_THRESHOLD = 15;
 
-      // Collision check
-      if (
-        newX < otherItem.x + otherItemWidth &&
-        newX + itemWidth > otherItem.x &&
-        newY < otherItem.y + otherItemHeight &&
-        newY + itemHeight > otherItem.y
-      ) {
-        // Collision detected, adjust position
-        if (newX < otherItem.x) {
-          newX = otherItem.x - itemWidth - SNAP_THRESHOLD / 2;
-        } else {
-          newX = otherItem.x + otherItemWidth + SNAP_THRESHOLD / 2;
-        }
-        if (newY < otherItem.y) {
-          newY = otherItem.y - itemHeight - SNAP_THRESHOLD / 2;
-        } else {
-          newY = otherItem.y + otherItemHeight + SNAP_THRESHOLD / 2;
-        }
-        break;
-      }
-    }
+//     // Check for collisions with other cabinets
+//     for (let i = 0; i < droppedItems.length; i++) {
+//       if (i === index) continue;
 
-    // Keep within dropzone boundaries
-    if (newX < SNAP_THRESHOLD) newX = 0;
-    if (newX > dropZoneNode.offsetWidth - itemWidth - SNAP_THRESHOLD) {
-      newX = dropZoneNode.offsetWidth - itemWidth;
-    }
-    if (newY < SNAP_THRESHOLD) newY = 0;
-    if (newY > dropZoneNode.offsetHeight - itemHeight - SNAP_THRESHOLD) {
-      newY = dropZoneNode.offsetHeight - itemHeight;
-    }
+//       const otherItem = droppedItems[i];
+//       const otherItemWidth = otherItem.width;
+//       const otherItemHeight = otherItem.height;
 
-    setDroppedItems(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        x: newX,
-        y: newY
-      };
-      return updated;
-    });
-  };
+//       // Collision check
+//       if (
+//         newX < otherItem.x + otherItemWidth &&
+//         newX + itemWidth > otherItem.x &&
+//         newY < otherItem.y + otherItemHeight &&
+//         newY + itemHeight > otherItem.y
+//       ) {
+//         // Collision detected, adjust position
+//         if (newX < otherItem.x) {
+//           newX = otherItem.x - itemWidth - SNAP_THRESHOLD / 2;
+//         } else {
+//           newX = otherItem.x + otherItemWidth + SNAP_THRESHOLD / 2;
+//         }
+//         if (newY < otherItem.y) {
+//           newY = otherItem.y - itemHeight - SNAP_THRESHOLD / 2;
+//         } else {
+//           newY = otherItem.y + otherItemHeight + SNAP_THRESHOLD / 2;
+//         }
+//         break;
+//       }
+//     }
 
-  const handleDrag = (index, data) => {
-    const tempItems = [...droppedItems];
-    tempItems[index] = { ...tempItems[index], x: data.x, y: data.y };
-    // Don't recalculate measurements during drag to improve performance
-    calculateMeasurements(tempItems);
-  };
+//     // Keep within dropzone boundaries
+//     if (newX < SNAP_THRESHOLD) newX = 0;
+//     if (newX > dropZoneNode.offsetWidth - itemWidth - SNAP_THRESHOLD) {
+//       newX = dropZoneNode.offsetWidth - itemWidth;
+//     }
+//     if (newY < SNAP_THRESHOLD) newY = 0;
+//     if (newY > dropZoneNode.offsetHeight - itemHeight - SNAP_THRESHOLD) {
+//       newY = dropZoneNode.offsetHeight - itemHeight;
+//     }
 
-  const handleSaveNotes = (item, note) => {
-    setNotesMap((prev) => {
-      const updated = {
-        ...prev,
-        [item.name]: [...(prev[item.name] || []), note],
-      };
-      saveNotesToLocalStorage(updated);
-      window.dispatchEvent(new Event("storage"));
-      return updated;
-    });
-    setModalOpen(false);
-  };
+//     setDroppedItems((prev) => {
+//       const updated = [...prev];
+//       updated[index] = {
+//         ...updated[index],
+//         x: newX,
+//         y: newY,
+//       };
+//       return updated;
+//     });
+//   };
 
-  const handleCabinetClick = (item, index) => {
-    if (currentStep === "Add Notes") {
-      setSelectedItem(item);
-      setModalOpen(true);
-    } else {
-      setSelectedItemIndex(index);
-    }
-  };
+//   const handleDrag = (index, data) => {
+//     const tempItems = [...droppedItems];
+//     tempItems[index] = { ...tempItems[index], x: data.x, y: data.y };
+//     // Don't recalculate measurements during drag to improve performance
+//     calculateMeasurements(tempItems);
+//   };
 
-  return (
-    <div style={{ position: "relative", width: "100%", padding: "10px" }}>
-      <AddNotesModal
-        isOpen={isModalOpen && currentStep === "Add Notes"}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSaveNotes}
-        item={selectedItem}
-      />
+//   const handleSaveNotes = (item, note) => {
+//     setNotesMap((prev) => {
+//       const updated = {
+//         ...prev,
+//         [item.name]: [...(prev[item.name] || []), note],
+//       };
+//       saveNotesToLocalStorage(updated);
+//       window.dispatchEvent(new Event("storage"));
+//       return updated;
+//     });
+//     setModalOpen(false);
+//   };
 
-      {/* Horizontal measurements at the top */}
-      <div style={{ height: "40px", position: "relative", marginBottom: "10px", borderBottom: "1px solid #ddd" }}>
-        {horizontalMeasurements.map((m, i) => (
-          <Fragment key={`h-${i}`}>
-            <div
-              style={{
-                position: "absolute",
-                left: `${m.from}px`,
-                width: `${m.to - m.from}px`,
-                height: "20px",
-                top: "10px",
-                borderTop: "1px solid #666",
-                borderLeft: m.type.includes('wall') ? "1px solid #666" : "none",
-                borderRight: m.type.includes('wall') ? "1px solid #666" : "none",
-                borderColor: "#007bff",
-                borderWidth: "2px",
-              }}
-            />
-            <div
-              className="measurement-label"
-              style={{
-                position: "absolute",
-                left: `${m.position}px`,
-                top: "0",
-                transform: 'translateX(-50%)',
-                backgroundColor: "#e0f7fa",
-                padding: '2px 6px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                border: "1px solid #00bcd4",
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                whiteSpace: 'nowrap',
-                fontWeight: "bold",
-              }}
-            >
-              {m.value}mm
-            </div>
-          </Fragment>
-        ))}
-      </div>
+//   const handleCabinetClick = (item, index) => {
+//     if (currentStep === "Add Notes") {
+//       setSelectedItem(item);
+//       setModalOpen(true);
+//     } else {
+//       setSelectedItemIndex(index);
+//     }
+//   };
 
-      <div
-        ref={(node) => {
-          drop(node);
-          dropRef.current = node;
-        }}
-        style={{
-          width: "100%",
-          height: "500px",
-          border: isOver ? "2px dashed #00bfff" : "2px dashed #adb5bd",
-          backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
-          position: "relative",
-          borderRadius: "4px",
-          overflow: "hidden",
-          cursor: "default",
-        }}
-      >
-        {/* Vertical measurements on the left side */}
-        <div style={{
-          position: "absolute",
-          left: "0",
-          top: "0",
-          bottom: "0",
-          width: "40px",
-          borderRight: "1px solid #ddd",
-          zIndex: 0
-        }}>
-          {verticalMeasurements.map((m, i) => (
-            <Fragment key={`v-${i}`}>
-              <div
-                style={{
-                  position: "absolute",
-                  top: `${m.from}px`,
-                  height: `${m.to - m.from}px`,
-                  width: "20px",
-                  left: "10px",
-                  borderLeft: "1px solid #666",
-                  borderTop: m.type.includes('floor') ? "1px solid #666" : "none",
-                  borderBottom: m.type.includes('ceiling') ? "1px solid #666" : "none",
-                  borderColor: "#007bff",
-                  borderWidth: "2px",
-                }}
-              />
-              <div
-                className="measurement-label"
-                style={{
-                  position: "absolute",
-                  top: `${m.position}px`,
-                  left: "25px",
-                  transform: 'translateY(-50%) rotate(-90deg)',
-                  transformOrigin: 'left center',
-                  backgroundColor: "#e0f7fa",
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  border: "1px solid #00bcd4",
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  whiteSpace: 'nowrap',
-                  fontWeight: "bold",
-                }}
-              >
-                {m.value}mm
-              </div>
-            </Fragment>
-          ))}
-        </div>
+//   return (
+//     <div style={{ position: "relative", width: "100%", padding: "10px" }}>
+//       <AddNotesModal
+//         isOpen={isModalOpen && currentStep === "Add Notes"}
+//         onClose={() => setModalOpen(false)}
+//         onSave={handleSaveNotes}
+//         item={selectedItem}
+//       />
 
-        {/* Rest of the drop zone content */}
-        {droppedItems.map((item, index) => (
-          <Fragment key={item.id || index}>
-            <Draggable
-              position={{ x: item.x || 0, y: item.y || 0 }}
-              bounds="parent"
-              onStart={() => {
-                setIsDragging(true);
-                setDraggingIndex(index);
-              }}
-              onDrag={(e, data) => handleDrag(index, data)}
-              onStop={(e, data) => {
-                setIsDragging(false);
-                setDraggingIndex(null);
-                handlePositionChange(index, data);
-              }}
-            >
-              <div
-                className="cabinet-item"
-                style={{
-                  position: "absolute",
-                  cursor: "move",
-                  borderRadius: "3px",
-                  padding: "2px",
-                  boxShadow: selectedItemIndex === index
-                    ? "0 0 0 2px #007bff, 0 2px 4px rgba(0,0,0,0.1)"
-                    : "0 2px 4px rgba(0,0,0,0.1)",
-                  transform: `rotate(${item.rotation}deg)`,
-                  zIndex: selectedItemIndex === index ? 10 : 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  backgroundColor: selectedItemIndex === index ? "rgba(0, 123, 255, 0.1)" : "transparent",
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCabinetClick(item, index);
-                }}
-              >
-                {/* Cabinet image and controls */}
-                <img
-                  src={item.imageSrc || item.frontImageSrc}
-                  alt={item.name}
-                  style={{
-                    width: `${item.width}px`,
-                    height: `${item.height}px`,
-                    objectFit: "contain",
-                    display: "block",
-                    transform: `rotate(${item.rotation}deg)`, // <== IMAGE pe rotate
-      transformOrigin: 'center center', // Rotate around center
-      transition: 'transform 0.3s ease', // Smooth rotation
-                  }}
-                />
+//       {/* Horizontal measurements at the top */}
+//       <div
+//         style={{
+//           height: "40px",
+//           position: "relative",
+//           marginBottom: "10px",
+//           borderBottom: "1px solid #ddd",
+//         }}
+//       >
+//         {horizontalMeasurements.map((m, i) => (
+//           <Fragment key={`h-${i}`}>
+//             <div
+//               style={{
+//                 position: "absolute",
+//                 left: `${m.from}px`,
+//                 width: `${m.to - m.from}px`,
+//                 height: "20px",
+//                 top: "10px",
+//                 borderTop: "1px solid #666",
+//                 borderLeft: m.type.includes("wall") ? "1px solid #666" : "none",
+//                 borderRight: m.type.includes("wall")
+//                   ? "1px solid #666"
+//                   : "none",
+//                 borderColor: "#007bff",
+//                 borderWidth: "2px",
+//               }}
+//             />
+//             <div
+//               className="measurement-label"
+//               style={{
+//                 position: "absolute",
+//                 left: `${m.position}px`,
+//                 top: "0",
+//                 transform: "translateX(-50%)",
+//                 backgroundColor: "#e0f7fa",
+//                 padding: "2px 6px",
+//                 borderRadius: "4px",
+//                 fontSize: "12px",
+//                 border: "1px solid #00bcd4",
+//                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+//                 whiteSpace: "nowrap",
+//                 fontWeight: "bold",
+//               }}
+//             >
+//               {m.value}mm
+//             </div>
+//           </Fragment>
+//         ))}
+//       </div>
 
-                {selectedItemIndex === index && currentStep !== "Add Notes" && (
-                  <>
-                    {/* Remove button at top right */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemove(index);
-                      }}
-                      style={{
-                        position: "absolute",
-                        top: "5px",
-                        right: "5px",
-                        background: "#dc3545",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "20px",
-                        height: "20px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "12px",
-                        zIndex: 20
-                      }}
-                      title="Remove cabinet"
-                    >×</button>
+//       <div
+//         ref={(node) => {
+//           drop(node);
+//           dropRef.current = node;
+//         }}
+//         style={{
+//           width: "100%",
+//           height: "500px",
+//           border: isOver ? "2px dashed #00bfff" : "2px dashed #adb5bd",
+//           backgroundColor: isOver ? "#e6f7ff" : "#f9f9f9",
+//           position: "relative",
+//           borderRadius: "4px",
+//           overflow: "hidden",
+//           cursor: "default",
+//         }}
+//       >
+//         {/* Vertical measurements on the left side */}
+//         <div
+//           style={{
+//             position: "absolute",
+//             left: "0",
+//             top: "0",
+//             bottom: "0",
+//             width: "40px",
+//             borderRight: "1px solid #ddd",
+//             zIndex: 0,
+//           }}
+//         >
+//           {verticalMeasurements.map((m, i) => (
+//             <Fragment key={`v-${i}`}>
+//               <div
+//                 style={{
+//                   position: "absolute",
+//                   top: `${m.from}px`,
+//                   height: `${m.to - m.from}px`,
+//                   width: "20px",
+//                   left: "10px",
+//                   borderLeft: "1px solid #666",
+//                   borderTop: m.type.includes("floor")
+//                     ? "1px solid #666"
+//                     : "none",
+//                   borderBottom: m.type.includes("ceiling")
+//                     ? "1px solid #666"
+//                     : "none",
+//                   borderColor: "#007bff",
+//                   borderWidth: "2px",
+//                 }}
+//               />
+//               <div
+//                 className="measurement-label"
+//                 style={{
+//                   position: "absolute",
+//                   top: `${m.position}px`,
+//                   left: "25px",
+//                   transform: "translateY(-50%) rotate(-90deg)",
+//                   transformOrigin: "left center",
+//                   backgroundColor: "#e0f7fa",
+//                   padding: "2px 6px",
+//                   borderRadius: "4px",
+//                   fontSize: "12px",
+//                   border: "1px solid #00bcd4",
+//                   boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+//                   whiteSpace: "nowrap",
+//                   fontWeight: "bold",
+//                 }}
+//               >
+//                 {m.value}mm
+//               </div>
+//             </Fragment>
+//           ))}
+//         </div>
 
-                    {/* Rotate button at bottom left */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRotate(index);
-                      }}
-                      style={{
-                        position: "absolute",
-                        bottom: "5px",
-                        left: "5px",
-                        background: "#28a745",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "20px",
-                        height: "20px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "12px",
-                        zIndex: 20
-                      }}
-                      title="Rotate 90°"
-                    >↻</button>
-                  </>
-                )}
-              </div>
-            </Draggable>
-          </Fragment>
-        ))}
+//         {/* Rest of the drop zone content */}
+//         {droppedItems.map((item, index) => (
+//           <Fragment key={item.id || index}>
+//             <Draggable
+//               position={{ x: item.x || 0, y: item.y || 0 }}
+//               bounds="parent"
+//               onStart={() => {
+//                 setIsDragging(true);
+//                 setDraggingIndex(index);
+//               }}
+//               onDrag={(e, data) => handleDrag(index, data)}
+//               onStop={(e, data) => {
+//                 setIsDragging(false);
+//                 setDraggingIndex(null);
+//                 handlePositionChange(index, data);
+//               }}
+//             >
+//               <div
+//                 className="cabinet-item"
+//                 style={{
+//                   position: "absolute",
+//                   cursor: "move",
+//                   borderRadius: "3px",
+//                   padding: "2px",
+//                   boxShadow:
+//                     selectedItemIndex === index
+//                       ? "0 0 0 2px #007bff, 0 2px 4px rgba(0,0,0,0.1)"
+//                       : "0 2px 4px rgba(0,0,0,0.1)",
+//                   transform: `rotate(${item.rotation}deg)`,
+//                   zIndex: selectedItemIndex === index ? 10 : 1,
+//                   display: "flex",
+//                   flexDirection: "column",
+//                   alignItems: "center",
+//                   backgroundColor:
+//                     selectedItemIndex === index
+//                       ? "rgba(0, 123, 255, 0.1)"
+//                       : "transparent",
+//                 }}
+//                 onClick={(e) => {
+//                   e.stopPropagation();
+//                   handleCabinetClick(item, index);
+//                 }}
+//               >
+//                 {/* Cabinet image and controls */}
+//                 <img
+//                   src={item.imageSrc || item.frontImageSrc}
+//                   alt={item.name}
+//                   style={{
+//                     width: `${item.width}px`,
+//                     height: `${item.height}px`,
+//                     objectFit: "contain",
+//                     display: "block",
+//                     transform: `rotate(${item.rotation}deg)`, // <== IMAGE pe rotate
+//                     transformOrigin: "center center", // Rotate around center
+//                     transition: "transform 0.3s ease", // Smooth rotation
+//                   }}
+//                 />
 
-        {/* Floating preview while dragging */}
-        {isDragLayerDragging && draggingItem && dragLayerOffset && (
-          <div
-            style={{
-              position: "absolute",
-              pointerEvents: "none",
-              left: `${dragLayerOffset.x - 50}px`,
-              top: `${dragLayerOffset.y - 50}px`,
-              zIndex: 9999,
-              width: draggingItem.width || 100,
-              height: draggingItem.height || 100,
-              transform: `rotate(${draggingItem.rotation || 0}deg)`,
-              opacity: 0.5,
-              border: "1px dashed #007bff",
-              backgroundImage: `url(${draggingItem.frontImageSrc || draggingItem.imageSrc
-                })`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
+//                 {selectedItemIndex === index && currentStep !== "Add Notes" && (
+//                   <>
+//                     {/* Remove button at top right */}
+//                     <button
+//                       onClick={(e) => {
+//                         e.stopPropagation();
+//                         onRemove(index);
+//                       }}
+//                       style={{
+//                         position: "absolute",
+//                         top: "5px",
+//                         right: "5px",
+//                         background: "#dc3545",
+//                         color: "#fff",
+//                         border: "none",
+//                         borderRadius: "50%",
+//                         width: "20px",
+//                         height: "20px",
+//                         cursor: "pointer",
+//                         display: "flex",
+//                         alignItems: "center",
+//                         justifyContent: "center",
+//                         fontSize: "12px",
+//                         zIndex: 20,
+//                       }}
+//                       title="Remove cabinet"
+//                     >
+//                       ×
+//                     </button>
 
+//                     {/* Rotate button at bottom left */}
+//                     <button
+//                       onClick={(e) => {
+//                         e.stopPropagation();
+//                         onRotate(index);
+//                       }}
+//                       style={{
+//                         position: "absolute",
+//                         bottom: "5px",
+//                         left: "5px",
+//                         background: "#28a745",
+//                         color: "#fff",
+//                         border: "none",
+//                         borderRadius: "50%",
+//                         width: "20px",
+//                         height: "20px",
+//                         cursor: "pointer",
+//                         display: "flex",
+//                         alignItems: "center",
+//                         justifyContent: "center",
+//                         fontSize: "12px",
+//                         zIndex: 20,
+//                       }}
+//                       title="Rotate 90°"
+//                     >
+//                       ↻
+//                     </button>
+//                   </>
+//                 )}
+//               </div>
+//             </Draggable>
+//           </Fragment>
+//         ))}
+
+//         {/* Floating preview while dragging */}
+//         {isDragLayerDragging && draggingItem && dragLayerOffset && (
+//           <div
+//             style={{
+//               position: "absolute",
+//               pointerEvents: "none",
+//               left: `${dragLayerOffset.x - 50}px`,
+//               top: `${dragLayerOffset.y - 50}px`,
+//               zIndex: 9999,
+//               width: draggingItem.width || 100,
+//               height: draggingItem.height || 100,
+//               transform: `rotate(${draggingItem.rotation || 0}deg)`,
+//               opacity: 0.5,
+//               border: "1px dashed #007bff",
+//               backgroundImage: `url(${
+//                 draggingItem.frontImageSrc || draggingItem.imageSrc
+//               })`,
+//               backgroundSize: "cover",
+//               backgroundPosition: "center",
+//             }}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
 
 // ---------------------------------------------------------------------------------
-
-
 
 // everything is perfect calculation, but only cabinate size is small
 
@@ -1006,6 +1049,302 @@ export const DropZone = ({
 //     </div>
 //   );
 // };
+
+
+//deeps
+
+export const DropZone = ({
+  onDrop,
+  droppedItems,
+  onRemove,
+  onRotate,
+  currentStep,
+  setDroppedItems,
+  roomSize = { width: 3000, depth: 2000 },
+}) => {
+  const dropRef = useRef(null);
+  const [roomSizePixels, setRoomSizePixels] = useState({ width: 1, height: 1 });
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+  const [horizontalMeasurements, setHorizontalMeasurements] = useState([]);
+  const [verticalMeasurements, setVerticalMeasurements] = useState([]);
+
+  useEffect(() => {
+    if (dropRef.current) {
+      setRoomSizePixels({
+        width: dropRef.current.offsetWidth,
+        height: dropRef.current.offsetHeight,
+      });
+    }
+  }, [dropRef]);
+
+  const calculateMeasurements = (items, index) => {
+    if (!dropRef.current || items.length === 0 || index == null) return;
+  
+    const item = items[index];
+    let { x, y, width, height } = item;
+  
+    const roomWidth = roomSize.width;
+    const roomHeight = roomSize.depth;
+  
+    // Constrain x/y to room bounds
+    const cappedX = Math.max(0, Math.min(x, roomWidth - width));
+    const cappedY = Math.max(0, Math.min(y, roomHeight - height));
+    const cappedRight = cappedX + Math.min(width, roomWidth - cappedX);
+    const cappedBottom = cappedY + Math.min(height, roomHeight - cappedY);
+  
+    const leftGap = Math.round(cappedX);
+    const cabinetWidth = Math.round(cappedRight - cappedX);  // 👈 This is crucial
+    const rightGap = Math.round(roomWidth - cappedRight);
+  
+    const topGap = Math.round(cappedY);
+    const cabinetHeight = Math.round(cappedBottom - cappedY);
+    const bottomGap = Math.round(roomHeight - cappedBottom);
+  
+    console.log({ leftGap, cabinetWidth, rightGap }); // Debug
+  
+    setHorizontalMeasurements([
+      {
+        type: 'left-gap',
+        value: leftGap,
+        position: cappedX / 2,
+        from: 0,
+        to: cappedX,
+      },
+      {
+        type: 'cabinet',
+        value: cabinetWidth,
+        position: cappedX + cabinetWidth / 2,
+        from: cappedX,
+        to: cappedRight,
+      },
+      {
+        type: 'right-gap',
+        value: rightGap,
+        position: cappedRight + rightGap / 2,
+        from: cappedRight,
+        to: roomWidth,
+      },
+    ]);
+  
+    setVerticalMeasurements([
+      {
+        type: 'top-gap',
+        value: topGap,
+        position: cappedY / 2,
+        from: 0,
+        to: cappedY,
+        vertical: true,
+      },
+      {
+        type: 'cabinet-height',
+        value: cabinetHeight,
+        position: cappedY + cabinetHeight / 2,
+        from: cappedY,
+        to: cappedBottom,
+        vertical: true,
+      },
+      {
+        type: 'bottom-gap',
+        value: bottomGap,
+        position: cappedBottom + bottomGap / 2,
+        from: cappedBottom,
+        to: roomHeight,
+        vertical: true,
+      },
+    ]);
+  };
+  
+  
+
+
+  useEffect(() => {
+    if (selectedItemIndex !== null) {
+      calculateMeasurements(droppedItems, selectedItemIndex);
+    }
+  }, [droppedItems, roomSize, selectedItemIndex]);
+
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: 'CABINET',
+    drop: (item, monitor) => {
+      const clientOffset = monitor.getClientOffset();
+      const dropZoneNode = dropRef.current;
+      if (!clientOffset || !dropZoneNode) return;
+
+      const rect = dropZoneNode.getBoundingClientRect();
+      const mmPerPixelX = roomSize.width / rect.width;
+      const mmPerPixelY = roomSize.depth / rect.height;
+      let x = (clientOffset.x - rect.left) * mmPerPixelX;
+      let y = (clientOffset.y - rect.top) * mmPerPixelY;
+
+      const width = item.width || 300;
+      const height = item.height || 600;
+
+      x = Math.max(0, Math.min(x, roomSize.width - width));
+      y = Math.max(0, Math.min(y, roomSize.depth - height));
+
+      onDrop({ ...item, x: Math.round(x), y: Math.round(y), width, height, rotation: 0 });
+    },
+    collect: (monitor) => ({ isOver: !!monitor.isOver() }),
+  }));
+
+  const handleDrag = (index, data) => {
+    const mmPerPixelX = roomSize.width / roomSizePixels.width;
+    const mmPerPixelY = roomSize.depth / roomSizePixels.height;
+  
+    let x = data.x * mmPerPixelX;
+    let y = data.y * mmPerPixelY;
+  
+    const item = droppedItems[index];
+    x = Math.max(0, Math.min(x, roomSize.width - item.width));
+    y = Math.max(0, Math.min(y, roomSize.depth - item.height));
+  
+    const updated = [...droppedItems];
+    updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
+    setDroppedItems(updated);
+    setSelectedItemIndex(index); // 👈 This line fixes the issue
+    calculateMeasurements(updated, index);
+  };
+  
+
+  // Function to ensure measurements stay within bounds
+  const constrainPosition = (position, total) => {
+    return Math.min(Math.max(position, 2), total - 2);
+  };
+
+  return (
+    <div style={{ overflow: 'auto', width: '100%', height: '100%' }}>
+      <div
+        ref={(node) => {
+          drop(node);
+          dropRef.current = node;
+        }}
+        onClick={(e) => {
+          if (e.target === dropRef.current) setSelectedItemIndex(null);
+        }}
+        style={{
+          width: '100%',
+          height: '500px',
+          border: isOver ? '2px dashed #00bfff' : '2px dashed #adb5bd',
+          backgroundColor: isOver ? '#e6f7ff' : '#f9f9f9',
+          position: 'relative',
+          borderRadius: '4px',
+          cursor: 'default',
+        }}
+      >
+        {horizontalMeasurements.map((m, i) => (
+          <Fragment key={`h-${i}`}>
+            <div
+              style={{
+                position: 'absolute',
+                left: `${(m.from / roomSize.width) * 100}%`,
+                width: `${((m.to - m.from) / roomSize.width) * 100}%`,
+                height: '2px',
+                top: '10px',
+                backgroundColor: '#00bcd4',
+              }}
+            />
+           {typeof m.value === 'number' && (
+
+              <div
+                style={{
+                  position: 'absolute',
+                  left: `${constrainPosition((m.position / roomSize.width) * 100, 100)}%`,
+                  top: '0px',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: '#e0f7fa',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  border: '1px solid #00bcd4',
+                  fontWeight: 500,
+                  maxWidth: '70px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {m.value} mm
+              </div>
+            )}
+          </Fragment>
+        ))}
+
+        {verticalMeasurements.map((m, i) => (
+          <Fragment key={`v-${i}`}>
+            <div
+              style={{
+                position: 'absolute',
+                top: `${(m.from / roomSize.depth) * 100}%`,
+                height: `${((m.to - m.from) / roomSize.depth) * 100}%`,
+                width: '2px',
+                left: '10px',
+                backgroundColor: '#00bcd4',
+              }}
+            />
+           {typeof m.value === 'number' && (
+
+              <div
+                style={{
+                  position: 'absolute',
+                  top: `${constrainPosition((m.position / roomSize.depth) * 100, 100)}%`,
+                  left: '20px',
+                  transform: 'translateY(-50%) rotate(-90deg)',
+                  backgroundColor: '#e0f7fa',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  border: '1px solid #00bcd4',
+                  fontWeight: 500,
+                  maxWidth: '70px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {m.value} mm
+              </div>
+            )}
+          </Fragment>
+        ))}
+
+        {droppedItems.map((item, index) => (
+          <Draggable
+            key={index}
+            position={{
+              x: (item.x / roomSize.width) * roomSizePixels.width,
+              y: (item.y / roomSize.depth) * roomSizePixels.height,
+            }}
+            onDrag={(e, data) => handleDrag(index, data)}
+            bounds="parent"
+          >
+            <div
+              style={{
+                width: `${(item.width / roomSize.width) * roomSizePixels.width}px`,
+                height: `${(item.height / roomSize.depth) * roomSizePixels.height}px`,
+                position: 'absolute',
+                transform: `rotate(${item.rotation}deg)`,
+                backgroundColor: selectedItemIndex === index ? '#cce5ff' : '#fff',
+                border: selectedItemIndex === index ? '2px solid #00bcd4' : '1px solid #007bff',
+                cursor: 'move',
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedItemIndex(index);
+              }}
+            >
+              <img
+                src={item.imageSrc}
+                alt={item.name}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            </div>
+          </Draggable>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 
 
 
