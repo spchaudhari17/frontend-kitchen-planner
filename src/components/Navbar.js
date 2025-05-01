@@ -15,7 +15,7 @@ import { ROLES } from "../config/roles";
 import Button from "./ui/Button";
 import Modal from "./ui/Modal";
 import { FaUser } from "react-icons/fa";
-import { AiOutlineShoppingCart } from "react-icons/ai"; 
+import { AiOutlineShoppingCart } from "react-icons/ai";
 import { FaClock } from "react-icons/fa";
 
 const Navbars = () => {
@@ -105,7 +105,7 @@ const Navbars = () => {
   };
 
 
-  const myAccountFunction =() =>{
+  const myAccountFunction = () => {
     alert("jg")
   }
 
@@ -132,116 +132,119 @@ const Navbars = () => {
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Navbar.Collapse className="justify-content-end">
-            <Nav>
-              {/*  Admin-only buttons */}
-              {auth && isAdmin && !["/login", "/signup", "/"].includes(location.pathname) && (
-                <>
-                  <Button
-                    className="mx-3"
-                    onClick={() => setShowModal(true)}
-                    style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
-                      color: componentColors.Button?.text || "#ffffff",
-                    }}
-                  >
-                    Color Picker
-                  </Button>
-
-                  <Button
-                    className="mx-3"
-                    onClick={() => navigate("/admin-add-cabinates")}
-                    style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
-                      color: componentColors.Button?.text || "#ffffff",
-                    }}
-                  >
-                    Add Cabinates
-                  </Button>
-
-                  <Button
-                    className="mx-3"
-                    onClick={() => navigate("/transactions")}
-                    style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
-                      color: componentColors.Button?.text || "#ffffff",
-                    }}
-                    title="Pending Orders"
-                  >
-                    <FaClock />
-                  </Button>
-                </>
-              )}
-
-                  {/*  Logout button for all logged-in users */}
-                  {auth && (
+              <Nav>
+                {/*  Admin-only buttons */}
+                {auth && isAdmin && !["/login", "/signup", "/"].includes(location.pathname) && (
+                  <>
                     <Button
                       className="mx-3"
-                      onClick={() => logout(auth._id)}
+                      onClick={() => setShowModal(true)}
                       style={{
                         backgroundColor: componentColors.Button?.background || "transparent",
                         color: componentColors.Button?.text || "#ffffff",
                       }}
                     >
-                      Log Out
+                      Color Picker
                     </Button>
-                  )}
 
-                  {/*  Profile icon */}
-                  {auth && (
                     <Button
                       className="mx-3"
-                      onClick={() => navigate("/account")}
+                      onClick={() => navigate("/admin-add-cabinates")}
                       style={{
                         backgroundColor: componentColors.Button?.background || "transparent",
                         color: componentColors.Button?.text || "#ffffff",
                       }}
                     >
-                      <FaUser />
+                      Add Cabinates
                     </Button>
-                  )}
 
-                  {/*  Cart icon */}
-                  {auth && (
                     <Button
                       className="mx-3"
-                      onClick={() => navigate("/cart")}
+                      onClick={() => navigate("/transactions")}
+                      style={{
+                        backgroundColor: componentColors.Button?.background || "transparent",
+                        color: componentColors.Button?.text || "#ffffff",
+                      }}
+                      title="Pending Orders"
+                    >
+                      <FaClock />
+                    </Button>
+                  </>
+                )}
+
+                {/*  Logout button for all logged-in users */}
+                {auth && (
+                  <Button
+                    className="mx-3"
+                    onClick={async () => {
+                      await logout(auth._id);
+                      navigate('/login');  // redirect to login page
+                    }}
+                    style={{
+                      backgroundColor: componentColors.Button?.background || "transparent",
+                      color: componentColors.Button?.text || "#ffffff",
+                    }}
+                  >
+                    Log Out
+                  </Button>
+                )}
+
+                {/*  Profile icon */}
+                {auth && (
+                  <Button
+                    className="mx-3"
+                    onClick={() => navigate("/account")}
+                    style={{
+                      backgroundColor: componentColors.Button?.background || "transparent",
+                      color: componentColors.Button?.text || "#ffffff",
+                    }}
+                  >
+                    <FaUser />
+                  </Button>
+                )}
+
+                {/*  Cart icon */}
+                {auth && (
+                  <Button
+                    className="mx-3"
+                    onClick={() => navigate("/cart")}
+                    style={{
+                      backgroundColor: componentColors.Button?.background || "transparent",
+                      color: componentColors.Button?.text || "#ffffff",
+                    }}
+                  >
+                    <AiOutlineShoppingCart />
+                  </Button>
+                )}
+
+                {/*  Login/Signup for non-authenticated users */}
+                {!auth && (
+                  <>
+                    <Button
+                      variant="outline-primary"
+                      className="mx-2"
+                      onClick={() => (window.location.href = "/login")}
                       style={{
                         backgroundColor: componentColors.Button?.background || "transparent",
                         color: componentColors.Button?.text || "#ffffff",
                       }}
                     >
-                      <AiOutlineShoppingCart />
+                      Login
                     </Button>
-                  )}
-
-                  {/*  Login/Signup for non-authenticated users */}
-                  {!auth && (
-                    <>
-                      <Button
-                        variant="outline-primary"
-                        className="mx-2"
-                        onClick={() => (window.location.href = "/login")}
-                        style={{
-                          backgroundColor: componentColors.Button?.background || "transparent",
-                          color: componentColors.Button?.text || "#ffffff",
-                        }}
-                      >
-                        Login
-                      </Button>
-                      <Button
-                        variant="outline-success"
-                        className="mx-2"
-                        onClick={() => (window.location.href = "/signup")}
-                        style={{
-                          backgroundColor: componentColors.Button?.background || "transparent",
-                          color: componentColors.Button?.text || "#ffffff",
-                        }}
-                      >
-                        Signup
-                      </Button>
-                    </>
-                  )}
-                </Nav>
+                    <Button
+                      variant="outline-success"
+                      className="mx-2"
+                      onClick={() => (window.location.href = "/signup")}
+                      style={{
+                        backgroundColor: componentColors.Button?.background || "transparent",
+                        color: componentColors.Button?.text || "#ffffff",
+                      }}
+                    >
+                      Signup
+                    </Button>
+                  </>
+                )}
+              </Nav>
 
             </Navbar.Collapse>
           </Navbar.Collapse>
