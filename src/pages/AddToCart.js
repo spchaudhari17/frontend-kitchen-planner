@@ -86,168 +86,165 @@ const AddToCart = () => {
     <>
       <h1>Shopping Cart</h1>
       <div>
+        {cartData.length === 0 ? (
+          <p>Your cart is empty.</p>
+        ) : (
+          <>
 
-        {/* Handle  */}
-        {
-          showHandle && (
-            <div className="cart-item d-flex mt-5" id="item-1">
-              <div className="">
-                <img
-                  className="product-image"
-                  src="//cabjaks.co.nz/cdn/shop/files/Standard_07592792-9316-4e64-ae70-f8bd3f5b803a_medium.webp?v=1721276017"
-                  alt="Cabinet"
-                />
-              </div>
-              <div className="cart-details">
-                <h2>Handle Upgrade</h2>
-                <p>
-                  <strong>Style:</strong>{" "}
-                  <span id="depth">Standard</span>
-                </p>
-
-                {/* <button className="rembutton" id="remove-item">
-              Remove
-            </button> */}
-
-                <button className="rembutton" onClick={() => setShowHandle(false)}>Remove</button>
-                <div className="d-flex">
-                  <div className="quantity">
-                    <button onClick={() => setHandleQty(Math.max(1, handleQty - 1))}>-</button>
-                    <span>{handleQty}</span>
-                    <button onClick={() => setHandleQty(handleQty + 1)}>+</button>
-                  </div>
-                  <p className="product-price">
-                    <strong>Price:</strong> <span id="price">$0</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          )
-        }
-
-        <hr />
-
-
-
-        {/* Hinges */}
-        {
-          showHinge && (
-            <div className="cart-item d-flex mt-5" id="item-1">
-              <div className="">
-                <img
-                  className="product-image"
-                  src="https://cabjaks.co.nz/cdn/shop/products/hinge-and-mount_grande_58c8ca02-48af-4225-a244-accbe2774414_large.jpg?v=1602707463"
-                  alt="Cabinet"
-                />
-              </div>
-              <div className="cart-details">
-                <h2>Soft Close Hinge</h2>
-
-                {/* <button className="rembutton" id="remove-item">
-                  Remove
-                </button> */}
-                <button className="rembutton" id="remove-item" onClick={() => setShowHinge(false)}>Remove</button>
-
-                <div className="d-flex">
-                  <div className="quantity">
-                    <button onClick={() => setHingeQty(Math.max(1, hingeQty - 1))}>-</button>
-                    <span>{hingeQty}</span>
-                    <button onClick={() => setHingeQty(hingeQty + 1)}>+</button>
-                  </div>
-                  <p className="product-price">
-                    <strong>Price:</strong> <span id="price">$0</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          )
-        }
-
-        <hr />
-
-
-        <div>
-          {cartData.length === 0 ? (
-            <p>Your cart is empty.</p>
-          ) : (
-            cartData.map((item, index) => {
-              const droppedItem = item.droppedItems?.[0];
-              const width = parseFloat(droppedItem?.width) || 0;
-              const qty = droppedItem?.qty || 1;
-              const pricePerItem = calculateDynamicPrice(width);
-              const totalPrice = pricePerItem * qty;
-
-              return (
-                <div className="cart-item d-flex mt-5" id="item-3" key={index}>
-                  <div>
+            {/* Handle  */}
+            {
+              showHandle && (
+                <div className="cart-item d-flex mt-5" id="item-1">
+                  <div className="">
                     <img
-                      src={droppedItem?.imageSrc || "https://via.placeholder.com/120"}
-                      alt="Cabinet"
                       className="product-image"
+                      src="//cabjaks.co.nz/cdn/shop/files/Standard_07592792-9316-4e64-ae70-f8bd3f5b803a_medium.webp?v=1721276017"
+                      alt="Cabinet"
                     />
                   </div>
                   <div className="cart-details">
-                    <h2>{item.description || "Cabinet Item"}</h2>
-                    <p><strong>Width:</strong> {width}mm</p>
-                    <p><strong>Depth:</strong> {droppedItem?.height || "N/A"}mm</p>
-                    <p><strong>Feet Option:</strong> Adjustable Feet</p>
-                    <p><strong>Handle Side:</strong> Left</p>
-                    <p><strong>Hinge Type:</strong> Soft Close</p>
-                    <button className="rembutton" onClick={() => removeItem(index)}>Remove</button>
+                    <h2>Handle Upgrade</h2>
+                    <p>
+                      <strong>Style:</strong>{" "}
+                      <span id="depth">Standard</span>
+                    </p>
+
+                    {/* <button className="rembutton" onClick={() => setShowHandle(false)}>Remove</button> */}
                     <div className="d-flex">
                       <div className="quantity">
-                        <button onClick={() => updateQty(index, 0, -1)}>-</button>
-                        <span>{qty}</span>
-                        <button onClick={() => updateQty(index, 0, 1)}>+</button>
+                        <button onClick={() => setHandleQty(Math.max(1, handleQty - 1))}>-</button>
+                        <span>{handleQty}</span>
+                        <button onClick={() => setHandleQty(handleQty + 1)}>+</button>
                       </div>
-                      <p className="product-price">${totalPrice.toFixed(2)}</p>
+                      <p className="product-price">
+                        <strong>Price:</strong> <span id="price">$0</span>
+                      </p>
                     </div>
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
-
-        <hr />
-
-
-        {/* Checkout Section */}
-        <div className="checkout-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          {/* <p><strong>Sub Total:</strong> ${calculateSubtotal().toFixed(2)}</p> */}
-          <p><strong>Sub Total (incl. GST):</strong> ${calculateTotalWithGST().toFixed(2)}</p>
-
-          <button
-            className="checkout-button"
-            // onClick={() => navigate("/shipping-address")}
-            onClick={() =>
-              navigate("/shipping-address", {
-  
-                state: {
-
-                  subtotal: calculateTotalWithGST().toFixed(2),
-                  cartItems: cartData,
-                  extras: {
-                    handle: showHandle ? { name: "Handle Upgrade", price: 0, qty: handleQty } : null,
-                    hinge: showHinge ? { name: "Soft Close Hinge", price: 4.8, qty: hingeQty } : null,
-                  }
-                }
-                
-              })
+              )
             }
 
-            style={{
-              backgroundColor: "black",
-              color: "white",
-              marginTop: "10px",
-              padding: "10px 20px"
-            }}
-          >
-            Checkout
-          </button>
-        </div>
+            <hr />
 
 
+
+            {/* Hinges */}
+            {
+              showHinge && (
+                <div className="cart-item d-flex mt-5" id="item-1">
+                  <div className="">
+                    <img
+                      className="product-image"
+                      src="https://cabjaks.co.nz/cdn/shop/products/hinge-and-mount_grande_58c8ca02-48af-4225-a244-accbe2774414_large.jpg?v=1602707463"
+                      alt="Cabinet"
+                    />
+                  </div>
+                  <div className="cart-details">
+                    <h2>Soft Close Hinge</h2>
+                    {/* <button className="rembutton" id="remove-item" onClick={() => setShowHinge(false)}>Remove</button> */}
+
+                    <div className="d-flex">
+                      <div className="quantity">
+                        <button onClick={() => setHingeQty(Math.max(1, hingeQty - 1))}>-</button>
+                        <span>{hingeQty}</span>
+                        <button onClick={() => setHingeQty(hingeQty + 1)}>+</button>
+                      </div>
+                      <p className="product-price">
+                        <strong>Price:</strong> <span id="price">$0</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            <hr />
+
+
+            <div>
+              {cartData.length === 0 ? (
+                <p>Your cart is empty.</p>
+              ) : (
+                cartData.map((item, index) => {
+                  const droppedItem = item.droppedItems?.[0];
+                  const width = parseFloat(droppedItem?.width) || 0;
+                  const qty = droppedItem?.qty || 1;
+                  const pricePerItem = calculateDynamicPrice(width);
+                  const totalPrice = pricePerItem * qty;
+
+                  return (
+                    <div className="cart-item d-flex mt-5" id="item-3" key={index}>
+                      <div>
+                        <img
+                          src={droppedItem?.imageSrc || "https://via.placeholder.com/120"}
+                          alt="Cabinet"
+                          className="product-image"
+                        />
+                      </div>
+                      <div className="cart-details">
+                        <h2>{item.description || "Cabinet Item"}</h2>
+                        <p><strong>Width:</strong> {width}mm</p>
+                        <p><strong>Depth:</strong> {droppedItem?.height || "N/A"}mm</p>
+                        <p><strong>Feet Option:</strong> Adjustable Feet</p>
+                        <p><strong>Handle Side:</strong> Left</p>
+                        <p><strong>Hinge Type:</strong> Soft Close</p>
+                        <button className="rembutton" onClick={() => removeItem(index)}>Remove</button>
+                        <div className="d-flex">
+                          <div className="quantity">
+                            <button onClick={() => updateQty(index, 0, -1)}>-</button>
+                            <span>{qty}</span>
+                            <button onClick={() => updateQty(index, 0, 1)}>+</button>
+                          </div>
+                          <p className="product-price">${totalPrice.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <hr />
+
+
+            {/* Checkout Section */}
+            <div className="checkout-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+              {/* <p><strong>Sub Total:</strong> ${calculateSubtotal().toFixed(2)}</p> */}
+              <p><strong>Sub Total (incl. GST):</strong> ${calculateTotalWithGST().toFixed(2)}</p>
+
+              <button
+                className="checkout-button"
+                // onClick={() => navigate("/shipping-address")}
+                onClick={() =>
+                  navigate("/shipping-address", {
+
+                    state: {
+
+                      subtotal: calculateTotalWithGST().toFixed(2),
+                      cartItems: cartData,
+                      extras: {
+                        handle: showHandle ? { name: "Handle Upgrade", price: 0, qty: handleQty } : null,
+                        hinge: showHinge ? { name: "Soft Close Hinge", price: 4.8, qty: hingeQty } : null,
+                      }
+                    }
+
+                  })
+                }
+
+                style={{
+                  backgroundColor: "black",
+                  color: "white",
+                  marginTop: "10px",
+                  padding: "10px 20px"
+                }}
+              >
+                Checkout
+              </button>
+            </div>
+
+          </>
+        )}
 
       </div>
 
