@@ -49,7 +49,7 @@ const ProductList = () => {
   const fetchRoomDetails = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/room-details/get-save-user-roomdetails",
+        `${process.env.REACT_APP_SERVER_URL}/api/room-details/get-save-user-roomdetails`,
         { userId: userInfo._id }
       );
 
@@ -353,7 +353,7 @@ const ProductList = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3001/api/room-details/update-room-details/${location.state.roomDetails._id}`, // ID from state
+        `${process.env.REACT_APP_SERVER_URL}/api/room-details/update-room-details/${location.state.roomDetails._id}`, // ID from state
         {
           width: roomSize.width,
           depth: roomSize.depth,
@@ -434,7 +434,7 @@ const ProductList = () => {
   
     // ✅ MongoDB Save
     try {
-      const response = await axios.post("http://localhost:3001/api/cart/save", newCartItem);
+      const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/cart/save`, newCartItem);
       if (response.data.success) {
         setAlert({
           open: true,
@@ -1085,7 +1085,7 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/product/products");
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/product/products`);
         setProducts(response.data);
       } catch (err) {
         console.error("Error fetching products:", err);

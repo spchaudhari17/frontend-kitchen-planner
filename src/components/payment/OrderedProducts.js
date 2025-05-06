@@ -13,8 +13,8 @@ const OrderProductDetails = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:3001/api/payment/order-products/${transactionId}`
-      );
+        `${process.env.REACT_APP_SERVER_URL}/api/payment/order-products/${transactionId}`
+      );      
       setProducts(response.data.data || []);  
       console.log("Ordered products:", response.data.data);
     } catch (err) {

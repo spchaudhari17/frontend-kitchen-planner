@@ -72,7 +72,7 @@ const PaymentForm = () => {
 
     try {
       const { data } = await axiosPrivate.post(
-        "http://localhost:3001/api/payment/create-payment-intent",
+        `${process.env.REACT_APP_SERVER_URL}/api/payment/create-payment-intent`,
         {
           userId: user._id,
           email: user.email,
@@ -106,7 +106,7 @@ const PaymentForm = () => {
         switch (status) {
           case "succeeded":
             await axiosPrivate.post(
-              "http://localhost:3001/api/payment/update-transaction",
+              `${process.env.REACT_APP_SERVER_URL}/api/payment/update-transaction`,
               {
                 transaction_id: result.paymentIntent.id,
                 userId: user._id,
@@ -176,7 +176,7 @@ const PaymentForm = () => {
     try {
       // 1. Create payment intent from backend
       const { data } = await axiosPrivate.post(
-        "http://localhost:3001/api/payment/bank-transfer",
+        `${process.env.REACT_APP_SERVER_URL}/api/payment/bank-transfer`,
         {
           userId: user._id,
           amount,

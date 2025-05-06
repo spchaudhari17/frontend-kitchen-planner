@@ -38,7 +38,7 @@ const Shipping = () => {
   useEffect(() => {
     const fetchSavedAddresses = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/shipping");
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/shipping`);
         setSavedAddresses(response.data);
       } catch (err) {
         setAlert({ open: true, message: "Failed to load addresses.", severity: "error" });
@@ -57,7 +57,7 @@ const Shipping = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post("http://localhost:3001/api/shipping", address);
+      const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/shipping`, address);
       setSavedAddresses((prev) => [...prev, response.data.address]);
       setUseSavedAddress(true);
     } catch (err) {

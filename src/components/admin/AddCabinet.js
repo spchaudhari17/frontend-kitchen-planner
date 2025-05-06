@@ -77,7 +77,7 @@ const AddCabinet = () => {
         if (cabinetFrontImage) formData.append("cabinateFrontImage", cabinetFrontImage);
 
         try {
-            const response = await axios.post("http://localhost:3001/api/product/products",
+            const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/product/products`,
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );
@@ -106,7 +106,7 @@ const AddCabinet = () => {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get("http://localhost:3001/api/product/products");
+            const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/product/products`);
             setProducts(response.data);
         } catch (err) {
             console.error("Error fetching products:", err);
@@ -120,7 +120,7 @@ const AddCabinet = () => {
 
     const deleteCabinetHandler = async () => {
         try {
-            await axios.delete(`http://localhost:3001/api/product/products/${selectedCabinetId}`);
+            await axios.delete(`${process.env.REACT_APP_SERVER_URL}/api/product/products/${selectedCabinetId}`);
             setProducts(products.filter(product => product._id !== selectedCabinetId));
             // setMessage("Cabinet deleted successfully!");
         } catch (error) {

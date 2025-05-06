@@ -23,7 +23,7 @@ const handleViewProducts = (transactionId) => {
   const fetchPendingData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3001/api/payment/All-transactions");
+      const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/payment/All-transactions`);
       setPendingList(response.data.data);
     } catch (err) {
       console.error("Error loading pending transactions:", err);

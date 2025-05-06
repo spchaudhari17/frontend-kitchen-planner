@@ -277,7 +277,7 @@ const AddToCart = () => {
       if (!user?._id) return;
   
       try {
-        const response = await fetch(`http://localhost:3001/api/cart/user/${user._id}`);
+        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/cart/user/${user._id}`);
         const result = await response.json();
         if (result.success) {
           setCartData(result.data); // Replace localStorage with DB data

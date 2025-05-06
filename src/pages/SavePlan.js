@@ -16,7 +16,7 @@ const MyAccount = () => {
   const fetchRoomDetails = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/room-details/get-save-user-roomdetails",
+        `${process.env.REACT_APP_SERVER_URL}/api/room-details/get-save-user-roomdetails`,
         { userId: userInfo._id }
       );
 
@@ -47,7 +47,7 @@ const MyAccount = () => {
     try {
       console.log(roomId)
       await axios.delete(
-        `http://localhost:3001/api/room-details/delete-room-details/${roomId}`
+        `${process.env.REACT_APP_SERVER_URL}/api/room-details/delete-room-details/${roomId}`
       );
 
       //  Filter out deleted room from UI
