@@ -387,10 +387,9 @@ const ProductList = () => {
 
 
 
-  const handleAddToCart = (event) => {
+  const handleAddToCart = async (event) => {
     event.preventDefault();
-
-    // Step 1: Validate input fields
+  
     if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
       setAlert({
         open: true,
@@ -399,20 +398,7 @@ const ProductList = () => {
       });
       return;
     }
-
-    // Step 2: Safely parse existing cart data
-    let existingCart = [];
-    try {
-      const storedCart = JSON.parse(localStorage.getItem("cartData"));
-      if (Array.isArray(storedCart)) {
-        existingCart = storedCart;
-      }
-    } catch (e) {
-      console.error("Error parsing cartData from localStorage:", e);
-      // You can optionally show an error alert here
-    }
-
-    // Step 3: Create new cart item
+  
     const newCartItem = {
       user_id: userInfo._id,
       width: roomSize.width,
@@ -432,18 +418,40 @@ const ProductList = () => {
         height: item.height
       })),
     };
-
-    // Step 4: Add to cart and update localStorage
+  
+    // Local Storage Save
+    let existingCart = [];
+    try {
+      const storedCart = JSON.parse(localStorage.getItem("cartData"));
+      if (Array.isArray(storedCart)) {
+        existingCart = storedCart;
+      }
+    } catch (e) {
+      console.error("Error parsing local cartData:", e);
+    }
     existingCart.push(newCartItem);
     localStorage.setItem("cartData", JSON.stringify(existingCart));
-
-    // Step 5: Show success message
-    setAlert({
-      open: true,
-      message: "Room details added to cart successfully!",
-      severity: "success",
-    });
+  
+    // ✅ MongoDB Save
+    try {
+      const response = await axios.post("http://localhost:3001/api/cart/save", newCartItem);
+      if (response.data.success) {
+        setAlert({
+          open: true,
+          message: "Cart saved successfully to database and localStorage!",
+          severity: "success",
+        });
+      }
+    } catch (err) {
+      console.error("MongoDB Cart Save Error:", err);
+      setAlert({
+        open: true,
+        message: "Saved locally, but failed to store in database.",
+        severity: "warning",
+      });
+    }
   };
+  
 
 
 
