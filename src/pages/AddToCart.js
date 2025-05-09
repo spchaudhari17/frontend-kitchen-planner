@@ -294,12 +294,35 @@ const AddToCart = () => {
   
 
 
-  const removeItem = (index) => {
-    const updatedCart = [...cartData];
-    updatedCart.splice(index, 1);
-    setCartData(updatedCart);
-    localStorage.setItem("cartData", JSON.stringify(updatedCart));
+  const removeItem = async (itemIdToDelete) => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user?._id || !itemIdToDelete) return;
+  
+    try {
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/cart/${user._id}/${itemIdToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.accessToken}`
+        }
+      });
+  
+      const result = await response.json();
+      if (result.success) {
+        const updatedCart = cartData.map(cart => ({
+          ...cart,
+          droppedItems: cart.droppedItems.filter(item => item.id !== itemIdToDelete)
+        })).filter(cart => cart.droppedItems.length > 0);
+  
+        setCartData(updatedCart);
+      } else {
+        console.error("Failed to delete item:", result.error);
+      }
+    } catch (error) {
+      console.error("Delete API failed:", error);
+    }
   };
+  
 
   const updateQty = (cartIndex, droppedIndex, change) => {
     const updatedCart = [...cartData];
@@ -453,7 +476,8 @@ const AddToCart = () => {
                     <p><strong>Feet Option:</strong> Adjustable Feet</p>
                     <p><strong>Handle Side:</strong> Left</p>
                     <p><strong>Hinge Type:</strong> Soft Close</p>
-                    <button className="rembutton" onClick={() => removeItem(index)}>Remove</button>
+                    <button className="rembutton" onClick={() => removeItem(droppedItem?.id)}>Remove</button>
+
                     <div className="d-flex">
                       <div className="quantity">
                         <button onClick={() => updateQty(index, 0, -1)}>-</button>
