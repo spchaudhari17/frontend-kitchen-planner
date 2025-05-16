@@ -1,22 +1,43 @@
+ 
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Spinner, Card, Row, Col, Container, Alert } from "react-bootstrap";
 
 const OrderProductDetails = () => {
   const { transactionId } = useParams();
+  const location = useLocation();  
+  const selectedAddressId = location.state?.shippingAddressId;
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [userInfo, setUserInfo] = useState(null);
+  const [shipping, setShipping] = useState(null); 
 
   const fetchOrderProducts = async () => {
     try {
       setLoading(true);
+
       const response = await axios.get(
         `${process.env.REACT_APP_SERVER_URL}/api/payment/order-products/${transactionId}`
-      );      
-      setProducts(response.data.data || []);  
-      console.log("Ordered products:", response.data.data);
+      );
+      setProducts(response.data.data || []);
+      setUserInfo(response.data.user || null);
+
+  
+      const shippingRes = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/shipping`);
+      const allAddresses = shippingRes.data || [];
+
+ 
+      if (selectedAddressId) {
+        const matched = allAddresses.find(addr => addr._id === selectedAddressId);
+        setShipping(matched || null);
+      } else {
+        // fallback: show latest address
+        setShipping(allAddresses[allAddresses.length - 1] || null);
+      }
+
     } catch (err) {
       console.error("Error loading ordered products:", err);
       setError("Failed to load ordered products.");
@@ -64,17 +85,38 @@ const OrderProductDetails = () => {
                 <Card.Img
                   variant="top"
                   src={product.image}
-                  alt={product.productName}
+                  alt={product.name}
                   style={{ height: "200px", width: "100%", objectFit: "cover" }}
                 />
               )}
               <Card.Body style={{ minHeight: "150px" }}>
-                <Card.Title>{product.productName}</Card.Title>
+                <Card.Title>{product.name}</Card.Title>
+
                 <Card.Text>
-                  <strong>Price:</strong> ${product.priceAtPurchase?.toFixed(2)}
-                  <br />
-                  <strong>Quantity:</strong> {product.quantity}
-                </Card.Text>
+  <strong>Price:</strong> ${product.priceAtPurchase?.toFixed(2)}<br />
+  <strong>Quantity:</strong> {product.quantity}<br />
+  <strong>Width:</strong> {product.width ?? "-"} mm<br />
+  <strong>Depth:</strong> {product.depth ?? "-"} mm<br />
+</Card.Text>
+
+
+                {userInfo && (
+                  <div className="mb-3">
+                    <h5>User Information</h5>
+                    <p><strong>Name:</strong> {userInfo.name}</p>
+                    <p><strong>Email:</strong> {userInfo.email}</p>
+                  </div>
+                )}
+
+                {shipping && (
+                  <div className="mb-3">
+                    <h5>Delivery Address</h5>
+                    <p>{shipping.firstName} {shipping.lastName}</p>
+                    <p>{shipping.addressLine1}, {shipping.addressLine2}</p>
+                    <p>{shipping.city}, {shipping.region}, {shipping.postalCode}</p>
+                    <p><strong>Phone:</strong> {shipping.phone}</p>
+                  </div>
+                )}
               </Card.Body>
             </Card>
           </Col>

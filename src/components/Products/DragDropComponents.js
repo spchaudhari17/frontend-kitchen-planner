@@ -237,8 +237,7 @@ export const DraggableCabinet = ({
 
 //         setHorizontalMeasurements(newHorizontalMeasurements);
 //         setTotalWidth(leftWallMeasurement + cabinetWidthMM + rightWallGapMM);
-
-
+ 
 //         // Vertical measurements for selected cabinet
 //         // Floor to cabinet
 //         const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
@@ -1050,7 +1049,6 @@ export const DraggableCabinet = ({
 //   );
 // };
 
-
 //deeps
 // ------------------------------------
 // export const DropZone = ({
@@ -1079,29 +1077,29 @@ export const DraggableCabinet = ({
 
 //   const calculateMeasurements = (items, index) => {
 //     if (!dropRef.current || items.length === 0 || index == null) return;
-  
+
 //     const item = items[index];
 //     let { x, y, width, height } = item;
-  
+
 //     const roomWidth = roomSize.width;
 //     const roomHeight = roomSize.depth;
-  
+
 //     // Constrain x/y to room bounds
 //     const cappedX = Math.max(0, Math.min(x, roomWidth - width));
 //     const cappedY = Math.max(0, Math.min(y, roomHeight - height));
 //     const cappedRight = cappedX + Math.min(width, roomWidth - cappedX);
 //     const cappedBottom = cappedY + Math.min(height, roomHeight - cappedY);
-  
+
 //     const leftGap = Math.round(cappedX);
 //     const cabinetWidth = Math.round(cappedRight - cappedX);  // 👈 This is crucial
 //     const rightGap = Math.round(roomWidth - cappedRight);
-  
+
 //     const topGap = Math.round(cappedY);
 //     const cabinetHeight = Math.round(cappedBottom - cappedY);
 //     const bottomGap = Math.round(roomHeight - cappedBottom);
-  
+
 //     console.log({ leftGap, cabinetWidth, rightGap }); // Debug
-  
+
 //     setHorizontalMeasurements([
 //       {
 //         type: 'left-gap',
@@ -1125,7 +1123,7 @@ export const DraggableCabinet = ({
 //         to: roomWidth,
 //       },
 //     ]);
-  
+
 //     setVerticalMeasurements([
 //       {
 //         type: 'top-gap',
@@ -1153,9 +1151,6 @@ export const DraggableCabinet = ({
 //       },
 //     ]);
 //   };
-  
-  
-
 
 //   useEffect(() => {
 //     if (selectedItemIndex !== null) {
@@ -1190,21 +1185,20 @@ export const DraggableCabinet = ({
 //   const handleDrag = (index, data) => {
 //     const mmPerPixelX = roomSize.width / roomSizePixels.width;
 //     const mmPerPixelY = roomSize.depth / roomSizePixels.height;
-  
+
 //     let x = data.x * mmPerPixelX;
 //     let y = data.y * mmPerPixelY;
-  
+
 //     const item = droppedItems[index];
 //     x = Math.max(0, Math.min(x, roomSize.width - item.width));
 //     y = Math.max(0, Math.min(y, roomSize.depth - item.height));
-  
+
 //     const updated = [...droppedItems];
 //     updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
 //     setDroppedItems(updated);
 //     setSelectedItemIndex(index); // 👈 This line fixes the issue
 //     calculateMeasurements(updated, index);
 //   };
-  
 
 //   // Function to ensure measurements stay within bounds
 //   const constrainPosition = (position, total) => {
@@ -1346,8 +1340,6 @@ export const DraggableCabinet = ({
 // };
 
 // -------------------------------------------------------------
-
-
 
 // shubham
 // export const DropZone = ({
@@ -1595,14 +1587,14 @@ export const DraggableCabinet = ({
 //   const handleDrag = (index, data) => {
 //     const mmPerPixelX = roomSize.width / roomSizePixels.width;
 //     const mmPerPixelY = roomSize.depth / roomSizePixels.height;
-  
+
 //     let x = data.x * mmPerPixelX;
 //     let y = data.y * mmPerPixelY;
-  
+
 //     const item = droppedItems[index];
 //     x = Math.max(0, Math.min(x, roomSize.width - item.width));
 //     y = Math.max(0, Math.min(y, roomSize.depth - item.height));
-  
+
 //     const updated = [...droppedItems];
 //     updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
 //     setDroppedItems(updated);
@@ -1613,14 +1605,14 @@ export const DraggableCabinet = ({
 //   const handlePositionChange = (index, position) => {
 //     const mmPerPixelX = roomSize.width / roomSizePixels.width;
 //     const mmPerPixelY = roomSize.depth / roomSizePixels.height;
-  
+
 //     let x = position.x * mmPerPixelX;
 //     let y = position.y * mmPerPixelY;
-  
+
 //     const item = droppedItems[index];
 //     x = Math.max(0, Math.min(x, roomSize.width - item.width));
 //     y = Math.max(0, Math.min(y, roomSize.depth - item.height));
-  
+
 //     const updated = [...droppedItems];
 //     updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
 //     setDroppedItems(updated);
@@ -1797,7 +1789,7 @@ export const DraggableCabinet = ({
 //         {droppedItems.map((item, index) => (
 //           <Fragment key={item.id || index}>
 //             <Draggable
-//               position={{ 
+//               position={{
 //                 x: (item.x / roomSize.width) * roomSizePixels.width,
 //                 y: (item.y / roomSize.depth) * roomSizePixels.height,
 //               }}
@@ -1965,7 +1957,7 @@ export const DropZone = ({
   const [verticalMeasurements, setVerticalMeasurements] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState(null);
- 
+
   const {
     item: draggingItem,
     isDragging: isDragLayerDragging,
@@ -1975,12 +1967,12 @@ export const DropZone = ({
     isDragging: monitor.isDragging(),
     clientOffset: monitor.getClientOffset(),
   }));
- 
+
   // Load and save notes to localStorage
   useEffect(() => {
     saveNotesToLocalStorage(notesMap);
   }, [notesMap]);
- 
+
   // Handle click outside cabinets
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1994,7 +1986,7 @@ export const DropZone = ({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
- 
+
   // Update room size in pixels when ref changes
   useEffect(() => {
     if (dropRef.current) {
@@ -2004,7 +1996,7 @@ export const DropZone = ({
       });
     }
   }, [dropRef]);
- 
+
   const isOverlapping = (newItem, existingItems) => {
     return existingItems.some((item) => {
       const buffer = 5; // Optional buffer for spacing
@@ -2016,61 +2008,61 @@ export const DropZone = ({
       );
     });
   };
- 
+
   const calculateMeasurements = (items, index) => {
     if (!dropRef.current || items.length === 0 || index == null) {
       setHorizontalMeasurements([]);
       setVerticalMeasurements([]);
       return;
-    };
- 
+    }
+
     const item = items[index];
     let { x, y, width, height } = item;
- 
+
     const roomWidth = roomSize.width;
     const roomHeight = roomSize.depth;
- 
+
     // Constrain x/y to room bounds
     const cappedX = Math.max(0, Math.min(x, roomWidth - width));
     const cappedY = Math.max(0, Math.min(y, roomHeight - height));
     const cappedRight = cappedX + Math.min(width, roomWidth - cappedX);
     const cappedBottom = cappedY + Math.min(height, roomHeight - cappedY);
- 
+
     const leftGap = Math.round(cappedX);
     const cabinetWidth = Math.round(cappedRight - cappedX);
     const rightGap = Math.round(roomWidth - cappedRight);
- 
+
     const topGap = Math.round(cappedY);
     const cabinetHeight = Math.round(cappedBottom - cappedY);
     const bottomGap = Math.round(roomHeight - cappedBottom);
- 
+
     setHorizontalMeasurements([
       {
-        type: 'left-gap',
+        type: "left-gap",
         value: leftGap,
         position: cappedX / 2,
         from: 0,
         to: cappedX,
       },
       {
-        type: 'cabinet',
+        type: "cabinet",
         value: cabinetWidth,
         position: cappedX + cabinetWidth / 2,
         from: cappedX,
         to: cappedRight,
       },
       {
-        type: 'right-gap',
+        type: "right-gap",
         value: rightGap,
         position: cappedRight + rightGap / 2,
         from: cappedRight,
         to: roomWidth,
       },
     ]);
- 
+
     setVerticalMeasurements([
       {
-        type: 'top-gap',
+        type: "top-gap",
         value: topGap,
         position: cappedY / 2,
         from: 0,
@@ -2078,7 +2070,7 @@ export const DropZone = ({
         vertical: true,
       },
       {
-        type: 'cabinet-height',
+        type: "cabinet-height",
         value: cabinetHeight,
         position: cappedY + cabinetHeight / 2,
         from: cappedY,
@@ -2086,7 +2078,7 @@ export const DropZone = ({
         vertical: true,
       },
       {
-        type: 'bottom-gap',
+        type: "bottom-gap",
         value: bottomGap,
         position: cappedBottom + bottomGap / 2,
         from: cappedBottom,
@@ -2095,30 +2087,30 @@ export const DropZone = ({
       },
     ]);
   };
- 
+
   useEffect(() => {
     if (selectedItemIndex !== null) {
       calculateMeasurements(droppedItems, selectedItemIndex);
     }
   }, [droppedItems, roomSize, selectedItemIndex]);
- 
+
   const [{ isOver }, drop] = useDrop(() => ({
-    accept: 'CABINET',
+    accept: "CABINET",
     drop: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
       const dropZoneNode = dropRef.current;
       if (!clientOffset || !dropZoneNode) return;
- 
+
       const rect = dropZoneNode.getBoundingClientRect();
       const mmPerPixelX = roomSize.width / rect.width;
       const mmPerPixelY = roomSize.depth / rect.height;
       let x = (clientOffset.x - rect.left) * mmPerPixelX;
       let y = (clientOffset.y - rect.top) * mmPerPixelY;
- 
+
       const SNAP_THRESHOLD = 20;
       let snappedX = x;
       let snappedY = y;
- 
+
       // Snap to other cabinets or walls
       droppedItems.forEach((cabinet) => {
         if (Math.abs(x - cabinet.x) < SNAP_THRESHOLD) {
@@ -2134,7 +2126,7 @@ export const DropZone = ({
           snappedY = cabinet.y + cabinet.height;
         }
       });
- 
+
       // Snap to walls
       if (x < SNAP_THRESHOLD) snappedX = 0;
       if (x > roomSize.width - SNAP_THRESHOLD) {
@@ -2144,10 +2136,10 @@ export const DropZone = ({
       if (y > roomSize.depth - SNAP_THRESHOLD) {
         snappedY = roomSize.depth - (item.height || 600);
       }
- 
+
       const itemWidth = item.minWidth || item.width || 300;
       const itemHeight = item.minDepth || item.height || 600;
- 
+
       // Prevent overlapping with other cabinets
       let finalX = snappedX;
       let finalY = snappedY;
@@ -2163,11 +2155,11 @@ export const DropZone = ({
           finalY = cabinet.y;
         }
       }
- 
+
       // Ensure we stay within bounds
       finalX = Math.max(0, Math.min(finalX, roomSize.width - itemWidth));
       finalY = Math.max(0, Math.min(finalY, roomSize.depth - itemHeight));
- 
+
       const newItem = {
         ...item,
         x: Math.round(finalX),
@@ -2177,7 +2169,7 @@ export const DropZone = ({
         height: itemHeight,
         id: Date.now(),
       };
- 
+
       if (!isOverlapping(newItem, droppedItems)) {
         onDrop(newItem);
         setSelectedItemIndex(droppedItems.length); // Select the newly added item
@@ -2187,43 +2179,43 @@ export const DropZone = ({
     },
     collect: (monitor) => ({ isOver: !!monitor.isOver() }),
   }));
- 
+
   const handleDrag = (index, data) => {
     const mmPerPixelX = roomSize.width / roomSizePixels.width;
     const mmPerPixelY = roomSize.depth / roomSizePixels.height;
- 
+
     let x = data.x * mmPerPixelX;
     let y = data.y * mmPerPixelY;
- 
+
     const item = droppedItems[index];
     x = Math.max(0, Math.min(x, roomSize.width - item.width));
     y = Math.max(0, Math.min(y, roomSize.depth - item.height));
- 
+
     const updated = [...droppedItems];
     updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
     setDroppedItems(updated);
     setSelectedItemIndex(index);
     calculateMeasurements(updated, index);
   };
- 
+
   const handlePositionChange = (index, position) => {
     const mmPerPixelX = roomSize.width / roomSizePixels.width;
     const mmPerPixelY = roomSize.depth / roomSizePixels.height;
- 
+
     let x = position.x * mmPerPixelX;
     let y = position.y * mmPerPixelY;
- 
+
     const item = droppedItems[index];
     x = Math.max(0, Math.min(x, roomSize.width - item.width));
     y = Math.max(0, Math.min(y, roomSize.depth - item.height));
- 
+
     const updated = [...droppedItems];
     updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
     setDroppedItems(updated);
     setSelectedItemIndex(index);
     calculateMeasurements(updated, index);
   };
- 
+
   const handleSaveNotes = (item, note) => {
     setNotesMap((prev) => {
       const updated = {
@@ -2236,7 +2228,7 @@ export const DropZone = ({
     });
     setModalOpen(false);
   };
- 
+
   const handleCabinetClick = (item, index) => {
     if (currentStep === "Add Notes") {
       setSelectedItem(item);
@@ -2245,25 +2237,27 @@ export const DropZone = ({
       setSelectedItemIndex(index);
     }
   };
- 
+
   // Function to ensure measurements stay within bounds
   const constrainPosition = (position, total) => {
     return Math.min(Math.max(position, 2), total - 2);
   };
- 
+
   return (
-    <div style={{
-      position: "relative",
-      width: "100%",
-      padding: "10px 10px 10px 50px" // Added left padding for vertical measurements
-    }}>
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        padding: "10px 10px 10px 50px", // Added left padding for vertical measurements
+      }}
+    >
       <AddNotesModal
         isOpen={isModalOpen && currentStep === "Add Notes"}
         onClose={() => setModalOpen(false)}
         onSave={handleSaveNotes}
         item={selectedItem}
       />
- 
+
       {/* Horizontal measurements at the top */}
       <div
         style={{
@@ -2271,7 +2265,7 @@ export const DropZone = ({
           position: "relative",
           marginBottom: "10px",
           borderBottom: "1px solid #ddd",
-          marginLeft: "40px" // Align with the drop zone
+          marginLeft: "40px", // Align with the drop zone
         }}
       >
         {horizontalMeasurements.map((m, i) => (
@@ -2292,12 +2286,15 @@ export const DropZone = ({
                 borderWidth: "2px",
               }}
             />
-            {typeof m.value === 'number' && (
+            {typeof m.value === "number" && (
               <div
                 className="measurement-label"
                 style={{
                   position: "absolute",
-                  left: `${constrainPosition((m.position / roomSize.width) * 100, 100)}%`,
+                  left: `${constrainPosition(
+                    (m.position / roomSize.width) * 100,
+                    100
+                  )}%`,
                   top: "0",
                   transform: "translateX(-50%)",
                   backgroundColor: "#e0f7fa",
@@ -2316,7 +2313,7 @@ export const DropZone = ({
           </Fragment>
         ))}
       </div>
- 
+
       {/* Vertical measurements container (outside the drop zone) */}
       <div
         style={{
@@ -2339,9 +2336,7 @@ export const DropZone = ({
                 width: "20px",
                 left: "10px",
                 borderLeft: "1px solid #666",
-                borderTop: m.type.includes("floor")
-                  ? "1px solid #666"
-                  : "none",
+                borderTop: m.type.includes("floor") ? "1px solid #666" : "none",
                 borderBottom: m.type.includes("ceiling")
                   ? "1px solid #666"
                   : "none",
@@ -2349,12 +2344,15 @@ export const DropZone = ({
                 borderWidth: "2px",
               }}
             />
-            {typeof m.value === 'number' && (
+            {typeof m.value === "number" && (
               <div
                 className="measurement-label"
                 style={{
                   position: "absolute",
-                  top: `${constrainPosition((m.position / roomSize.depth) * 100, 100)}%`,
+                  top: `${constrainPosition(
+                    (m.position / roomSize.depth) * 100,
+                    100
+                  )}%`,
                   left: "25px",
                   transform: "translateY(-50%) rotate(-90deg)",
                   transformOrigin: "left center",
@@ -2374,7 +2372,7 @@ export const DropZone = ({
           </Fragment>
         ))}
       </div>
- 
+
       {/* Drop zone */}
       <div
         ref={(node) => {
@@ -2393,7 +2391,7 @@ export const DropZone = ({
           borderRadius: "4px",
           overflow: "hidden",
           cursor: "default",
-          marginLeft: "40px" // Push to the right to make space for vertical measurements
+          marginLeft: "40px", // Push to the right to make space for vertical measurements
         }}
       >
         {droppedItems.map((item, index) => (
@@ -2435,8 +2433,12 @@ export const DropZone = ({
                     selectedItemIndex === index
                       ? "rgba(0, 123, 255, 0.1)"
                       : "transparent",
-                  width: `${(item.width / roomSize.width) * roomSizePixels.width}px`,
-                  height: `${(item.height / roomSize.depth) * roomSizePixels.height}px`,
+                  width: `${
+                    (item.width / roomSize.width) * roomSizePixels.width
+                  }px`,
+                  height: `${
+                    (item.height / roomSize.depth) * roomSizePixels.height
+                  }px`,
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -2456,7 +2458,7 @@ export const DropZone = ({
                     transition: "transform 0.3s ease",
                   }}
                 />
- 
+
                 {selectedItemIndex === index && currentStep !== "Add Notes" && (
                   <>
                     <button
@@ -2485,7 +2487,7 @@ export const DropZone = ({
                     >
                       ×
                     </button>
- 
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -2518,7 +2520,7 @@ export const DropZone = ({
             </Draggable>
           </Fragment>
         ))}
- 
+
         {/* Floating preview while dragging */}
         {isDragLayerDragging && draggingItem && dragLayerOffset && (
           <div
@@ -2545,8 +2547,6 @@ export const DropZone = ({
     </div>
   );
 };
-
-
 
 // Function to retrieve notes from any file
 export const getNotes = () => getNotesFromLocalStorage();

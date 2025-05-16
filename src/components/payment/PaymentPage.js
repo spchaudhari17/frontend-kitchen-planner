@@ -56,6 +56,8 @@ const PaymentForm = () => {
       priceAtPurchase: calculateDynamicPrice(droppedItem?.width || 0),
       quantity: droppedItem?.qty || 1,
       image: droppedItem?.imageSrc || "",
+      width: droppedItem?.width || null,      
+      depth: droppedItem?.height || null, 
     };
   });
 
