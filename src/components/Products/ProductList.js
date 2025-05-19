@@ -8,7 +8,7 @@ import { DraggableCabinet, DropZone, getNotes } from "./DragDropComponents";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import axios from "axios";
- 
+
 
 import { useAuthContext } from "../../context/auth";
 import { useColorContext } from '../../context/colorcontext';
@@ -19,7 +19,7 @@ const ProductList = () => {
   const { auth } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const { componentColors } = useColorContext();  
+  const { componentColors } = useColorContext();
   const [completedSteps, setCompletedSteps] = useState([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
@@ -130,20 +130,28 @@ const ProductList = () => {
 
   //location for open cabinates data
   useEffect(() => {
-    if (location.state?.roomDetails) {
-      const room = location.state.roomDetails;
+  if (location.state?.roomDetails) {
+    const room = location.state.roomDetails;
+    
+    // Ensure droppedItems have all required properties
+    const normalizedItems = (room.droppedItems || []).map(item => ({
+      ...item,
+      x: item.x || 0,
+      y: item.y || 0,
+      rotation: item.rotation || 0,
+      width: item.width || item.minWidth || 300,
+      height: item.height || item.minDepth || 600,
+      id: item.id || Date.now()
+    }));
 
-      // Set the retrieved room details into state
-      setRoomSize({ width: room.width, depth: room.depth });
-      setDescription(room.description);
-      setSubdescription(room.subdescription);
-      setNotes(room.notes || {});
-      setDroppedItems(room.droppedItems || []);
-
-      // Set current step to "Room Layout"
-      setCurrentStep("Room Layout");
-    }
-  }, [location.state]);
+    setRoomSize({ width: room.width, depth: room.depth });
+    setDescription(room.description);
+    setSubdescription(room.subdescription);
+    setNotes(room.notes || {});
+    setDroppedItems(normalizedItems);
+    setCurrentStep("Room Layout");
+  }
+}, [location.state]);
 
   // Function to delete all notes from localStorage
   const handleDeleteAllNotes = () => {
@@ -159,7 +167,7 @@ const ProductList = () => {
 
   };
 
- 
+
   const steps = [
     {
       name: "Start",
@@ -204,23 +212,23 @@ const ProductList = () => {
   const handleRoomSizeChange = (name, value) => {
     setRoomSize((prev) => ({ ...prev, [name]: value }));
   };
- 
+
   const handleDrop = (item) => {
     const CABINET_WIDTH = item.minWidth || 200;
     const CABINET_HEIGHT = item.minDepth || 200;
     const SPACING = 20;
-  
+
     // Find a non-overlapping position (simple row layout for now)
     let newX = 50;
     let newY = 50;
-  
+
     const occupiedPositions = droppedItems.map(i => ({
       x: i.x,
       y: i.y,
       width: i.width,
       height: i.height
     }));
-  
+
     while (
       occupiedPositions.some(pos =>
         newX < pos.x + pos.width + SPACING &&
@@ -235,7 +243,7 @@ const ProductList = () => {
         newY += CABINET_HEIGHT + SPACING;
       }
     }
-  
+
     const newItem = {
       ...item,
       id: item.id || Date.now(),
@@ -249,11 +257,11 @@ const ProductList = () => {
       minDepth: item.minDepth,       // Store min depth from API
       maxDepth: item.maxDepth        // Store max depth from API
     };
-  
+
     setSelectedItem(newItem);
     setShowModal(true);
   };
-  
+
 
 
 
@@ -311,7 +319,7 @@ const ProductList = () => {
           user_id: userInfo._id,
           width: roomSize.width,
           depth: roomSize.depth,
-            description,
+          description,
           subdescription,
           notes,
           droppedItems,
@@ -389,7 +397,7 @@ const ProductList = () => {
 
   const handleAddToCart = async (event) => {
     event.preventDefault();
-  
+
     if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
       setAlert({
         open: true,
@@ -398,7 +406,7 @@ const ProductList = () => {
       });
       return;
     }
-  
+
     const newCartItem = {
       user_id: userInfo._id,
       width: roomSize.width,
@@ -418,7 +426,7 @@ const ProductList = () => {
         height: item.height
       })),
     };
-  
+
     // Local Storage Save
     let existingCart = [];
     try {
@@ -431,7 +439,7 @@ const ProductList = () => {
     }
     existingCart.push(newCartItem);
     localStorage.setItem("cartData", JSON.stringify(existingCart));
-  
+
     // ✅ MongoDB Save
     try {
       const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/cart/save`, newCartItem);
@@ -451,7 +459,7 @@ const ProductList = () => {
       });
     }
   };
-  
+
 
 
 
@@ -583,7 +591,7 @@ const ProductList = () => {
       );
     }
 
- 
+
 
     const handleNextStep = () => {
       // Mark current step as completed
@@ -787,7 +795,7 @@ const ProductList = () => {
       return (
 
         <DndProvider backend={HTML5Backend}>
-     
+
           <div style={{}}>
             <div
               style={{
@@ -800,7 +808,7 @@ const ProductList = () => {
               }}
               className="remmar"
             >
-     
+
 
               <DropZone {...commonDropZoneProps} roomSize={roomSize} />
 
@@ -832,20 +840,31 @@ const ProductList = () => {
                     Width: {itemDimensions.width}mm
                     (Range: {selectedItem?.minWidth}mm - {selectedItem?.maxWidth}mm)
                   </Form.Label>
+
                   <Form.Control
                     type="number"
                     value={itemDimensions.width}
                     min={selectedItem?.minWidth || 100}
                     max={selectedItem?.maxWidth || 3000}
-                    onChange={(e) => setItemDimensions({
-                      ...itemDimensions,
-                      width: Math.min(
-                        Math.max(e.target.value, selectedItem?.minWidth || 100),
-                        selectedItem?.maxWidth || 3000
-                      )
-                    })}
+                    onChange={(e) =>
+                      setItemDimensions({
+                        ...itemDimensions,
+                        width: e.target.value, // don't clamp yet
+                      })
+                    }
+                    onBlur={(e) =>
+                      setItemDimensions({
+                        ...itemDimensions,
+                        width: Math.min(
+                          Math.max(Number(e.target.value), selectedItem?.minWidth || 100),
+                          selectedItem?.maxWidth || 3000
+                        ),
+                      })
+                    }
                     placeholder="Enter width"
                   />
+
+
                   <Form.Range
                     min={selectedItem?.minWidth || 100}
                     max={selectedItem?.maxWidth || 3000}
@@ -863,20 +882,31 @@ const ProductList = () => {
                     Depth: {itemDimensions.height}mm
                     (Range: {selectedItem?.minDepth}mm - {selectedItem?.maxDepth}mm)
                   </Form.Label>
+
                   <Form.Control
                     type="number"
                     value={itemDimensions.height}
                     min={selectedItem?.minDepth || 100}
                     max={selectedItem?.maxDepth || 3000}
-                    onChange={(e) => setItemDimensions({
-                      ...itemDimensions,
-                      height: Math.min(
-                        Math.max(e.target.value, selectedItem?.minDepth || 100),
-                        selectedItem?.maxDepth || 3000
-                      )
-                    })}
+                    onChange={(e) =>
+                      setItemDimensions({
+                        ...itemDimensions,
+                        height: e.target.value, // raw value allow kar rahe hain
+                      })
+                    }
+                    onBlur={(e) =>
+                      setItemDimensions({
+                        ...itemDimensions,
+                        height: Math.min(
+                          Math.max(Number(e.target.value), selectedItem?.minDepth || 100),
+                          selectedItem?.maxDepth || 3000
+                        ),
+                      })
+                    }
                     placeholder="Enter depth"
                   />
+
+
                   <Form.Range
                     min={selectedItem?.minDepth || 100}
                     max={selectedItem?.maxDepth || 3000}
@@ -904,7 +934,7 @@ const ProductList = () => {
         </DndProvider>
       );
     }
- 
+
 
     if (currentStep === "Add Notes") {
       return (
@@ -923,14 +953,14 @@ const ProductList = () => {
               <DropZone {...commonDropZoneProps} />
             </div>
           </DndProvider>
-    
+
           {/* Notes Section - if you want to add it back */}
           {/* <div style={{ width: '100%', marginBottom: '20px' }}>
             ... your notes content ...
           </div> */}
-    
-          <div style={{ 
-            width: '100%', 
+
+          <div style={{
+            width: '100%',
             textAlign: 'center',
             marginTop: '20px'
           }}>
@@ -963,7 +993,7 @@ const ProductList = () => {
               }}
               className="sidemenu remmar"
             >
-            
+
 
               <DropZone {...commonDropZoneProps} />
             </div>
@@ -1151,18 +1181,18 @@ const ProductList = () => {
     }
   };
 
-useEffect(() => {
-  if (showModal && selectedItem) {
-    setItemDimensions({
-      width: selectedItem.minWidth || 100,
-      height: selectedItem.minDepth || 100,
-      minWidth: selectedItem.minWidth,
-      maxWidth: selectedItem.maxWidth,
-      minDepth: selectedItem.minDepth,
-      maxDepth: selectedItem.maxDepth,
-    });
-  }
-}, [showModal, selectedItem]);
+  useEffect(() => {
+    if (showModal && selectedItem) {
+      setItemDimensions({
+        width: selectedItem.minWidth || 100,
+        height: selectedItem.minDepth || 100,
+        minWidth: selectedItem.minWidth,
+        maxWidth: selectedItem.maxWidth,
+        minDepth: selectedItem.minDepth,
+        maxDepth: selectedItem.maxDepth,
+      });
+    }
+  }, [showModal, selectedItem]);
 
 
 
@@ -1188,7 +1218,7 @@ useEffect(() => {
           marginRight: "20px",
         }}
       >
-       
+
 
         {/* Progress Bar */}
         <div
@@ -1198,7 +1228,7 @@ useEffect(() => {
             marginBottom: "20px",
           }}
         >
-           
+
 
 
           {steps.map((step, index) => {

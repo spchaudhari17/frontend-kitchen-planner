@@ -237,7 +237,7 @@ export const DraggableCabinet = ({
 
 //         setHorizontalMeasurements(newHorizontalMeasurements);
 //         setTotalWidth(leftWallMeasurement + cabinetWidthMM + rightWallGapMM);
- 
+
 //         // Vertical measurements for selected cabinet
 //         // Floor to cabinet
 //         const floorToCabinet = Math.round(selectedItem.y * mmPerPixelHeight);
@@ -2010,13 +2010,28 @@ export const DropZone = ({
   };
 
   const calculateMeasurements = (items, index) => {
-    if (!dropRef.current || items.length === 0 || index == null) {
+    if (!dropRef.current || !items || !items.length || index == null || index >= items.length) {
       setHorizontalMeasurements([]);
       setVerticalMeasurements([]);
       return;
     }
 
     const item = items[index];
+    if (!item) {
+      setHorizontalMeasurements([]);
+      setVerticalMeasurements([]);
+      return;
+    }
+
+    const safeItem = {
+      x: item.x || 0,
+      y: item.y || 0,
+      width: item.width || 300,
+      height: item.height || 600,
+      rotation: item.rotation || 0
+    };
+
+
     let { x, y, width, height } = item;
 
     const roomWidth = roomSize.width;
@@ -2433,12 +2448,10 @@ export const DropZone = ({
                     selectedItemIndex === index
                       ? "rgba(0, 123, 255, 0.1)"
                       : "transparent",
-                  width: `${
-                    (item.width / roomSize.width) * roomSizePixels.width
-                  }px`,
-                  height: `${
-                    (item.height / roomSize.depth) * roomSizePixels.height
-                  }px`,
+                  width: `${(item.width / roomSize.width) * roomSizePixels.width
+                    }px`,
+                  height: `${(item.height / roomSize.depth) * roomSizePixels.height
+                    }px`,
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -2535,9 +2548,8 @@ export const DropZone = ({
               transform: `rotate(${draggingItem.rotation || 0}deg)`,
               opacity: 0.5,
               border: "1px dashed #007bff",
-              backgroundImage: `url(${
-                draggingItem.frontImageSrc || draggingItem.imageSrc
-              })`,
+              backgroundImage: `url(${draggingItem.frontImageSrc || draggingItem.imageSrc
+                })`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

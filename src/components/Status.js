@@ -72,14 +72,15 @@ const Status = () => {
             </span>
             <span>
               {/* Kitchen Planner Button */}
-          <Button onClick={() => setShowModal(true)} className="kitchen-planner-btn mx-4">
-            Kitchen Planner
-          </Button>
+              {/* <Button onClick={() => setShowModal(true)} className="kitchen-planner-btn mx-4">
+                Kitchen Planner
+              </Button> */}
 
+              
             </span>
           </div>
 
-        
+
         </div>
       )}
 
