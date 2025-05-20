@@ -22,6 +22,7 @@ const ProductList = () => {
   const { componentColors } = useColorContext();
   const [completedSteps, setCompletedSteps] = useState([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+const [selectedRoomDetails, setSelectedRoomDetails] = useState(null);
 
   const defaultColors = {
     background: '#ffffff',
@@ -71,6 +72,46 @@ const ProductList = () => {
   useEffect(() => {
     fetchRoomDetails();
   }, []);
+  
+useEffect(() => {
+  if (location.state?.resumeAction && location.state?.roomData) {
+    const { roomData, resumeAction, currentStep } = location.state;
+
+    setRoomSize({ width: roomData.width, depth: roomData.depth });
+    setDescription(roomData.description);
+    setSubdescription(roomData.subdescription);
+    setNotes(roomData.notes || {});
+    setDroppedItems(roomData.droppedItems || []);
+    
+    setCurrentStep(currentStep || "Room Layout"); // ✅ Resume at the step user left off
+
+    setTimeout(() => {
+      if (resumeAction === "addToCart") handleAddToCart(new Event("resume"));
+      else if (resumeAction === "saveRoom") handleSubmit(new Event("resume"));
+    }, 500);
+  }
+}, [location.state]);
+
+
+const redirectToLoginWithData = (action) => {
+  navigate("/login", {
+    state: {
+      redirectFrom: "planner",
+      pendingAction: action,
+      currentStep, // <== ✅ ADD THIS
+      roomData: {
+        width: roomSize.width,
+        depth: roomSize.depth,
+        description,
+        subdescription,
+        notes,
+        droppedItems,
+      },
+    },
+  });
+};
+
+
 
   const handleOpenSavedPlan = () => {
     if (!auth) {
@@ -86,7 +127,7 @@ const ProductList = () => {
   };
 
   const [currentStep, setCurrentStep] = useState("Start"); // Tracks the active step
-  const [roomSize, setRoomSize] = useState({ width: 3000, depth: 2000 });
+  const [roomSize, setRoomSize] = useState({ width: 8000, depth: 8000 });
   const [description, setDescription] = useState("");
   const [subdescription, setSubdescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -123,7 +164,12 @@ const ProductList = () => {
     };
   }, []);
 
-  const handleFrontViewToggle = () => {
+  const handleFrontViewToggle = (event) => {
+  event.preventDefault();
+      if (!auth) {
+    redirectToLoginWithData("frontView");
+    return;
+  }
     setShowFrontView(!showFrontView);
     setShowView(!showView); // Toggle visibility of the div
   };
@@ -295,108 +341,150 @@ const ProductList = () => {
   };
 
   //save room details 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
+  if (!auth) {
+    redirectToLoginWithData("saveRoom");
+    return;
+  }
+
+  if (!roomSize.width || !roomSize.depth) {
+    setAlert({
+      open: true,
+      message: "Room width and depth are required.",
+      severity: "error",
+    });
+    return;
+  }
+
+  if (!description.trim()) {
+    setAlert({
+      open: true,
+      message: "Description is required.",
+      severity: "error",
+    });
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await axiosPrivate.post(
+      "/api/room-details/save-room-details",
+      {
+        user_id: userInfo._id,
+        width: roomSize.width,
+        depth: roomSize.depth,
+        description,
+        subdescription,
+        notes,
+        droppedItems,
+      },
+      { withCredentials: true }
+    );
+
+    if (response.status === 201) {
       setAlert({
         open: true,
-        message: "Please fill out all fields before proceeding.",
-        severity: "error",
+        message: "Room details saved successfully!",
+        severity: "success",
       });
-
-      return;
+      setRoomSize({ width: 8000, depth: 8000 });
+      setDescription("");
+      setSubdescription("");
+      setNotes({});
+      setDroppedItems([]);
+      setCurrentStep("Start");
+      setHasSubmitted(true);
     }
+  } catch (error) {
+    setAlert({
+      open: true,
+      message: "Failed to save room details. Please try again.",
+      severity: "error",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-    setIsLoading(true);
 
-    try {
-      console.log("itemDimensions -- ", itemDimensions);
-
-      const response = await axiosPrivate.post(
-        "/api/room-details/save-room-details",
-        {
-          user_id: userInfo._id,
-          width: roomSize.width,
-          depth: roomSize.depth,
-          description,
-          subdescription,
-          notes,
-          droppedItems,
-        },
-        { withCredentials: true }
-      );
-
-      console.log("response -- ", response);
-
-      if (response.status === 201) {
-        setAlert({
-          open: true,
-          message: "Room details saved successfully!",
-          severity: "success",
-        });
-        setRoomSize({ width: 3000, depth: 2000 });
-        setDescription("");
-        setSubdescription("");
-        setNotes({});
-        setDroppedItems([]);
-        setCurrentStep("Start"); // Automatically navigate to Base Layout after submission
-        setHasSubmitted(true);
-      }
-    } catch (error) {
-      setAlert({
-        open: true,
-        message: "Failed to save room details. Please try again.",
-        severity: "error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
 
   //update room details
-  const handleUpdate = async () => {
-    setIsLoading(true);
+const handleUpdate = async (event) => {
+  event?.preventDefault?.();
 
-    try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_SERVER_URL}/api/room-details/update-room-details/${location.state.roomDetails._id}`, // ID from state
-        {
-          width: roomSize.width,
-          depth: roomSize.depth,
-          description,
-          subdescription,
-        },
-        { withCredentials: true }
-      );
+  if (!auth) {
+    redirectToLoginWithData("updateRoom");
+    return;
+  }
 
-      console.log("Update Response:", response);
+  if (!roomSize.width || !roomSize.depth) {
+    setAlert({
+      open: true,
+      message: "Room width and depth are required.",
+      severity: "error",
+    });
+    return;
+  }
 
-      if (response.status === 200) {
-        setAlert({
-          open: true,
-          message: "Room details updated successfully!",
-          severity: "success",
-        });
+  if (!description.trim()) {
+    setAlert({
+      open: true,
+      message: "Description is required.",
+      severity: "error",
+    });
+    return;
+  }
 
-        navigate("/account");
-      }
-    } catch (error) {
+  setIsLoading(true);
+
+  try {
+    const response = await axios.put(
+      `${process.env.REACT_APP_SERVER_URL}/api/room-details/update-room-details/${location.state.roomDetails._id}`,
+      {
+        width: roomSize.width,
+        depth: roomSize.depth,
+        description,
+        subdescription,  
+      },
+      { withCredentials: true }
+    );
+
+    if (response.status === 200) {
       setAlert({
         open: true,
-        message: "Failed to update room details. Please try again.",
-        severity: "error",
+        message: "Room details updated successfully!",
+        severity: "success",
       });
-    } finally {
-      setIsLoading(false);
+
+      navigate("/account");
     }
-  };
+  } catch (error) {
+    setAlert({
+      open: true,
+      message: "Failed to update room details. Please try again.",
+      severity: "error",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
 
 
 const handleAddToCart = async (event) => {
   event.preventDefault();
+
+  
+  if (!auth) {
+    redirectToLoginWithData("addToCart");
+    return;
+  }
 
   if (!roomSize.width || !roomSize.depth || !description.trim()) {
     setAlert({
@@ -699,67 +787,71 @@ const handleNextStep = () => {
                   of your room size yet.
                 </p>
 
-                {/* Width Input and Slider */}
-                <Form.Group controlId="roomWidth" className="mb-3">
-                  <Row>
-                    <Col xs={4}>
-                      <Form.Label style={{ color: plannerText }}>Width:</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={roomSize.width}
-                        onChange={(e) =>
-                          handleRoomSizeChange("width", e.target.value)
-                        }
-                        placeholder="Enter width in mm"
-                      />
-                    </Col>
-                    <Col
-                      xs={3}
-                      style={{ display: "flex", alignItems: "center" }}
-                      className="w66"
-                    >
-                      <Form.Range
-                        min={0}
-                        max={3000}
-                        value={roomSize.width}
-                        onChange={(e) =>
-                          handleRoomSizeChange("width", e.target.value)
-                        }
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
+{/* Width Input and Slider */}
+<Form.Group controlId="roomWidth" className="mb-3">
+  <Row>
+    <Col xs={4}>
+      <Form.Label style={{ color: plannerText }}>Width (min 8000mm):</Form.Label>
+      <Form.Control
+        type="number"
+        min={8000} // ✅ set minimum
+        max={20000} // ✅ optional upper bound
+        value={roomSize.width}
+        onChange={(e) =>
+          handleRoomSizeChange("width", Number(e.target.value))
+        }
+        placeholder="Enter width in mm"
+      />
+    </Col>
+    <Col
+      xs={3}
+      style={{ display: "flex", alignItems: "center" }}
+      className="w66"
+    >
+      <Form.Range
+        min={8000}  
+        max={30000}  
+        value={roomSize.width}
+        onChange={(e) =>
+          handleRoomSizeChange("width", Number(e.target.value))
+        }
+      />
+    </Col>
+  </Row>
+</Form.Group>
 
-                {/* Depth Input and Slider */}
-                <Form.Group controlId="roomDepth" className="mb-3">
-                  <Row>
-                    <Col xs={4}>
-                      <Form.Label style={{ color: plannerText }}>Depth:</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={roomSize.depth}
-                        onChange={(e) =>
-                          handleRoomSizeChange("depth", e.target.value)
-                        }
-                        placeholder="Enter depth in mm"
-                      />
-                    </Col>
-                    <Col
-                      xs={3}
-                      style={{ display: "flex", alignItems: "center" }}
-                      className="w66"
-                    >
-                      <Form.Range
-                        min={0}
-                        max={3000}
-                        value={roomSize.depth}
-                        onChange={(e) =>
-                          handleRoomSizeChange("depth", e.target.value)
-                        }
-                      />
-                    </Col>
-                  </Row>
-                </Form.Group>
+{/* Depth Input and Slider */}
+<Form.Group controlId="roomDepth" className="mb-3">
+  <Row>
+    <Col xs={4}>
+      <Form.Label style={{ color: plannerText }}>Depth (min 8000mm):</Form.Label>
+      <Form.Control
+        type="number"
+        min={8000} // ✅ set minimum
+        max={30000}
+        value={roomSize.depth}
+        onChange={(e) =>
+          handleRoomSizeChange("depth", Number(e.target.value))
+        }
+        placeholder="Enter depth in mm"
+      />
+    </Col>
+    <Col
+      xs={3}
+      style={{ display: "flex", alignItems: "center" }}
+      className="w66"
+    >
+      <Form.Range
+        min={8000} // ✅ set minimum
+        max={30000}
+        value={roomSize.depth}
+        onChange={(e) =>
+          handleRoomSizeChange("depth", Number(e.target.value))
+        }
+      />
+    </Col>
+  </Row>
+</Form.Group>
 
                 <p
                   style={{

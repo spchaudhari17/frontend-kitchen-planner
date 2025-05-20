@@ -1,5 +1,7 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLogin } from '../hooks/useLogin';
+import { useAuthContext } from '../context/auth';
 import { Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import usePersist from '../hooks/usePersist';
@@ -10,9 +12,34 @@ import SignInWithGoogleButton from '../components/auth/SignInWithGoogleButton';
 const Login = () => {
   const { login, error, isLoading } = useLogin();
   const { persist, setPersist } = usePersist();
+  const { auth } = useAuthContext();
   const [changeIcon, setChangeIcon] = useState(false);
   const emailRef = useRef('');
   const passwordRef = useRef('');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+useEffect(() => {
+  if (auth) {
+    if (location.state?.redirectFrom === 'planner') {
+      navigate('/planner', {
+        state: {
+          resumeAction: location.state.pendingAction,
+          roomData: location.state.roomData,
+          currentStep: location.state.currentStep || "Review", // ✅ include this
+        },
+        replace: true
+      });
+    } else {
+      if (auth.role === 'admin') {
+        navigate('/user', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    }
+  }
+}, [auth, location, navigate]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
