@@ -251,7 +251,7 @@ const Shipping = () => {
           <span className="ItemName">Soft Close Hinge</span>
           <span className="ItemCost">$9.60</span>
         </div> */}
-        {extras?.handle && (
+        {/* {extras?.handle && (
           <div className="item">
             <span className="ItemIndex">
               <img src="https://placehold.co/400" alt="" />
@@ -276,7 +276,7 @@ const Shipping = () => {
               ${(extras.hinge.price * extras.hinge.qty).toFixed(2)}
             </span>
           </div>
-        )}
+        )} */}
 
         <div>
           {cartItems.map((cartItem, index) => {

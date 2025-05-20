@@ -94,8 +94,8 @@ function App() {
             <Route path="/activate/:activation_token" element={<Activate />} />
             <Route path="/recover-password" element={<VerifyEmail />} />
             <Route path="/login" element={!auth ? <Login /> : <Navigate to={getRedirectPath()} />} />
-            <Route path="/" element={!auth ? <Guest /> : <Navigate to={getRedirectPath()} />} />
-            <Route path="/product-list/:category/:subcategory" element={<ProductList />} />
+            {/* <Route path="/" element={!auth ? <Guest /> : <Navigate to={getRedirectPath()} />} /> */}
+            <Route path="/" element={<ProductList />} />
             <Route path="/add-product/:category/:subcategory" element={<ProductAdder />} />
 
 

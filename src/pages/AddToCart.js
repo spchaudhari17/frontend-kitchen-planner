@@ -371,7 +371,7 @@ const AddToCart = () => {
       <div>
 
         {/* Handle  */}
-        {
+        {/* {
           showHandle && (
             <div className="cart-item d-flex mt-5" id="item-1">
               <div className="">
@@ -388,9 +388,7 @@ const AddToCart = () => {
                   <span id="depth">Standard</span>
                 </p>
 
-                {/* <button className="rembutton" id="remove-item">
-              Remove
-            </button> */}
+               
 
                 <button className="rembutton" onClick={() => setShowHandle(false)}>Remove</button>
                 <div className="d-flex">
@@ -406,14 +404,14 @@ const AddToCart = () => {
               </div>
             </div>
           )
-        }
+        } */}
 
-        <hr />
+        {/* <hr /> */}
 
 
 
         {/* Hinges */}
-        {
+        {/* {
           showHinge && (
             <div className="cart-item d-flex mt-5" id="item-1">
               <div className="">
@@ -425,10 +423,7 @@ const AddToCart = () => {
               </div>
               <div className="cart-details">
                 <h2>Soft Close Hinge</h2>
-
-                {/* <button className="rembutton" id="remove-item">
-                  Remove
-                </button> */}
+ 
                 <button className="rembutton" id="remove-item" onClick={() => setShowHinge(false)}>Remove</button>
 
                 <div className="d-flex">
@@ -444,7 +439,7 @@ const AddToCart = () => {
               </div>
             </div>
           )
-        }
+        } */}
 
         <hr />
 

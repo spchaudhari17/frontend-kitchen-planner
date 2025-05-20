@@ -395,70 +395,64 @@ const ProductList = () => {
 
 
 
-  const handleAddToCart = async (event) => {
-    event.preventDefault();
+const handleAddToCart = async (event) => {
+  event.preventDefault();
 
-    if (!roomSize.width || !roomSize.depth || !description || !subdescription) {
-      setAlert({
-        open: true,
-        message: "Please fill out all fields before adding to cart.",
-        severity: "error",
-      });
-      return;
-    }
+  if (!roomSize.width || !roomSize.depth || !description.trim()) {
+    setAlert({
+      open: true,
+      message: "Room width, depth, and description are required to add to cart.",
+      severity: "error",
+    });
+    return;
+  }
 
-    const newCartItem = {
-      user_id: userInfo._id,
-      width: roomSize.width,
-      depth: roomSize.depth,
-      description,
-      subdescription,
-      notes,
-      droppedItems: droppedItems.map(item => ({
-        id: item.id,
-        name: item.name,
-        imageSrc: item.imageSrc,
-        price: item.price,
-        x: item.x,
-        y: item.y,
-        rotation: item.rotation,
-        width: item.width,
-        height: item.height
-      })),
-    };
+  const newCartItem = {
+    user_id: userInfo._id,
+    width: roomSize.width,
+    depth: roomSize.depth,
+    description,
+    subdescription, // optional
+    notes,
+    droppedItems: droppedItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      imageSrc: item.imageSrc,
+      price: item.price,
+      x: item.x,
+      y: item.y,
+      rotation: item.rotation,
+      width: item.width,
+      height: item.height
+    })),
+  };
 
-    // Local Storage Save
+  try {
     let existingCart = [];
-    try {
-      const storedCart = JSON.parse(localStorage.getItem("cartData"));
-      if (Array.isArray(storedCart)) {
-        existingCart = storedCart;
-      }
-    } catch (e) {
-      console.error("Error parsing local cartData:", e);
+    const storedCart = JSON.parse(localStorage.getItem("cartData"));
+    if (Array.isArray(storedCart)) {
+      existingCart = storedCart;
     }
     existingCart.push(newCartItem);
     localStorage.setItem("cartData", JSON.stringify(existingCart));
 
-    // ✅ MongoDB Save
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/cart/save`, newCartItem);
-      if (response.data.success) {
-        setAlert({
-          open: true,
-          message: "Cart saved successfully to database and localStorage!",
-          severity: "success",
-        });
-      }
-    } catch (err) {
-      console.error("MongoDB Cart Save Error:", err);
+    const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/cart/save`, newCartItem);
+    if (response.data.success) {
       setAlert({
         open: true,
-        message: "Saved locally, but failed to store in database.",
-        severity: "warning",
+        message: "Cart saved successfully!",
+        severity: "success",
       });
     }
-  };
+  } catch (err) {
+    console.error("MongoDB Cart Save Error:", err);
+    setAlert({
+      open: true,
+      message: "Saved locally, but failed to store in database.",
+      severity: "warning",
+    });
+  }
+};
 
 
 
@@ -593,24 +587,51 @@ const ProductList = () => {
 
 
 
-    const handleNextStep = () => {
-      // Mark current step as completed
-      if (!completedSteps.includes(currentStep)) {
-        setCompletedSteps([...completedSteps, currentStep]);
-      }
+const handleNextStep = () => {
+  if (currentStep === "Room Layout") {
+    if (!roomSize.width || !roomSize.depth) {
+      setAlert({
+        open: true,
+        message: "Please enter room width and depth.",
+        severity: "error",
+      });
+      return;
+    }
 
-      // Determine next step
-      let nextStep;
-      switch (currentStep) {
-        case "Start": nextStep = "Room Layout"; break;
-        case "Room Layout": nextStep = "Top View"; break;
-        case "Top View": nextStep = "Add Notes"; break;
-        case "Add Notes": nextStep = "Review"; break;
-        default: nextStep = currentStep;
-      }
+    if (!description.trim()) {
+      setAlert({
+        open: true,
+        message: "Description is required.",
+        severity: "error",
+      });
+      return;
+    }
+  }
 
-      setCurrentStep(nextStep);
-    };
+  // Proceed to next step
+  if (!completedSteps.includes(currentStep)) {
+    setCompletedSteps([...completedSteps, currentStep]);
+  }
+
+  let nextStep;
+  switch (currentStep) {
+    case "Start":
+      nextStep = "Room Layout"; break;
+    case "Room Layout":
+      nextStep = "Top View"; break;
+    case "Top View":
+      nextStep = "Add Notes"; break;
+    case "Add Notes":
+      nextStep = "Review"; break;
+    default:
+      nextStep = currentStep;
+  }
+
+  setCurrentStep(nextStep);
+};
+
+
+
 
     if (currentStep === "Room Layout") {
       return (
@@ -1063,7 +1084,7 @@ const ProductList = () => {
                 }}
                 onClick={handleSubmit}
               >
-                REVIEW AND SUBMIT
+                REVIEW AND  SAVE
               </Button>
 
               <Button
