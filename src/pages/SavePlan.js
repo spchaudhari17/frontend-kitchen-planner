@@ -60,7 +60,7 @@ const MyAccount = () => {
   };
 
   const handleOpenPlan = (room) => {
-    navigate("/product-list/Kitchen/Base", {
+    navigate("/", {
       state: {
         roomDetails: room, // Passing full room details
         fromSavedPlans: true

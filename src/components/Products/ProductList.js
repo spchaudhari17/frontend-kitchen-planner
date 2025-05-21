@@ -9,9 +9,8 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import axios from "axios";
 
-
 import { useAuthContext } from "../../context/auth";
-import { useColorContext } from '../../context/colorcontext';
+import { useColorContext } from "../../context/colorcontext";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./ProductList.css";
 
@@ -22,25 +21,31 @@ const ProductList = () => {
   const { componentColors } = useColorContext();
   const [completedSteps, setCompletedSteps] = useState([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-const [selectedRoomDetails, setSelectedRoomDetails] = useState(null);
+  const [selectedRoomDetails, setSelectedRoomDetails] = useState(null);
+  const isEditing = Boolean(location.state?.roomDetails);
+
 
   const defaultColors = {
-    background: '#ffffff',
-    text: '#000000',
+    background: "#ffffff",
+    text: "#000000",
   };
 
   // Main planner background and text
-  const plannerBg = componentColors?.['Kitchen Planner']?.background || defaultColors.background;
-  const plannerText = componentColors?.['Kitchen Planner']?.text || defaultColors.text;
+  const plannerBg =
+    componentColors?.["Kitchen Planner"]?.background ||
+    defaultColors.background;
+  const plannerText =
+    componentColors?.["Kitchen Planner"]?.text || defaultColors.text;
 
   const defaultButtonColors = {
-    background: '#007bff', // fallback
-    text: '#ffffff'
+    background: "#007bff", // fallback
+    text: "#ffffff",
   };
 
-  const globalButtonBg = componentColors?.['Button']?.background || defaultButtonColors.background;
-  const globalButtonText = componentColors?.['Button']?.text || defaultButtonColors.text;
-
+  const globalButtonBg =
+    componentColors?.["Button"]?.background || defaultButtonColors.background;
+  const globalButtonText =
+    componentColors?.["Button"]?.text || defaultButtonColors.text;
 
   const [roomDetails, setRoomDetails] = useState([]);
 
@@ -72,46 +77,44 @@ const [selectedRoomDetails, setSelectedRoomDetails] = useState(null);
   useEffect(() => {
     fetchRoomDetails();
   }, []);
-  
-useEffect(() => {
-  if (location.state?.resumeAction && location.state?.roomData) {
-    const { roomData, resumeAction, currentStep } = location.state;
 
-    setRoomSize({ width: roomData.width, depth: roomData.depth });
-    setDescription(roomData.description);
-    setSubdescription(roomData.subdescription);
-    setNotes(roomData.notes || {});
-    setDroppedItems(roomData.droppedItems || []);
-    
-    setCurrentStep(currentStep || "Room Layout"); // ✅ Resume at the step user left off
+  useEffect(() => {
+    if (location.state?.resumeAction && location.state?.roomData) {
+      const { roomData, resumeAction, currentStep } = location.state;
 
-    setTimeout(() => {
-      if (resumeAction === "addToCart") handleAddToCart(new Event("resume"));
-      else if (resumeAction === "saveRoom") handleSubmit(new Event("resume"));
-    }, 500);
-  }
-}, [location.state]);
+      setRoomSize({ width: roomData.width, depth: roomData.depth });
+      setDescription(roomData.description);
+      setSubdescription(roomData.subdescription);
+      setNotes(roomData.notes || {});
+      setDroppedItems(roomData.droppedItems || []);
 
+      setCurrentStep(currentStep || "Room Layout"); // ✅ Resume at the step user left off
 
-const redirectToLoginWithData = (action) => {
-  navigate("/login", {
-    state: {
-      redirectFrom: "planner",
-      pendingAction: action,
-      currentStep, // <== ✅ ADD THIS
-      roomData: {
-        width: roomSize.width,
-        depth: roomSize.depth,
-        description,
-        subdescription,
-        notes,
-        droppedItems,
+      setTimeout(() => {
+        if (resumeAction === "addToCart") handleAddToCart(new Event("resume"));
+        else if (resumeAction === "saveRoom") handleSubmit(new Event("resume"));
+      }, 500);
+    }
+  }, [location.state]);
+
+  const redirectToLoginWithData = (action) => {
+    navigate("/login", {
+      state: {
+        // “from” is where we want to go back to
+        from: location.pathname,
+        pendingAction: action,
+        roomData: {
+          width: roomSize.width,
+          depth: roomSize.depth,
+          description,
+          subdescription,
+          notes,
+          droppedItems,
+        },
+        currentStep,
       },
-    },
-  });
-};
-
-
+    });
+  };
 
   const handleOpenSavedPlan = () => {
     if (!auth) {
@@ -127,7 +130,7 @@ const redirectToLoginWithData = (action) => {
   };
 
   const [currentStep, setCurrentStep] = useState("Start"); // Tracks the active step
-  const [roomSize, setRoomSize] = useState({ width: 8000, depth: 8000 });
+  const [roomSize, setRoomSize] = useState({ width: 3000, depth: 2000 });
   const [description, setDescription] = useState("");
   const [subdescription, setSubdescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -165,39 +168,39 @@ const redirectToLoginWithData = (action) => {
   }, []);
 
   const handleFrontViewToggle = (event) => {
-  event.preventDefault();
-      if (!auth) {
-    redirectToLoginWithData("frontView");
-    return;
-  }
+    event.preventDefault();
+    if (!auth) {
+      redirectToLoginWithData("frontView");
+      return;
+    }
     setShowFrontView(!showFrontView);
     setShowView(!showView); // Toggle visibility of the div
   };
 
   //location for open cabinates data
   useEffect(() => {
-  if (location.state?.roomDetails) {
-    const room = location.state.roomDetails;
-    
-    // Ensure droppedItems have all required properties
-    const normalizedItems = (room.droppedItems || []).map(item => ({
-      ...item,
-      x: item.x || 0,
-      y: item.y || 0,
-      rotation: item.rotation || 0,
-      width: item.width || item.minWidth || 300,
-      height: item.height || item.minDepth || 600,
-      id: item.id || Date.now()
-    }));
+    if (location.state?.roomDetails) {
+      const room = location.state.roomDetails;
 
-    setRoomSize({ width: room.width, depth: room.depth });
-    setDescription(room.description);
-    setSubdescription(room.subdescription);
-    setNotes(room.notes || {});
-    setDroppedItems(normalizedItems);
-    setCurrentStep("Room Layout");
-  }
-}, [location.state]);
+      // Ensure droppedItems have all required properties
+      const normalizedItems = (room.droppedItems || []).map((item) => ({
+        ...item,
+        x: item.x || 0,
+        y: item.y || 0,
+        rotation: item.rotation || 0,
+        width: item.width || item.minWidth || 300,
+        height: item.height || item.minDepth || 600,
+        id: item.id || Date.now(),
+      }));
+
+      setRoomSize({ width: room.width, depth: room.depth });
+      setDescription(room.description);
+      setSubdescription(room.subdescription);
+      setNotes(room.notes || {});
+      setDroppedItems(normalizedItems);
+      setCurrentStep("Room Layout");
+    }
+  }, [location.state]);
 
   // Function to delete all notes from localStorage
   const handleDeleteAllNotes = () => {
@@ -210,15 +213,13 @@ const redirectToLoginWithData = (action) => {
 
     //  Storage Event Trigger karega
     window.dispatchEvent(new Event("storage"));
-
   };
-
 
   const steps = [
     {
       name: "Start",
       tooltip: "Start planning your kitchen.",
-      canNavigate: true
+      canNavigate: true,
     },
     {
       name: "Room Layout",
@@ -227,7 +228,7 @@ const redirectToLoginWithData = (action) => {
         // Can always go back, or forward if previous step completed
         targetIndex < currentIndex ||
         completedSteps.includes("Start") ||
-        hasSubmitted
+        hasSubmitted,
     },
     {
       name: "Top View",
@@ -235,7 +236,7 @@ const redirectToLoginWithData = (action) => {
       canNavigate: (currentIndex, targetIndex) =>
         targetIndex < currentIndex ||
         completedSteps.includes("Room Layout") ||
-        hasSubmitted
+        hasSubmitted,
     },
     {
       name: "Add Notes",
@@ -243,7 +244,7 @@ const redirectToLoginWithData = (action) => {
       canNavigate: (currentIndex, targetIndex) =>
         targetIndex < currentIndex ||
         completedSteps.includes("Top View") ||
-        hasSubmitted
+        hasSubmitted,
     },
     {
       name: "Review",
@@ -251,7 +252,7 @@ const redirectToLoginWithData = (action) => {
       canNavigate: (currentIndex, targetIndex) =>
         targetIndex < currentIndex ||
         completedSteps.includes("Add Notes") ||
-        hasSubmitted
+        hasSubmitted,
     },
   ];
 
@@ -268,19 +269,20 @@ const redirectToLoginWithData = (action) => {
     let newX = 50;
     let newY = 50;
 
-    const occupiedPositions = droppedItems.map(i => ({
+    const occupiedPositions = droppedItems.map((i) => ({
       x: i.x,
       y: i.y,
       width: i.width,
-      height: i.height
+      height: i.height,
     }));
 
     while (
-      occupiedPositions.some(pos =>
-        newX < pos.x + pos.width + SPACING &&
-        newX + CABINET_WIDTH > pos.x &&
-        newY < pos.y + pos.height + SPACING &&
-        newY + CABINET_HEIGHT > pos.y
+      occupiedPositions.some(
+        (pos) =>
+          newX < pos.x + pos.width + SPACING &&
+          newX + CABINET_WIDTH > pos.x &&
+          newY < pos.y + pos.height + SPACING &&
+          newY + CABINET_HEIGHT > pos.y
       )
     ) {
       newX += CABINET_WIDTH + SPACING;
@@ -294,23 +296,19 @@ const redirectToLoginWithData = (action) => {
       ...item,
       id: item.id || Date.now(),
       rotation: 0,
-      height: item.minDepth || 0,    // Initialize with min depth
-      width: item.minWidth || 0,     // Initialize with min width
+      height: item.minDepth || 0, // Initialize with min depth
+      width: item.minWidth || 0, // Initialize with min width
       x: 50,
       y: 50,
-      minWidth: item.minWidth,       // Store min width from API
-      maxWidth: item.maxWidth,       // Store max width from API
-      minDepth: item.minDepth,       // Store min depth from API
-      maxDepth: item.maxDepth        // Store max depth from API
+      minWidth: item.minWidth, // Store min width from API
+      maxWidth: item.maxWidth, // Store max width from API
+      minDepth: item.minDepth, // Store min depth from API
+      maxDepth: item.maxDepth, // Store max depth from API
     };
 
     setSelectedItem(newItem);
     setShowModal(true);
   };
-
-
-
-
 
   const handleRotate = (index) => {
     setDroppedItems((prevItems) => {
@@ -340,210 +338,203 @@ const redirectToLoginWithData = (action) => {
     setItemDimensions({ height: "", width: "" });
   };
 
-  //save room details 
-const handleSubmit = async (event) => {
-  event.preventDefault();
+  //save room details
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  if (!auth) {
-    redirectToLoginWithData("saveRoom");
-    return;
-  }
+    if (!auth) {
+      redirectToLoginWithData("saveRoom");
+      return;
+    }
 
-  if (!roomSize.width || !roomSize.depth) {
-    setAlert({
-      open: true,
-      message: "Room width and depth are required.",
-      severity: "error",
-    });
-    return;
-  }
-
-  if (!description.trim()) {
-    setAlert({
-      open: true,
-      message: "Description is required.",
-      severity: "error",
-    });
-    return;
-  }
-
-  setIsLoading(true);
-
-  try {
-    const response = await axiosPrivate.post(
-      "/api/room-details/save-room-details",
-      {
-        user_id: userInfo._id,
-        width: roomSize.width,
-        depth: roomSize.depth,
-        description,
-        subdescription,
-        notes,
-        droppedItems,
-      },
-      { withCredentials: true }
-    );
-
-    if (response.status === 201) {
+    if (!roomSize.width || !roomSize.depth) {
       setAlert({
         open: true,
-        message: "Room details saved successfully!",
-        severity: "success",
+        message: "Room width and depth are required.",
+        severity: "error",
       });
-      setRoomSize({ width: 8000, depth: 8000 });
-      setDescription("");
-      setSubdescription("");
-      setNotes({});
-      setDroppedItems([]);
-      setCurrentStep("Start");
-      setHasSubmitted(true);
+      return;
     }
-  } catch (error) {
-    setAlert({
-      open: true,
-      message: "Failed to save room details. Please try again.",
-      severity: "error",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
 
-
-
-
-  //update room details
-const handleUpdate = async (event) => {
-  event?.preventDefault?.();
-
-  if (!auth) {
-    redirectToLoginWithData("updateRoom");
-    return;
-  }
-
-  if (!roomSize.width || !roomSize.depth) {
-    setAlert({
-      open: true,
-      message: "Room width and depth are required.",
-      severity: "error",
-    });
-    return;
-  }
-
-  if (!description.trim()) {
-    setAlert({
-      open: true,
-      message: "Description is required.",
-      severity: "error",
-    });
-    return;
-  }
-
-  setIsLoading(true);
-
-  try {
-    const response = await axios.put(
-      `${process.env.REACT_APP_SERVER_URL}/api/room-details/update-room-details/${location.state.roomDetails._id}`,
-      {
-        width: roomSize.width,
-        depth: roomSize.depth,
-        description,
-        subdescription,  
-      },
-      { withCredentials: true }
-    );
-
-    if (response.status === 200) {
+    if (!description.trim()) {
       setAlert({
         open: true,
-        message: "Room details updated successfully!",
-        severity: "success",
+        message: "Description is required.",
+        severity: "error",
       });
-
-      navigate("/account");
+      return;
     }
-  } catch (error) {
-    setAlert({
-      open: true,
-      message: "Failed to update room details. Please try again.",
-      severity: "error",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
 
+    setIsLoading(true);
 
+    try {
+      const response = await axiosPrivate.post(
+        "/api/room-details/save-room-details",
+        {
+          user_id: userInfo._id,
+          width: roomSize.width,
+          depth: roomSize.depth,
+          description,
+          subdescription,
+          notes,
+          droppedItems,
+        },
+        { withCredentials: true }
+      );
 
-
-
-const handleAddToCart = async (event) => {
-  event.preventDefault();
-
-  
-  if (!auth) {
-    redirectToLoginWithData("addToCart");
-    return;
-  }
-
-  if (!roomSize.width || !roomSize.depth || !description.trim()) {
-    setAlert({
-      open: true,
-      message: "Room width, depth, and description are required to add to cart.",
-      severity: "error",
-    });
-    return;
-  }
-
-  const newCartItem = {
-    user_id: userInfo._id,
-    width: roomSize.width,
-    depth: roomSize.depth,
-    description,
-    subdescription, // optional
-    notes,
-    droppedItems: droppedItems.map(item => ({
-      id: item.id,
-      name: item.name,
-      imageSrc: item.imageSrc,
-      price: item.price,
-      x: item.x,
-      y: item.y,
-      rotation: item.rotation,
-      width: item.width,
-      height: item.height
-    })),
+      if (response.status === 201) {
+        setAlert({
+          open: true,
+          message: "Room details saved successfully!",
+          severity: "success",
+        });
+        setRoomSize({ width: 3000, depth: 2000 });
+        setDescription("");
+        setSubdescription("");
+        setNotes({});
+        setDroppedItems([]);
+        setCurrentStep("Start");
+        setHasSubmitted(true);
+      }
+    } catch (error) {
+      setAlert({
+        open: true,
+        message: "Failed to save room details. Please try again.",
+        severity: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  try {
-    let existingCart = [];
-    const storedCart = JSON.parse(localStorage.getItem("cartData"));
-    if (Array.isArray(storedCart)) {
-      existingCart = storedCart;
-    }
-    existingCart.push(newCartItem);
-    localStorage.setItem("cartData", JSON.stringify(existingCart));
+  //update room details
+  const handleUpdate = async (event) => {
+    event?.preventDefault?.();
 
-    const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/cart/save`, newCartItem);
-    if (response.data.success) {
+    if (!auth) {
+      redirectToLoginWithData("updateRoom");
+      return;
+    }
+
+    if (!roomSize.width || !roomSize.depth) {
       setAlert({
         open: true,
-        message: "Cart saved successfully!",
-        severity: "success",
+        message: "Room width and depth are required.",
+        severity: "error",
+      });
+      return;
+    }
+
+    if (!description.trim()) {
+      setAlert({
+        open: true,
+        message: "Description is required.",
+        severity: "error",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_SERVER_URL}/api/room-details/update-room-details/${location.state.roomDetails._id}`,
+        {
+          width: roomSize.width,
+          depth: roomSize.depth,
+          description,
+          subdescription,
+        },
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        setAlert({
+          open: true,
+          message: "Room details updated successfully!",
+          severity: "success",
+        });
+
+        navigate("/account");
+      }
+    } catch (error) {
+      setAlert({
+        open: true,
+        message: "Failed to update room details. Please try again.",
+        severity: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddToCart = async (event) => {
+    event.preventDefault();
+
+    if (!auth) {
+      redirectToLoginWithData("addToCart");
+      return;
+    }
+
+    if (!roomSize.width || !roomSize.depth || !description.trim()) {
+      setAlert({
+        open: true,
+        message:
+          "Room width, depth, and description are required to add to cart.",
+        severity: "error",
+      });
+      return;
+    }
+
+    const newCartItem = {
+      user_id: userInfo._id,
+      width: roomSize.width,
+      depth: roomSize.depth,
+      description,
+      subdescription, // optional
+      notes,
+      droppedItems: droppedItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        imageSrc: item.imageSrc,
+        price: item.price,
+        x: item.x,
+        y: item.y,
+        rotation: item.rotation,
+        width: item.width,
+        height: item.height,
+      })),
+    };
+
+    try {
+      let existingCart = [];
+      const storedCart = JSON.parse(localStorage.getItem("cartData"));
+      if (Array.isArray(storedCart)) {
+        existingCart = storedCart;
+      }
+      existingCart.push(newCartItem);
+      localStorage.setItem("cartData", JSON.stringify(existingCart));
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_SERVER_URL}/api/cart/save`,
+        newCartItem
+      );
+      if (response.data.success) {
+        setAlert({
+          open: true,
+          message: "Cart saved successfully!",
+          severity: "success",
+        });
+      }
+    } catch (err) {
+      console.error("MongoDB Cart Save Error:", err);
+      setAlert({
+        open: true,
+        message: "Saved locally, but failed to store in database.",
+        severity: "warning",
       });
     }
-  } catch (err) {
-    console.error("MongoDB Cart Save Error:", err);
-    setAlert({
-      open: true,
-      message: "Saved locally, but failed to store in database.",
-      severity: "warning",
-    });
-  }
-};
-
-
-
+  };
 
   const handleRemove = (indexToRemove) => {
     setDroppedItems((prev) =>
@@ -566,28 +557,33 @@ const handleAddToCart = async (event) => {
   };
 
   const renderStepContent = () => {
-
-
     if (currentStep === "Start") {
       return (
         <div
           className="maincont"
           style={{
-            textAlign: 'center',
-            padding: '20px',
-            display: 'flex',
+            textAlign: "center",
+            padding: "20px",
+            display: "flex",
             backgroundColor: plannerBg,
             color: plannerText,
           }}
         >
-          <div className="toptxt" style={{
-            textAlign: 'center',
-            padding: '20px',
-            display: 'flex',
-
-          }}>
-            <h4 className="h4head" style={{ color: plannerText }}  >Would You Like to Create a Plan?</h4>
-            <p className="paratext" style={{ color: plannerText, marginLeft: "10px" }}>
+          <div
+            className="toptxt"
+            style={{
+              textAlign: "center",
+              padding: "20px",
+              display: "flex",
+            }}
+          >
+            <h4 className="h4head" style={{ color: plannerText }}>
+              Would You Like to Create a Plan?
+            </h4>
+            <p
+              className="paratext"
+              style={{ color: plannerText, marginLeft: "10px" }}
+            >
               Need help visualizing your dream kitchen? Our kitchen planner puts
               the design power in your hands, with an incredibly easy-to-use
               drag-and-drop builder.
@@ -673,64 +669,63 @@ const handleAddToCart = async (event) => {
       );
     }
 
+    const handleNextStep = () => {
+      if (currentStep === "Room Layout") {
+        if (!roomSize.width || !roomSize.depth) {
+          setAlert({
+            open: true,
+            message: "Please enter room width and depth.",
+            severity: "error",
+          });
+          return;
+        }
 
+        if (!description.trim()) {
+          setAlert({
+            open: true,
+            message: "Description is required.",
+            severity: "error",
+          });
+          return;
+        }
+      }
 
-const handleNextStep = () => {
-  if (currentStep === "Room Layout") {
-    if (!roomSize.width || !roomSize.depth) {
-      setAlert({
-        open: true,
-        message: "Please enter room width and depth.",
-        severity: "error",
-      });
-      return;
-    }
+      // Proceed to next step
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps([...completedSteps, currentStep]);
+      }
 
-    if (!description.trim()) {
-      setAlert({
-        open: true,
-        message: "Description is required.",
-        severity: "error",
-      });
-      return;
-    }
-  }
+      let nextStep;
+      switch (currentStep) {
+        case "Start":
+          nextStep = "Room Layout";
+          break;
+        case "Room Layout":
+          nextStep = "Top View";
+          break;
+        case "Top View":
+          nextStep = "Add Notes";
+          break;
+        case "Add Notes":
+          nextStep = "Review";
+          break;
+        default:
+          nextStep = currentStep;
+      }
 
-  // Proceed to next step
-  if (!completedSteps.includes(currentStep)) {
-    setCompletedSteps([...completedSteps, currentStep]);
-  }
-
-  let nextStep;
-  switch (currentStep) {
-    case "Start":
-      nextStep = "Room Layout"; break;
-    case "Room Layout":
-      nextStep = "Top View"; break;
-    case "Top View":
-      nextStep = "Add Notes"; break;
-    case "Add Notes":
-      nextStep = "Review"; break;
-    default:
-      nextStep = currentStep;
-  }
-
-  setCurrentStep(nextStep);
-};
-
-
-
+      setCurrentStep(nextStep);
+    };
 
     if (currentStep === "Room Layout") {
       return (
         <div
           className="roomlayout"
           style={{
-            width: '80%',
+            width: "80%",
             backgroundColor: plannerBg,
             color: plannerText,
-            padding: '20px',
-            margin: 'auto',
+            padding: "20px",
+            margin: "auto",
           }}
         >
           {/* <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -773,85 +768,89 @@ const handleNextStep = () => {
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "center",
                   }}
-                >
-
-                </div>
+                ></div>
                 <h5 className="cardtxt">Create New Plan</h5>
               </div>
             </Col>
             <Col xs={12} sm={8}>
               <Form>
                 <h5>Please Enter Your Room Size</h5>
-                <p className="paratext" style={{ textAlign: "left", color: plannerText }}>
+                <p
+                  className="paratext"
+                  style={{ textAlign: "left", color: plannerText }}
+                >
                   You can use the default measurements below if you’re not sure
                   of your room size yet.
                 </p>
+                {/* Width Input and Slider */}
+                <Form.Group controlId="roomWidth" className="mb-3">
+                  <Row>
+                    <Col xs={4}>
+                      <Form.Label style={{ color: plannerText }}>
+                        Width (3000 mm – 8000 mm):
+                      </Form.Label>
+                      <Form.Control
+                        type="number"
+                        min={3000}
+                        max={8000}
+                        value={roomSize.width}
+                        onChange={(e) =>
+                          handleRoomSizeChange("width", Number(e.target.value))
+                        }
+                        placeholder="Enter width in mm"
+                      />
+                    </Col>
+                    <Col
+                      xs={3}
+                      style={{ display: "flex", alignItems: "center" }}
+                      className="w66"
+                    >
+                      <Form.Range
+                        min={3000}
+                        max={8000}
+                        value={roomSize.width}
+                        onChange={(e) =>
+                          handleRoomSizeChange("width", Number(e.target.value))
+                        }
+                      />
+                    </Col>
+                  </Row>
+                </Form.Group>
 
-{/* Width Input and Slider */}
-<Form.Group controlId="roomWidth" className="mb-3">
-  <Row>
-    <Col xs={4}>
-      <Form.Label style={{ color: plannerText }}>Width (min 8000mm):</Form.Label>
-      <Form.Control
-        type="number"
-        min={8000} // ✅ set minimum
-        max={20000} // ✅ optional upper bound
-        value={roomSize.width}
-        onChange={(e) =>
-          handleRoomSizeChange("width", Number(e.target.value))
-        }
-        placeholder="Enter width in mm"
-      />
-    </Col>
-    <Col
-      xs={3}
-      style={{ display: "flex", alignItems: "center" }}
-      className="w66"
-    >
-      <Form.Range
-        min={8000}  
-        max={30000}  
-        value={roomSize.width}
-        onChange={(e) =>
-          handleRoomSizeChange("width", Number(e.target.value))
-        }
-      />
-    </Col>
-  </Row>
-</Form.Group>
-
-{/* Depth Input and Slider */}
-<Form.Group controlId="roomDepth" className="mb-3">
-  <Row>
-    <Col xs={4}>
-      <Form.Label style={{ color: plannerText }}>Depth (min 8000mm):</Form.Label>
-      <Form.Control
-        type="number"
-        min={8000} // ✅ set minimum
-        max={30000}
-        value={roomSize.depth}
-        onChange={(e) =>
-          handleRoomSizeChange("depth", Number(e.target.value))
-        }
-        placeholder="Enter depth in mm"
-      />
-    </Col>
-    <Col
-      xs={3}
-      style={{ display: "flex", alignItems: "center" }}
-      className="w66"
-    >
-      <Form.Range
-        min={8000} // ✅ set minimum
-        max={30000}
-        value={roomSize.depth}
-        onChange={(e) =>
-          handleRoomSizeChange("depth", Number(e.target.value))
-        }
-      />
-    </Col>
-  </Row>
-</Form.Group>
+                {/* Depth Input and Slider */}
+                <Form.Group controlId="roomDepth" className="mb-3">
+                  <Row>
+                    <Col xs={4}>
+                      <Form.Label style={{ color: plannerText }}>
+                        Depth (3000 mm – 8000 mm):
+                      </Form.Label>
+                      <Form.Control
+                        type="number"
+                        min={3000}
+                        max={8000}
+                        value={roomSize.depth}
+                        onChange={(e) =>
+                          handleRoomSizeChange("depth", Number(e.target.value))
+                        }
+                        placeholder="Enter depth in mm"
+                      />
+                    </Col>
+                    <Col
+                      xs={3}
+                      style={{ display: "flex", alignItems: "center" }}
+                      className="w66"
+                    >
+                      <Form.Range
+                        min={3000}
+                        max={8000}
+                        value={roomSize.depth}
+                        onChange={(e) =>
+                          handleRoomSizeChange("depth", Number(e.target.value))
+                        }
+                      />
+                    </Col>
+                  </Row>
+                </Form.Group>
 
                 <p
                   style={{
@@ -906,25 +905,20 @@ const handleNextStep = () => {
 
     if (currentStep === "Top View") {
       return (
-
         <DndProvider backend={HTML5Backend}>
-
           <div style={{}}>
             <div
               style={{
                 flex: 3,
                 // backgroundColor: plannerBg,
                 color: plannerText,
-                padding: '20px',
-                borderRadius: '5px',
-                marginRight: '20px',
+                padding: "20px",
+                borderRadius: "5px",
+                marginRight: "20px",
               }}
               className="remmar"
             >
-
-
               <DropZone {...commonDropZoneProps} roomSize={roomSize} />
-
             </div>
 
             <div style={{ marginTop: "20px", textAlign: "center" }}>
@@ -939,7 +933,6 @@ const handleNextStep = () => {
             </div>
           </div>
 
-
           {/* Modal for Item Dimensions */}
           <Modal show={showModal} onHide={() => setShowModal(false)}>
             <Modal.Header closeButton>
@@ -950,8 +943,8 @@ const handleNextStep = () => {
                 {/* Width Input and Slider */}
                 <Form.Group className="mb-3">
                   <Form.Label>
-                    Width: {itemDimensions.width}mm
-                    (Range: {selectedItem?.minWidth}mm - {selectedItem?.maxWidth}mm)
+                    Width: {itemDimensions.width}mm (Range:{" "}
+                    {selectedItem?.minWidth}mm - {selectedItem?.maxWidth}mm)
                   </Form.Label>
 
                   <Form.Control
@@ -969,7 +962,10 @@ const handleNextStep = () => {
                       setItemDimensions({
                         ...itemDimensions,
                         width: Math.min(
-                          Math.max(Number(e.target.value), selectedItem?.minWidth || 100),
+                          Math.max(
+                            Number(e.target.value),
+                            selectedItem?.minWidth || 100
+                          ),
                           selectedItem?.maxWidth || 3000
                         ),
                       })
@@ -977,23 +973,24 @@ const handleNextStep = () => {
                     placeholder="Enter width"
                   />
 
-
                   <Form.Range
                     min={selectedItem?.minWidth || 100}
                     max={selectedItem?.maxWidth || 3000}
                     value={itemDimensions.width}
-                    onChange={(e) => setItemDimensions({
-                      ...itemDimensions,
-                      width: e.target.value
-                    })}
+                    onChange={(e) =>
+                      setItemDimensions({
+                        ...itemDimensions,
+                        width: e.target.value,
+                      })
+                    }
                   />
                 </Form.Group>
 
                 {/* Depth Input and Slider */}
                 <Form.Group className="mb-3">
                   <Form.Label>
-                    Depth: {itemDimensions.height}mm
-                    (Range: {selectedItem?.minDepth}mm - {selectedItem?.maxDepth}mm)
+                    Depth: {itemDimensions.height}mm (Range:{" "}
+                    {selectedItem?.minDepth}mm - {selectedItem?.maxDepth}mm)
                   </Form.Label>
 
                   <Form.Control
@@ -1011,7 +1008,10 @@ const handleNextStep = () => {
                       setItemDimensions({
                         ...itemDimensions,
                         height: Math.min(
-                          Math.max(Number(e.target.value), selectedItem?.minDepth || 100),
+                          Math.max(
+                            Number(e.target.value),
+                            selectedItem?.minDepth || 100
+                          ),
                           selectedItem?.maxDepth || 3000
                         ),
                       })
@@ -1019,19 +1019,18 @@ const handleNextStep = () => {
                     placeholder="Enter depth"
                   />
 
-
                   <Form.Range
                     min={selectedItem?.minDepth || 100}
                     max={selectedItem?.maxDepth || 3000}
                     value={itemDimensions.height}
-                    onChange={(e) => setItemDimensions({
-                      ...itemDimensions,
-                      height: e.target.value
-                    })}
+                    onChange={(e) =>
+                      setItemDimensions({
+                        ...itemDimensions,
+                        height: e.target.value,
+                      })
+                    }
                   />
                 </Form.Group>
-
-
               </Form>
             </Modal.Body>
             <Modal.Footer>
@@ -1043,15 +1042,13 @@ const handleNextStep = () => {
               </Button>
             </Modal.Footer>
           </Modal>
-
         </DndProvider>
       );
     }
 
-
     if (currentStep === "Add Notes") {
       return (
-        <div className="notes-container" style={{ width: '100%' }}>
+        <div className="notes-container" style={{ width: "100%" }}>
           <DndProvider backend={HTML5Backend}>
             <div
               style={{
@@ -1059,7 +1056,7 @@ const handleNextStep = () => {
                 backgroundColor: "#fff",
                 padding: "20px",
                 borderRadius: "5px",
-                marginBottom: "20px" // Add some space below the drop zone
+                marginBottom: "20px", // Add some space below the drop zone
               }}
               className="sidemenu"
             >
@@ -1072,11 +1069,13 @@ const handleNextStep = () => {
             ... your notes content ...
           </div> */}
 
-          <div style={{
-            width: '100%',
-            textAlign: 'center',
-            marginTop: '20px'
-          }}>
+          <div
+            style={{
+              width: "100%",
+              textAlign: "center",
+              marginTop: "20px",
+            }}
+          >
             <Button
               variant="primary"
               type="Button"
@@ -1100,14 +1099,12 @@ const handleNextStep = () => {
                 // backgroundColor: plannerBg,
                 color: plannerText,
 
-                padding: '20px',
-                borderRadius: '5px',
+                padding: "20px",
+                borderRadius: "5px",
                 // marginRight: "20px",
               }}
               className="sidemenu remmar"
             >
-
-
               <DropZone {...commonDropZoneProps} />
             </div>
             <div className="mt-4">
@@ -1162,7 +1159,7 @@ const handleNextStep = () => {
 
               {/* </div> */}
 
-              {/* New "Review & Submit" Button */}
+                  {/* New "Review & Submit" Button */}
               <Button
                 className="rbtn2"
                 style={{
@@ -1176,25 +1173,26 @@ const handleNextStep = () => {
                 }}
                 onClick={handleSubmit}
               >
-                REVIEW AND  SAVE
+                REVIEW AND SAVE
               </Button>
 
-              <Button
-                className="rbtn2"
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: globalButtonBg,
-                  color: globalButtonText,
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  marginLeft: "20px",
-                }}
-                onClick={handleUpdate}
-              >
-                UPDATE DETAILS
-              </Button>
-
+             {isEditing && (
+                <Button
+                  className="rbtn2"
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: globalButtonBg,
+                    color: globalButtonText,
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    marginLeft: "20px",
+                  }}
+                  onClick={handleUpdate}
+                >
+                  UPDATE DETAILS
+                </Button>
+           )}
 
               <Button
                 className="rbtn2"
@@ -1211,6 +1209,7 @@ const handleNextStep = () => {
               >
                 Add To Cart
               </Button>
+
             </div>
           </div>
         </DndProvider>
@@ -1218,17 +1217,17 @@ const handleNextStep = () => {
     }
   };
 
-
   const [openSection, setOpenSection] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/product/products`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_SERVER_URL}/api/product/products`
+        );
         setProducts(response.data);
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -1241,7 +1240,6 @@ const handleNextStep = () => {
     fetchProducts();
   }, []);
 
-
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);
   };
@@ -1252,7 +1250,6 @@ const handleNextStep = () => {
       .map((cabinet) => {
         console.log("Cabinet Data:", cabinet);
         return (
-
           <DraggableCabinet
             key={cabinet._id}
             id={cabinet._id}
@@ -1263,23 +1260,20 @@ const handleNextStep = () => {
             maxWidth={cabinet.maxWidth}
             minDepth={cabinet.minDepth}
             maxDepth={cabinet.maxDepth}
-
           />
-        )
+        );
       });
   };
 
-
   const validateStepNavigation = (targetStep) => {
-    const currentIndex = steps.findIndex(s => s.name === currentStep);
-    const targetIndex = steps.findIndex(s => s.name === targetStep);
+    const currentIndex = steps.findIndex((s) => s.name === currentStep);
+    const targetIndex = steps.findIndex((s) => s.name === targetStep);
 
-    if (typeof steps[targetIndex].canNavigate === 'function') {
+    if (typeof steps[targetIndex].canNavigate === "function") {
       return steps[targetIndex].canNavigate(currentIndex, targetIndex);
     }
     return steps[targetIndex].canNavigate;
   };
-
 
   // Use this when setting current step directly
   const setCurrentStepWithValidation = (stepName) => {
@@ -1289,7 +1283,7 @@ const handleNextStep = () => {
       setAlert({
         open: true,
         message: `Please complete previous steps before accessing ${stepName}`,
-        severity: "error"
+        severity: "error",
       });
     }
   };
@@ -1307,17 +1301,15 @@ const handleNextStep = () => {
     }
   }, [showModal, selectedItem]);
 
-
-
   return (
     <div
       className="rempad fldc"
       style={{
-        display: 'flex',
+        display: "flex",
         backgroundColor: plannerBg,
         color: plannerText,
-        minHeight: '100vh',
-        padding: '20px',
+        minHeight: "100vh",
+        padding: "20px",
       }}
     >
       {/* Main Content */}
@@ -1331,8 +1323,6 @@ const handleNextStep = () => {
           marginRight: "20px",
         }}
       >
-
-
         {/* Progress Bar */}
         <div
           style={{
@@ -1341,11 +1331,7 @@ const handleNextStep = () => {
             marginBottom: "20px",
           }}
         >
-
-
-
           {steps.map((step, index) => {
-
             const canNavigate = validateStepNavigation(step.name);
             return (
               <CustomTooltip key={index} message={step.tooltip}>
@@ -1354,7 +1340,7 @@ const handleNextStep = () => {
                     textAlign: "center",
                     flex: 1,
                     cursor: step.canNavigate ? "pointer" : "not-allowed",
-                    opacity: step.canNavigate ? 1 : 0.5
+                    opacity: step.canNavigate ? 1 : 0.5,
                   }}
                   onClick={() => canNavigate && setCurrentStep(step.name)}
                 >
@@ -1364,11 +1350,12 @@ const handleNextStep = () => {
                       width: "25px",
                       height: "25px",
                       borderRadius: "50%",
-                      backgroundColor: currentStep === step.name
-                        ? "#00bfff"
-                        : completedSteps.includes(step.name)
+                      backgroundColor:
+                        currentStep === step.name
+                          ? "#00bfff"
+                          : completedSteps.includes(step.name)
                           ? "#4CAF50" // Green for completed
-                          : "#ccc",   // Gray for incomplete
+                          : "#ccc", // Gray for incomplete
                       margin: "0 auto",
                       lineHeight: "25px",
                       color: "#fff",
@@ -1381,14 +1368,14 @@ const handleNextStep = () => {
                     style={{
                       fontSize: "12px",
                       marginTop: "5px",
-                      color: step.canNavigate ? plannerText : "#999"
+                      color: step.canNavigate ? plannerText : "#999",
                     }}
                   >
                     {step.name}
                   </p>
                 </div>
               </CustomTooltip>
-            )
+            );
           })}
         </div>
 
@@ -1400,47 +1387,82 @@ const handleNextStep = () => {
 
       <div className="w-25 p-4 bg-gray-100 rounded-lg sidemenu">
         <h4 className="text-lg font-bold">Kitchen Options</h4>
-        <p className="text-sm text-gray-500 paratext" style={{ textAlign: "left" }}>
+        <p
+          className="text-sm text-gray-500 paratext"
+          style={{ textAlign: "left" }}
+        >
           Drag and drop your items into our planner.
         </p>
 
-        {loading ? <p>Loading...</p> : error ? <p className="text-red-500">{error}</p> : null}
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : null}
 
         <DndProvider backend={HTML5Backend}>
           {/* Base Cabinets */}
-          <div className="mt-4" >
-            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("base")}   >
+          <div className="mt-4">
+            <Button
+              className="w-full text-left font-semibold optbtn"
+              onClick={() => toggleSection("base")}
+            >
               <span className="text-left">Base Cabinets</span>
-              <span className="text-right">{openSection === "base" ? "-" : "+"}</span>
+              <span className="text-right">
+                {openSection === "base" ? "-" : "+"}
+              </span>
             </Button>
-            {openSection === "base" && <div className="mt-2 c-flex drgbl">{renderCabinets("base")}</div>}
+            {openSection === "base" && (
+              <div className="mt-2 c-flex drgbl">{renderCabinets("base")}</div>
+            )}
           </div>
 
           {/* Tall Cabinets */}
           <div className="mt-4">
-            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("tall")}>
+            <Button
+              className="w-full text-left font-semibold optbtn"
+              onClick={() => toggleSection("tall")}
+            >
               <span className="text-left">Tall Cabinets</span>
-              <span className="text-right">{openSection === "tall" ? "-" : "+"}</span>
+              <span className="text-right">
+                {openSection === "tall" ? "-" : "+"}
+              </span>
             </Button>
-            {openSection === "tall" && <div className="mt-2 c-flex">{renderCabinets("tall")}</div>}
+            {openSection === "tall" && (
+              <div className="mt-2 c-flex">{renderCabinets("tall")}</div>
+            )}
           </div>
 
           {/* Finishing Panels */}
           <div className="mt-4">
-            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("finishing")}>
+            <Button
+              className="w-full text-left font-semibold optbtn"
+              onClick={() => toggleSection("finishing")}
+            >
               <span className="text-left">Finishing Panels</span>
-              <span className="text-right">{openSection === "finishing" ? "-" : "+"}</span>
+              <span className="text-right">
+                {openSection === "finishing" ? "-" : "+"}
+              </span>
             </Button>
-            {openSection === "finishing" && <div className="mt-2 c-flex">{renderCabinets("finishing")}</div>}
+            {openSection === "finishing" && (
+              <div className="mt-2 c-flex">{renderCabinets("finishing")}</div>
+            )}
           </div>
 
           {/* Wall Cabinets */}
           <div className="mt-4">
-            <Button className="w-full text-left font-semibold optbtn" onClick={() => toggleSection("wall")}>
+            <Button
+              className="w-full text-left font-semibold optbtn"
+              onClick={() => toggleSection("wall")}
+            >
               <span className="text-left">Wall Cabinets</span>
-              <span className="text-right">{openSection === "wall" ? "-" : "+"}</span>
+              <span className="text-right">
+                {openSection === "wall" ? "-" : "+"}
+              </span>
             </Button>
-            {openSection === "wall" && <div className="mt-2 c-flex">{renderCabinets("wall")}</div>}
+            {openSection === "wall" && (
+              <div className="mt-2 c-flex">{renderCabinets("wall")}</div>
+            )}
           </div>
         </DndProvider>
       </div>
