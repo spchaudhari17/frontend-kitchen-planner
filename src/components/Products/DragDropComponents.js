@@ -2183,6 +2183,8 @@ export const DropZone = ({
         width: itemWidth,
         height: itemHeight,
         id: Date.now(),
+         frontImageSrc: item.frontImageSrc, // Explicitly include this
+  imageSrc: item.imageSrc   
       };
 
       if (!isOverlapping(newItem, droppedItems)) {
@@ -2459,7 +2461,7 @@ export const DropZone = ({
                 }}
               >
                 <img
-                  src={item.imageSrc || item.frontImageSrc}
+                  src={item.frontImageSrc}
                   alt={item.name}
                   style={{
                     width: "100%",

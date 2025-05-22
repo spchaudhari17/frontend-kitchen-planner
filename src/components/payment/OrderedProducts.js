@@ -1,4 +1,4 @@
- 
+
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -6,14 +6,14 @@ import { Spinner, Card, Row, Col, Container, Alert } from "react-bootstrap";
 
 const OrderProductDetails = () => {
   const { transactionId } = useParams();
-  const location = useLocation();  
+  const location = useLocation();
   const selectedAddressId = location.state?.shippingAddressId;
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [userInfo, setUserInfo] = useState(null);
-  const [shipping, setShipping] = useState(null); 
+  const [shipping, setShipping] = useState(null);
 
   const fetchOrderProducts = async () => {
     try {
@@ -25,11 +25,11 @@ const OrderProductDetails = () => {
       setProducts(response.data.data || []);
       setUserInfo(response.data.user || null);
 
-  
+
       const shippingRes = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/shipping`);
       const allAddresses = shippingRes.data || [];
 
- 
+
       if (selectedAddressId) {
         const matched = allAddresses.find(addr => addr._id === selectedAddressId);
         setShipping(matched || null);
@@ -90,14 +90,14 @@ const OrderProductDetails = () => {
                 />
               )}
               <Card.Body style={{ minHeight: "150px" }}>
-                <Card.Title>{product.name}</Card.Title>
+                <Card.Title>Product Name: {product.name}</Card.Title>
 
                 <Card.Text>
-  <strong>Price:</strong> ${product.priceAtPurchase?.toFixed(2)}<br />
-  <strong>Quantity:</strong> {product.quantity}<br />
-  <strong>Width:</strong> {product.width ?? "-"} mm<br />
-  <strong>Depth:</strong> {product.depth ?? "-"} mm<br />
-</Card.Text>
+                  <strong>Price:</strong> ${product.priceAtPurchase?.toFixed(2)}<br />
+                  <strong>Quantity:</strong> {product.quantity}<br />
+                  <strong>Width:</strong> {product.width ?? "-"} mm<br />
+                  <strong>Depth:</strong> {product.depth ?? "-"} mm<br />
+                </Card.Text>
 
 
                 {userInfo && (

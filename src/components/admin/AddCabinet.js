@@ -4,6 +4,7 @@ import DataTable from "react-data-table-component";
 import { FormControl, InputGroup, Modal } from "react-bootstrap";
 import Button from "../ui/Button";
 import { useColorContext } from "../../context/colorcontext";
+
 const AddCabinet = () => {
   const [title, setTitle] = useState("");
   const [cabinetType, setCabinetType] = useState("");
@@ -16,6 +17,8 @@ const AddCabinet = () => {
   const [drawers, setDrawers] = useState("");
   const [cabinetImage, setCabinetImage] = useState(null);
   const [cabinetFrontImage, setCabinetFrontImage] = useState(null);
+  const [existingCabinetImage, setExistingCabinetImage] = useState("");
+  const [existingCabinetFrontImage, setExistingCabinetFrontImage] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -28,6 +31,7 @@ const AddCabinet = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCabinetId, setSelectedCabinetId] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const { componentColors } = useColorContext();
 
   const defaultButtonColors = {
@@ -51,13 +55,65 @@ const AddCabinet = () => {
   const cabinetText =
     componentColors?.["Add Cabinet"]?.text || defaultCabinetColors.text;
 
-  const handleCloseAdd = () => setShowAddModal(false);
-  const handleShowAdd = () => setShowAddModal(true);
+  const handleCloseAdd = () => {
+    setShowAddModal(false);
+    setIsEditMode(false);
+    resetForm();
+  };
+  const handleShowAdd = () => {
+    setIsEditMode(false);
+    resetForm();
+    setShowAddModal(true);
+  };
 
   const handleCloseDelete = () => setShowDeleteModal(false);
   const handleShowDelete = (id) => {
     setSelectedCabinetId(id);
     setShowDeleteModal(true);
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setCabinetType("");
+    setMinWidth("");
+    setMaxWidth("");
+    setMinDepth("");
+    setMaxDepth("");
+    setHinges("");
+    setHandles("");
+    setDrawers("");
+    setDescription("");
+    setCabinetImage(null);
+    setCabinetFrontImage(null);
+    setExistingCabinetImage("");
+    setExistingCabinetFrontImage("");
+  };
+
+  const fetchProductById = async (id) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_SERVER_URL}/api/product/products/${id}`
+      );
+      const product = response.data.product;
+      setTitle(product.cabinateName || "");
+      setCabinetType(product.cabinateType || "");
+      setMinWidth(product.minWidth || "");
+      setMaxWidth(product.maxWidth || "");
+      setMinDepth(product.minDepth || "");
+      setMaxDepth(product.maxDepth || "");
+      setHinges(product.hinges || "");
+      setHandles(product.handles || "");
+      setDrawers(product.drawers || "");
+      setDescription(product.description || "");
+      setExistingCabinetImage(product.cabinateImage || "");
+      setExistingCabinetFrontImage(product.cabinateFrontImage || "");
+      setSelectedCabinetId(id);
+      setIsEditMode(true);
+      setShowAddModal(true);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      setMessage("Error loading product details");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -82,27 +138,30 @@ const AddCabinet = () => {
       formData.append("cabinateFrontImage", cabinetFrontImage);
 
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_SERVER_URL}/api/product/products`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      let response;
+      if (isEditMode) {
+        response = await axios.put(
+          `${process.env.REACT_APP_SERVER_URL}/api/product/products/${selectedCabinetId}`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+      } else {
+        response = await axios.post(
+          `${process.env.REACT_APP_SERVER_URL}/api/product/products`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+      }
 
-      if (response.status === 201) {
-        // setMessage("Product added successfully!");
-        setTitle("");
-        setCabinetType("");
-        setCabinetImage(null);
-        setCabinetFrontImage(null);
-
+      if (response.status === 200 || response.status === 201) {
         fetchProducts();
-        handleCloseAdd(); // Close modal after submission
+        handleCloseAdd();
       } else {
         setMessage(`Error: ${response.data.message}`);
       }
     } catch (error) {
-      console.log("Add error", error);
-      setMessage("Error adding product");
+      console.log("Add/Edit error", error);
+      setMessage("Error processing request");
     } finally {
       setLoading(false);
     }
@@ -132,7 +191,6 @@ const AddCabinet = () => {
       setProducts(
         products.filter((product) => product._id !== selectedCabinetId)
       );
-      // setMessage("Cabinet deleted successfully!");
     } catch (error) {
       console.error("Error deleting cabinet:", error);
       setMessage("Error deleting cabinet");
@@ -167,7 +225,7 @@ const AddCabinet = () => {
         fontWeight: "700",
         padding: "12px",
         color: cabinetText,
-        backgroundColor: cabinetBg, // or set another for contrast
+        backgroundColor: cabinetBg,
       },
     },
     cells: {
@@ -205,7 +263,6 @@ const AddCabinet = () => {
       sortable: false,
       minWidth: "200px",
     },
-
     {
       name: "Cabinate Image",
       selector: (row) =>
@@ -233,6 +290,14 @@ const AddCabinet = () => {
       minWidth: "150px",
       cell: (row) => (
         <div className="d-flex gap-2">
+          <Button
+            variant="outline-danger"
+            title="edit"
+            onClick={() => fetchProductById(row._id)}
+          >
+            <i className="bi bi-pencil-fill"></i>
+          </Button>
+
           <Button
             variant="outline-danger"
             title="Delete"
@@ -293,7 +358,7 @@ const AddCabinet = () => {
         </div>
       </div>
 
-      {/* Add Cabinet Modal */}
+      {/* Add/Edit Cabinet Modal */}
       <Modal show={showAddModal} centered onHide={handleCloseAdd}>
         <Modal.Body className="text-center px-md-5 py-5">
           <div
@@ -337,7 +402,9 @@ const AddCabinet = () => {
             </svg>
           </div>
 
-          <h2 className="text-center mb-4 mt-3">Add Cabinet</h2>
+          <h2 className="text-center mb-4 mt-3">
+            {isEditMode ? "Edit Cabinet" : "Add Cabinet"}
+          </h2>
           {message && <div className="alert alert-info">{message}</div>}
 
           <form onSubmit={handleSubmit}>
@@ -458,10 +525,15 @@ const AddCabinet = () => {
 
             <div className="mb-3">
               <label>Cabinate Image</label>
+              {existingCabinetImage && (
+                <div className="mb-2">
+                  <img src={existingCabinetImage} alt="Current Cabinet" width="100" />
+                  <p className="small text-muted">Current Image</p>
+                </div>
+              )}
               <input
                 type="file"
                 className="form-control"
-                required
                 accept="image/*"
                 onChange={(e) => setCabinetImage(e.target.files[0])}
               />
@@ -469,23 +541,32 @@ const AddCabinet = () => {
 
             <div className="mb-3">
               <label>Top View Image</label>
+              {existingCabinetFrontImage && (
+                <div className="mb-2">
+                  <img src={existingCabinetFrontImage} alt="Current Top View" width="100" />
+                  <p className="small text-muted">Current Image</p>
+                </div>
+              )}
               <input
                 type="file"
                 className="form-control"
-                required
                 accept="image/*"
                 onChange={(e) => setCabinetFrontImage(e.target.files[0])}
               />
             </div>
 
             <Button type="submit" className="w-100" disabled={loading}>
-              {loading ? "Submitting..." : "Submit"}
+              {loading
+                ? "Submitting..."
+                : isEditMode
+                ? "Update Cabinet"
+                : "Add Cabinet"}
             </Button>
           </form>
         </Modal.Body>
       </Modal>
 
-      {/* Delete Cabinet Modal (FIXED) */}
+      {/* Delete Cabinet Modal */}
       <Modal show={showDeleteModal} centered onHide={handleCloseDelete}>
         <Modal.Body className="text-center px-md-5 py-5">
           <h4>Are you sure you want to delete this cabinet?</h4>

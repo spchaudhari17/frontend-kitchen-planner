@@ -1159,7 +1159,7 @@ const ProductList = () => {
 
               {/* </div> */}
 
-                  {/* New "Review & Submit" Button */}
+              {/* New "Review & Submit" Button */}
               <Button
                 className="rbtn2"
                 style={{
@@ -1176,7 +1176,7 @@ const ProductList = () => {
                 REVIEW AND SAVE
               </Button>
 
-             {isEditing && (
+              {isEditing && (
                 <Button
                   className="rbtn2"
                   style={{
@@ -1192,7 +1192,7 @@ const ProductList = () => {
                 >
                   UPDATE DETAILS
                 </Button>
-           )}
+              )}
 
               <Button
                 className="rbtn2"
@@ -1354,8 +1354,8 @@ const ProductList = () => {
                         currentStep === step.name
                           ? "#00bfff"
                           : completedSteps.includes(step.name)
-                          ? "#4CAF50" // Green for completed
-                          : "#ccc", // Gray for incomplete
+                            ? "#4CAF50" // Green for completed
+                            : "#ccc", // Gray for incomplete
                       margin: "0 auto",
                       lineHeight: "25px",
                       color: "#fff",
