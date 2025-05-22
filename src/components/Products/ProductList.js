@@ -126,6 +126,15 @@ const ProductList = () => {
       navigate("/account"); //  Plans exist → Go to Account page
     } else {
       setCurrentStep("Room Layout"); //  No plans → Go to Create Plan
+      // Reset all planner state when starting new plan
+      setRoomSize({ width: 3000, depth: 2000 });
+      setDescription("");
+      setSubdescription("");
+      setDroppedItems([]);
+      setNotes({});
+      // setCurrentStep("Room Layout");
+      setHasSubmitted(false);
+      setCompletedSteps([]);
     }
   };
 
@@ -595,7 +604,17 @@ const ProductList = () => {
               xs={12}
               sm={6}
               md={4}
-              onClick={() => setCurrentStep("Room Layout")}
+              onClick={() => {
+                 
+                setRoomSize({ width: 3000, depth: 2000 });
+                setDescription("");
+                setSubdescription("");
+                setDroppedItems([]);
+                setNotes({});
+                setCurrentStep("Room Layout");
+                setHasSubmitted(false);
+                setCompletedSteps([]);
+              }}
               style={{ cursor: "pointer", width: "max-content" }}
               className="nopad"
             >
@@ -1159,24 +1178,8 @@ const ProductList = () => {
 
               {/* </div> */}
 
-              {/* New "Review & Submit" Button */}
-              <Button
-                className="rbtn2"
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: globalButtonBg,
-                  color: globalButtonText,
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  marginLeft: "20px",
-                }}
-                onClick={handleSubmit}
-              >
-                REVIEW AND SAVE
-              </Button>
-
-              {isEditing && (
+            
+  {isEditing ? (
                 <Button
                   className="rbtn2"
                   style={{
@@ -1191,6 +1194,22 @@ const ProductList = () => {
                   onClick={handleUpdate}
                 >
                   UPDATE DETAILS
+                </Button>
+              ) : (
+                <Button
+                  className="rbtn2"
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: globalButtonBg,
+                    color: globalButtonText,
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    marginLeft: "20px",
+                  }}
+                  onClick={handleSubmit}
+                >
+                  REVIEW AND SAVE
                 </Button>
               )}
 
