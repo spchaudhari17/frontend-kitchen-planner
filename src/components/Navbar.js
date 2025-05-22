@@ -26,10 +26,15 @@ const Navbars = () => {
   const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
-  const [alert, setAlert] = useState({ open: false, message: "", severity: "success" });
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [unsavedColors, setUnsavedColors] = useState({});
   const isAdmin = auth?.roles?.includes(ROLES.Admin);
+  const isUser = auth?.roles?.includes(ROLES.User);
 
   const fetchColors = async () => {
     try {
@@ -71,14 +76,20 @@ const Navbars = () => {
 
     setAlert({
       open: true,
-      message: `${property.charAt(0).toUpperCase() + property.slice(1)} color for ${component} saved!`,
+      message: `${
+        property.charAt(0).toUpperCase() + property.slice(1)
+      } color for ${component} saved!`,
       severity: "success",
     });
   };
 
   const handleSaveColors = async () => {
     if (!Object.keys(unsavedColors).length) {
-      setAlert({ open: true, message: "No changes to save!", severity: "info" });
+      setAlert({
+        open: true,
+        message: "No changes to save!",
+        severity: "info",
+      });
       return;
     }
 
@@ -88,26 +99,40 @@ const Navbars = () => {
         return acc;
       }, {});
 
-      const response = await axiosPrivate.post("/api/colors/save-colors", payload);
+      const response = await axiosPrivate.post(
+        "/api/colors/save-colors",
+        payload
+      );
       if (response.status === 200 || response.status === 201) {
-        setAlert({ open: true, message: "Colors saved successfully!", severity: "success" });
+        setAlert({
+          open: true,
+          message: "Colors saved successfully!",
+          severity: "success",
+        });
         setUnsavedColors({});
       } else {
-        setAlert({ open: true, message: "Failed to save colors.", severity: "error" });
+        setAlert({
+          open: true,
+          message: "Failed to save colors.",
+          severity: "error",
+        });
       }
     } catch (error) {
       console.error("Error saving colors:", error);
-      setAlert({ open: true, message: "An error occurred while saving colors.", severity: "error" });
+      setAlert({
+        open: true,
+        message: "An error occurred while saving colors.",
+        severity: "error",
+      });
     } finally {
       setConfirmDialogOpen(false);
       setShowModal(false);
     }
   };
 
-
   const myAccountFunction = () => {
-    alert("jg")
-  }
+    alert("jg");
+  };
 
   return (
     <>
@@ -123,9 +148,21 @@ const Navbars = () => {
         <div className="container-fluid">
           <Navbar.Brand>
             <h3 style={{ color: componentColors.Navbars?.text || "#ffffff" }}>
-              <Link to="/" style={{ color: componentColors.Navbars?.text || "#ffffff" }}>
+              <span
+                onClick={() => {
+                  if (auth?.roles?.includes(ROLES.Admin)) {
+                    navigate("/user");
+                  } else {
+                    navigate("/");
+                  }
+                }}
+                style={{
+                  cursor: "pointer",
+                  color: componentColors.Navbars?.text || "#ffffff",
+                }}
+              >
                 <FaHome />
-              </Link>
+              </span>
               &ensp;Welcome
             </h3>
           </Navbar.Brand>
@@ -134,42 +171,61 @@ const Navbars = () => {
             <Navbar.Collapse className="justify-content-end">
               <Nav>
                 {/*  Admin-only buttons */}
-                {auth && isAdmin && !["/login", "/signup", "/"].includes(location.pathname) && (
-                  <>
-                    <Button
-                      className="mx-3"
-                      onClick={() => setShowModal(true)}
-                      style={{
-                        backgroundColor: componentColors.Button?.background || "transparent",
-                        color: componentColors.Button?.text || "#ffffff",
-                      }}
-                    >
-                      Color Picker
-                    </Button>
+                {auth &&
+                  isAdmin &&
+                  !["/login", "/signup", "/"].includes(location.pathname) && (
+                    <>
+                      <Button
+                        className="mx-3"
+                        onClick={() => setShowModal(true)}
+                        style={{
+                          backgroundColor:
+                            componentColors.Button?.background || "transparent",
+                          color: componentColors.Button?.text || "#ffffff",
+                        }}
+                      >
+                        Color Picker
+                      </Button>
 
-                    <Button
-                      className="mx-3"
-                      onClick={() => navigate("/admin-add-cabinates")}
-                      style={{
-                        backgroundColor: componentColors.Button?.background || "transparent",
-                        color: componentColors.Button?.text || "#ffffff",
-                      }}
-                    >
-                      Add Cabinates
-                    </Button>
+                      <Button
+                        className="mx-3"
+                        onClick={() => navigate("/admin-add-cabinates")}
+                        style={{
+                          backgroundColor:
+                            componentColors.Button?.background || "transparent",
+                          color: componentColors.Button?.text || "#ffffff",
+                        }}
+                      >
+                        Add Cabinates
+                      </Button>
 
-                    <Button
-                      className="mx-3"
-                      onClick={() => navigate("/transactions")}
-                      style={{
-                        backgroundColor: componentColors.Button?.background || "transparent",
-                        color: componentColors.Button?.text || "#ffffff",
-                      }}
-                      title="Pending Orders"
-                    >
-                      <FaClock />
-                    </Button>
-                  </>
+                      <Button
+                        className="mx-3"
+                        onClick={() => navigate("/transactions")}
+                        style={{
+                          backgroundColor:
+                            componentColors.Button?.background || "transparent",
+                          color: componentColors.Button?.text || "#ffffff",
+                        }}
+                        title="Pending Orders"
+                      >
+                        <FaClock />
+                      </Button>
+                    </>
+                  )}
+
+                {auth && isUser && (
+                  <Button
+                    className="mx-3"
+                    onClick={() => navigate("/user-custom-page")} // 🔁 You'll update this path later
+                    style={{
+                      backgroundColor:
+                        componentColors.Button?.background || "transparent",
+                      color: componentColors.Button?.text || "#ffffff",
+                    }}
+                  >
+                    My Orders
+                  </Button>
                 )}
 
                 {/*  Logout button for all logged-in users */}
@@ -178,10 +234,11 @@ const Navbars = () => {
                     className="mx-3"
                     onClick={async () => {
                       await logout(auth._id);
-                      navigate('/login');  // redirect to login page
+                      navigate("/login"); // redirect to login page
                     }}
                     style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
+                      backgroundColor:
+                        componentColors.Button?.background || "transparent",
                       color: componentColors.Button?.text || "#ffffff",
                     }}
                   >
@@ -195,7 +252,8 @@ const Navbars = () => {
                     className="mx-3"
                     onClick={() => navigate("/account")}
                     style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
+                      backgroundColor:
+                        componentColors.Button?.background || "transparent",
                       color: componentColors.Button?.text || "#ffffff",
                     }}
                   >
@@ -209,7 +267,8 @@ const Navbars = () => {
                     className="mx-3"
                     onClick={() => navigate("/cart")}
                     style={{
-                      backgroundColor: componentColors.Button?.background || "transparent",
+                      backgroundColor:
+                        componentColors.Button?.background || "transparent",
                       color: componentColors.Button?.text || "#ffffff",
                     }}
                   >
@@ -225,7 +284,8 @@ const Navbars = () => {
                       className="mx-2"
                       onClick={() => (window.location.href = "/login")}
                       style={{
-                        backgroundColor: componentColors.Button?.background || "transparent",
+                        backgroundColor:
+                          componentColors.Button?.background || "transparent",
                         color: componentColors.Button?.text || "#ffffff",
                       }}
                     >
@@ -236,7 +296,8 @@ const Navbars = () => {
                       className="mx-2"
                       onClick={() => (window.location.href = "/signup")}
                       style={{
-                        backgroundColor: componentColors.Button?.background || "transparent",
+                        backgroundColor:
+                          componentColors.Button?.background || "transparent",
                         color: componentColors.Button?.text || "#ffffff",
                       }}
                     >
@@ -245,13 +306,16 @@ const Navbars = () => {
                   </>
                 )}
               </Nav>
-
             </Navbar.Collapse>
           </Navbar.Collapse>
         </div>
       </Navbar>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} title="Change Component Colors">
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        title="Change Component Colors"
+      >
         {componentsConfig.map((component) => (
           <div key={component.name} className="mb-4">
             <h5>{component.name}</h5>
@@ -271,7 +335,11 @@ const Navbars = () => {
           <Button variant="primary" onClick={() => setConfirmDialogOpen(true)}>
             Save All
           </Button>
-          <Button variant="secondary" onClick={() => setShowModal(false)} className="mx-3">
+          <Button
+            variant="secondary"
+            onClick={() => setShowModal(false)}
+            className="mx-3"
+          >
             Close
           </Button>
         </div>

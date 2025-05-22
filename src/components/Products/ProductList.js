@@ -500,7 +500,7 @@ const ProductList = () => {
       width: roomSize.width,
       depth: roomSize.depth,
       description,
-      subdescription, // optional
+      subdescription,  
       notes,
       droppedItems: droppedItems.map((item) => ({
         id: item.id,
@@ -1209,7 +1209,7 @@ const ProductList = () => {
                   }}
                   onClick={handleSubmit}
                 >
-                  REVIEW AND SAVE
+                   SAVE
                 </Button>
               )}
 
