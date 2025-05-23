@@ -78,43 +78,57 @@ const ProductList = () => {
     fetchRoomDetails();
   }, []);
 
-  useEffect(() => {
-    if (location.state?.resumeAction && location.state?.roomData) {
-      const { roomData, resumeAction, currentStep } = location.state;
 
+
+
+useEffect(() => {
+  const stored = sessionStorage.getItem("resumeRoomData");
+  if (stored) {
+    const { roomData, pendingAction, currentStep } = JSON.parse(stored);
+    sessionStorage.removeItem("resumeRoomData");
+
+    if (roomData) {
       setRoomSize({ width: roomData.width, depth: roomData.depth });
-      setDescription(roomData.description);
-      setSubdescription(roomData.subdescription);
+      setDescription(roomData.description || "");        // ✅ MUST set this
+      setSubdescription(roomData.subdescription || "");
       setNotes(roomData.notes || {});
       setDroppedItems(roomData.droppedItems || []);
+      setCurrentStep(currentStep || "Room Layout");
 
-      setCurrentStep(currentStep || "Room Layout"); // ✅ Resume at the step user left off
-
+      // 🕒 Delay running the pending action until state is hydrated
       setTimeout(() => {
-        if (resumeAction === "addToCart") handleAddToCart(new Event("resume"));
-        else if (resumeAction === "saveRoom") handleSubmit(new Event("resume"));
-      }, 500);
+        if (pendingAction === "addToCart") {
+          handleAddToCart(new Event("resume"));
+        } else if (pendingAction === "saveRoom") {
+          handleSubmit(new Event("resume"));
+        }
+      }, 300); // Wait for hydration to finish
     }
-  }, [location.state]);
+  }
+}, []);
 
-  const redirectToLoginWithData = (action) => {
-    navigate("/login", {
-      state: {
-        // “from” is where we want to go back to
-        from: location.pathname,
-        pendingAction: action,
-        roomData: {
-          width: roomSize.width,
-          depth: roomSize.depth,
-          description,
-          subdescription,
-          notes,
-          droppedItems,
-        },
-        currentStep,
-      },
-    });
+
+
+
+const redirectToLoginWithData = (action) => {
+  const pendingData = {
+    pendingAction: action,
+    currentStep,
+    roomData: {
+      width: roomSize.width,
+      depth: roomSize.depth,
+      description,
+      subdescription,
+      notes,
+      droppedItems,
+    },
   };
+
+  sessionStorage.setItem("resumeRoomData", JSON.stringify(pendingData));
+  navigate("/login");
+};
+
+
 
   const handleOpenSavedPlan = () => {
     if (!auth) {
@@ -200,6 +214,7 @@ const ProductList = () => {
         width: item.width || item.minWidth || 300,
         height: item.height || item.minDepth || 600,
         id: item.id || Date.now(),
+        basePrice: item.basePrice || 0,
       }));
 
       setRoomSize({ width: room.width, depth: room.depth });
@@ -313,6 +328,7 @@ const ProductList = () => {
       maxWidth: item.maxWidth, // Store max width from API
       minDepth: item.minDepth, // Store min depth from API
       maxDepth: item.maxDepth, // Store max depth from API
+      basePrice: item.basePrice, // Store base price from API
     };
 
     setSelectedItem(newItem);
@@ -341,7 +357,7 @@ const ProductList = () => {
     }
     setDroppedItems((prev) => [
       ...prev,
-      { ...selectedItem, ...itemDimensions, price: selectedItem.price },
+      { ...selectedItem, ...itemDimensions, basePrice: selectedItem.basePrice , minWidth: selectedItem.minWidth,maxWidth: selectedItem.maxWidth},
     ]);
     setShowModal(false);
     setItemDimensions({ height: "", width: "" });
@@ -506,7 +522,9 @@ const ProductList = () => {
         id: item.id,
         name: item.name,
         imageSrc: item.imageSrc,
-        price: item.price,
+         minWidth: item.minWidth, // Add minWidth
+        maxWidth: item.maxWidth, // Add maxWidth
+        basePrice: item.basePrice,
         x: item.x,
         y: item.y,
         rotation: item.rotation,
@@ -1276,6 +1294,7 @@ const ProductList = () => {
             imageSrc={cabinet.cabinateImage}
             cabinateFrontImage={cabinet.cabinateFrontImage}
             minWidth={cabinet.minWidth}
+            basePrice={cabinet.basePrice}
             maxWidth={cabinet.maxWidth}
             minDepth={cabinet.minDepth}
             maxDepth={cabinet.maxDepth}

@@ -30,6 +30,26 @@ const Transactions = () => {
     navigate(`/order-products/${transactionId}`);
   };
 
+  const handleStatusChange = async (transactionId, userId, newStatus) => {
+  try {
+    await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/payment/update-transaction`, {
+      transaction_id: transactionId,
+      userId: userId,
+      status: newStatus,
+    });
+
+    // ✅ Close the dropdown after update
+    setStatusMenuOpenId(null);
+
+    // ✅ Refresh the table data
+    fetchPendingData();
+  } catch (error) {
+    console.error("Error updating transaction status:", error);
+    alert("Failed to update transaction status. Please try again.");
+  }
+};
+
+
  
 
   const fetchPendingData = async () => {
@@ -64,69 +84,114 @@ const Transactions = () => {
         return isNaN(d.getTime()) ? "N/A" : d.toLocaleString();
       }
     },
-    {
-      name: "Status",
-      cell: (row) => (
-        <div style={{ position: "relative" }}>
-          <span
-            style={{ cursor: "pointer", fontSize: "18px" }}
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              setDropdownPosition({
-                top: rect.bottom + window.scrollY,
-                left: rect.left + window.scrollX,
-              });
-              setStatusMenuOpenId(statusMenuOpenId === row._id ? null : row._id);
-            }}
-          >
-            ⋮
-          </span>
+{
+  name: "Status",
+  cell: (row) => (
+    <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px" }}>
+      <span
+        style={{
+          padding: "4px 10px",
+          borderRadius: "12px",
+          backgroundColor:
+            row.transaction_status === "Delivered"
+              ? "#d4edda"
+              : row.transaction_status === "Out Of Delivery"
+              ? "#ffeeba"
+              : row.transaction_status === "Progress"
+              ? "#d1ecf1"
+              : "#f8d7da",
+          color:
+            row.transaction_status === "Delivered"
+              ? "#155724"
+              : row.transaction_status === "Out Of Delivery"
+              ? "#856404"
+              : row.transaction_status === "Progress"
+              ? "#0c5460"
+              : "#721c24",
+          fontWeight: "500",
+          fontSize: "0.75rem",
+        }}
+      >
+        {row.transaction_status}
+      </span>
 
-          {statusMenuOpenId === row._id && (
+      {/* Hide 3-dots if status is Delivered */}
+      {row.transaction_status.toLowerCase() !== "delivered" && (
+        <span
+          style={{
+            cursor: "pointer",
+            fontSize: "14px",
+            padding: "4px 6px",
+            lineHeight: "1",
+            borderRadius: "4px",
+            backgroundColor: "#e9ecef",
+          }}
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setDropdownPosition({
+              top: rect.bottom + window.scrollY,
+              left: rect.left + window.scrollX,
+            });
+            setStatusMenuOpenId(statusMenuOpenId === row._id ? null : row._id);
+          }}
+        >
+          ⋮
+        </span>
+      )}
+
+      {statusMenuOpenId === row._id && (
+        <div
+          ref={menuRef}
+          style={{
+            position: "fixed",
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+            boxShadow: "0px 2px 8px rgba(0,0,0,0.2)",
+            zIndex: 9999,
+          }}
+        >
+          {["Pending", "Progress", "Out Of Delivery", "Delivered"].map((status) => (
             <div
-              ref={menuRef}
+              key={status}
+              onClick={() => handleStatusChange(row.transaction_id, row.user_id._id, status)}
               style={{
-                position: "fixed",
-                top: dropdownPosition.top,
-                left: dropdownPosition.left,
-                backgroundColor: "#fff",
-                border: "1px solid #ccc",
-                boxShadow: "0px 2px 8px rgba(0,0,0,0.2)",
-                zIndex: 9999,
+                padding: "8px 12px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                backgroundColor: row.transaction_status === status ? "#f1f1f1" : "#fff",
               }}
             >
-              {["Pending", "Progress", "Out for Delivery"].map((status) => (
-                <div
-                  key={status}
-                  
-                  style={{
-                    padding: "8px 12px",
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    backgroundColor: row.transaction_status === status ? "#f1f1f1" : "#fff",
-                  }}
-                >
-                  {status}
-                </div>
-              ))}
+              {status}
             </div>
-          )}
+          ))}
         </div>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
+      )}
+    </div>
+  ),
+  ignoreRowClick: true,
+  allowOverflow: true,
+  button: true,
+}
+
+,
     {
       name: "Actions",
       cell: (row) =>
-        row.transaction_status === "success" ? (
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={() => handleViewProducts(row._id)}
-          >
-            View Products
-          </button>
+        row.transaction_status !== "Pending" ? (
+        <button
+  className="btn btn-primary"
+  style={{
+    padding: "2px 6px",
+    fontSize: "12px",
+     marginLeft: "10px",
+  }}
+  onClick={() => handleViewProducts(row._id)}
+>
+  View Products
+</button>
+
         ) : (
           <span className="text-muted">Pending</span>
         ),

@@ -71,6 +71,7 @@ export const DraggableCabinet = ({
   maxWidth,
   minDepth,
   maxDepth,
+  basePrice,
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CABINET",
@@ -81,6 +82,7 @@ export const DraggableCabinet = ({
       minWidth, // Include in drag item
       maxWidth,
       minDepth,
+      basePrice,
       maxDepth,
       frontImageSrc: cabinateFrontImage,
     },

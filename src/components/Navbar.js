@@ -217,7 +217,7 @@ const Navbars = () => {
                 {auth && isUser && (
                   <Button
                     className="mx-3"
-                    onClick={() => navigate("/user-custom-page")} // 🔁 You'll update this path later
+                    onClick={() => navigate("/userOrders")}  
                     style={{
                       backgroundColor:
                         componentColors.Button?.background || "transparent",
@@ -234,7 +234,7 @@ const Navbars = () => {
                     className="mx-3"
                     onClick={async () => {
                       await logout(auth._id);
-                      navigate("/login"); // redirect to login page
+                      navigate("/login");  
                     }}
                     style={{
                       backgroundColor:

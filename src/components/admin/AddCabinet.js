@@ -4,7 +4,7 @@ import DataTable from "react-data-table-component";
 import { FormControl, InputGroup, Modal } from "react-bootstrap";
 import Button from "../ui/Button";
 import { useColorContext } from "../../context/colorcontext";
-
+ 
 const AddCabinet = () => {
   const [title, setTitle] = useState("");
   const [cabinetType, setCabinetType] = useState("");
@@ -19,42 +19,44 @@ const AddCabinet = () => {
   const [cabinetFrontImage, setCabinetFrontImage] = useState(null);
   const [existingCabinetImage, setExistingCabinetImage] = useState("");
   const [existingCabinetFrontImage, setExistingCabinetFrontImage] = useState("");
-
+ 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
   const [searchText, setSearchText] = useState("");
   const [description, setDescription] = useState("");
-
+  const [overlap, setOverlap] = useState("");
+  const [basePrice, setBasePrice] = useState("");
+ 
   // State for modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCabinetId, setSelectedCabinetId] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const { componentColors } = useColorContext();
-
+ 
   const defaultButtonColors = {
     background: "#007bff",
     text: "#ffffff",
   };
-
+ 
   const globalButtonBg =
     componentColors?.["Button"]?.background || defaultButtonColors.background;
   const globalButtonText =
     componentColors?.["Button"]?.text || defaultButtonColors.text;
-
+ 
   const defaultCabinetColors = {
     background: "#ffffff",
     text: "#000000",
   };
-
+ 
   const cabinetBg =
     componentColors?.["Add Cabinet"]?.background ||
     defaultCabinetColors.background;
   const cabinetText =
     componentColors?.["Add Cabinet"]?.text || defaultCabinetColors.text;
-
+ 
   const handleCloseAdd = () => {
     setShowAddModal(false);
     setIsEditMode(false);
@@ -65,13 +67,13 @@ const AddCabinet = () => {
     resetForm();
     setShowAddModal(true);
   };
-
+ 
   const handleCloseDelete = () => setShowDeleteModal(false);
   const handleShowDelete = (id) => {
     setSelectedCabinetId(id);
     setShowDeleteModal(true);
   };
-
+ 
   const resetForm = () => {
     setTitle("");
     setCabinetType("");
@@ -83,12 +85,14 @@ const AddCabinet = () => {
     setHandles("");
     setDrawers("");
     setDescription("");
+    setOverlap("");
+    setBasePrice("");
     setCabinetImage(null);
     setCabinetFrontImage(null);
     setExistingCabinetImage("");
     setExistingCabinetFrontImage("");
   };
-
+ 
   const fetchProductById = async (id) => {
     try {
       const response = await axios.get(
@@ -105,6 +109,8 @@ const AddCabinet = () => {
       setHandles(product.handles || "");
       setDrawers(product.drawers || "");
       setDescription(product.description || "");
+      setOverlap(product.overlap || "");
+      setBasePrice(product.basePrice || "");
       setExistingCabinetImage(product.cabinateImage || "");
       setExistingCabinetFrontImage(product.cabinateFrontImage || "");
       setSelectedCabinetId(id);
@@ -115,12 +121,12 @@ const AddCabinet = () => {
       setMessage("Error loading product details");
     }
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
+ 
     const formData = new FormData();
     formData.append("cabinateName", title);
     formData.append("cabinateType", cabinetType);
@@ -132,11 +138,13 @@ const AddCabinet = () => {
     formData.append("handles", handles);
     formData.append("drawers", drawers);
     formData.append("description", description);
-
+    formData.append("overlap", overlap);
+    formData.append("basePrice", basePrice);
+ 
     if (cabinetImage) formData.append("cabinateImage", cabinetImage);
     if (cabinetFrontImage)
       formData.append("cabinateFrontImage", cabinetFrontImage);
-
+ 
     try {
       let response;
       if (isEditMode) {
@@ -152,7 +160,7 @@ const AddCabinet = () => {
           { headers: { "Content-Type": "multipart/form-data" } }
         );
       }
-
+ 
       if (response.status === 200 || response.status === 201) {
         fetchProducts();
         handleCloseAdd();
@@ -166,7 +174,7 @@ const AddCabinet = () => {
       setLoading(false);
     }
   };
-
+ 
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
@@ -178,11 +186,11 @@ const AddCabinet = () => {
       setError("Failed to load products");
     }
   };
-
+ 
   useEffect(() => {
     fetchProducts();
   }, []);
-
+ 
   const deleteCabinetHandler = async () => {
     try {
       await axios.delete(
@@ -198,13 +206,13 @@ const AddCabinet = () => {
       handleCloseDelete();
     }
   };
-
+ 
   const filteredCabinates = products.filter(
     (product) =>
       product.cabinateName?.toLowerCase().includes(searchText.toLowerCase()) ||
       product.cabinateType?.toLowerCase().includes(searchText.toLowerCase())
   );
-
+ 
   const customStyles = {
     table: {
       style: {
@@ -237,7 +245,7 @@ const AddCabinet = () => {
       },
     },
   };
-
+ 
   const columns = [
     {
       name: "Sr.No",
@@ -260,6 +268,18 @@ const AddCabinet = () => {
     {
       name: "Description",
       selector: (row) => row.description || "N/A",
+      sortable: false,
+      minWidth: "200px",
+    },
+    {
+      name: "Overlap",
+      selector: (row) => row.overlap || "N/A",
+      sortable: false,
+      minWidth: "200px",
+    },
+    {
+      name: "Base Price",
+      selector: (row) => row.basePrice || "N/A",
       sortable: false,
       minWidth: "200px",
     },
@@ -297,7 +317,7 @@ const AddCabinet = () => {
           >
             <i className="bi bi-pencil-fill"></i>
           </Button>
-
+ 
           <Button
             variant="outline-danger"
             title="Delete"
@@ -309,7 +329,7 @@ const AddCabinet = () => {
       ),
     },
   ];
-
+ 
   return (
     <div className="container-fluid">
       <div className="WallList-wrapper bg-white rounded-3 p-3">
@@ -325,7 +345,7 @@ const AddCabinet = () => {
           >
             <i className="bi bi-person-add fs-18 lh-sm "></i> Add Cabinet
           </Button>
-
+ 
           <InputGroup className="search-bar">
             <InputGroup.Text>
               <i className="bi bi-search"></i>
@@ -338,7 +358,7 @@ const AddCabinet = () => {
             />
           </InputGroup>
         </div>
-
+ 
         <div
           className="table-responsive table-custom-wrapper product-table mt-3"
           style={{ backgroundColor: cabinetBg, color: cabinetText }}
@@ -357,7 +377,7 @@ const AddCabinet = () => {
           />
         </div>
       </div>
-
+ 
       {/* Add/Edit Cabinet Modal */}
       <Modal show={showAddModal} centered onHide={handleCloseAdd}>
         <Modal.Body className="text-center px-md-5 py-5">
@@ -401,12 +421,12 @@ const AddCabinet = () => {
               </g>
             </svg>
           </div>
-
+ 
           <h2 className="text-center mb-4 mt-3">
             {isEditMode ? "Edit Cabinet" : "Add Cabinet"}
           </h2>
           {message && <div className="alert alert-info">{message}</div>}
-
+ 
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <input
@@ -418,7 +438,7 @@ const AddCabinet = () => {
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
-
+ 
             <div className="mb-3">
               <select
                 style={{
@@ -441,7 +461,7 @@ const AddCabinet = () => {
                 <option value="wall">Wall Cabinets</option>
               </select>
             </div>
-
+ 
             <div className="row">
               <div className="col-md-6 mb-3">
                 <input
@@ -462,7 +482,7 @@ const AddCabinet = () => {
                 />
               </div>
             </div>
-
+ 
             <div className="row">
               <div className="col-md-6 mb-3">
                 <input
@@ -483,7 +503,7 @@ const AddCabinet = () => {
                 />
               </div>
             </div>
-
+ 
             <div className="row">
               <div className="col-md-4 mb-3">
                 <input
@@ -512,6 +532,27 @@ const AddCabinet = () => {
                   onChange={(e) => setDrawers(e.target.value)}
                 />
               </div>
+ 
+              <div className="col-md-4 mb-3">
+                <input
+                  type="number"
+                  placeholder="Overlap number"
+                  className="form-control"
+                  value={overlap}
+                  onChange={(e) => setOverlap(e.target.value)}
+                />
+              </div>
+ 
+              <div className="col-md-4 mb-3">
+                <input
+                  type="number"
+                  placeholder="BasePrice"
+                  className="form-control"
+                  value={basePrice}
+                  onChange={(e) => setBasePrice(e.target.value)}
+                />
+              </div>
+ 
             </div>
             <div className="mb-3">
               <textarea
@@ -522,7 +563,7 @@ const AddCabinet = () => {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-
+ 
             <div className="mb-3">
               <label>Cabinate Image</label>
               {existingCabinetImage && (
@@ -538,7 +579,7 @@ const AddCabinet = () => {
                 onChange={(e) => setCabinetImage(e.target.files[0])}
               />
             </div>
-
+ 
             <div className="mb-3">
               <label>Top View Image</label>
               {existingCabinetFrontImage && (
@@ -554,18 +595,18 @@ const AddCabinet = () => {
                 onChange={(e) => setCabinetFrontImage(e.target.files[0])}
               />
             </div>
-
+ 
             <Button type="submit" className="w-100" disabled={loading}>
               {loading
                 ? "Submitting..."
                 : isEditMode
-                ? "Update Cabinet"
-                : "Add Cabinet"}
+                  ? "Update Cabinet"
+                  : "Add Cabinet"}
             </Button>
           </form>
         </Modal.Body>
       </Modal>
-
+ 
       {/* Delete Cabinet Modal */}
       <Modal show={showDeleteModal} centered onHide={handleCloseDelete}>
         <Modal.Body className="text-center px-md-5 py-5">
@@ -580,7 +621,7 @@ const AddCabinet = () => {
             >
               Cancel
             </Button>
-
+ 
             <Button
               onClick={deleteCabinetHandler}
               className="ms-3"
@@ -597,5 +638,6 @@ const AddCabinet = () => {
     </div>
   );
 };
-
+ 
 export default AddCabinet;
+ 

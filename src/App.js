@@ -29,6 +29,7 @@ import Shipping from './components/Shipping/Shipping';
 import PaymentPage from './components/payment/PaymentPage';
 import PendingTransactions from './components/payment/Transactions';
 import OrderProductDetails from "./components/payment/OrderedProducts";
+import UserOrders from './components/payment/userOrder';
 
 function App() {
   const { auth } = useAuthContext();
@@ -98,6 +99,7 @@ function App() {
             {/* <Route path="/" element={!auth ? <Guest /> : <Navigate to={getRedirectPath()} />} /> */}
             <Route path="/" element={<ProductList />} />
             <Route path="/add-product/:category/:subcategory" element={<ProductAdder />} />
+            <Route path="/userOrders" element={<UserOrders />} />
 
 
             {/* Authenticated Routes */}
