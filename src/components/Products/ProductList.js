@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useRef} from "react";
 import { Row, Col, Form, Modal } from "react-bootstrap";
 import Button from "../ui/Button";
 import { axiosPrivate } from "../../api/axios";
@@ -7,6 +7,8 @@ import CustomTooltip from "../ui/ToolTip";
 import { DraggableCabinet, DropZone, getNotes } from "./DragDropComponents";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+
+import html2canvas from "html2canvas";
 import axios from "axios";
 
 import { useAuthContext } from "../../context/auth";
@@ -23,6 +25,10 @@ const ProductList = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [selectedRoomDetails, setSelectedRoomDetails] = useState(null);
   const isEditing = Boolean(location.state?.roomDetails);
+const dropZoneRef = useRef(null);
+const [snapshotImage, setSnapshotImage] = useState("");
+
+
 
 
   const defaultColors = {
@@ -403,6 +409,7 @@ const redirectToLoginWithData = (action) => {
           subdescription,
           notes,
           droppedItems,
+          snapshotImage, 
         },
         { withCredentials: true }
       );
@@ -706,52 +713,72 @@ const redirectToLoginWithData = (action) => {
       );
     }
 
-    const handleNextStep = () => {
-      if (currentStep === "Room Layout") {
-        if (!roomSize.width || !roomSize.depth) {
-          setAlert({
-            open: true,
-            message: "Please enter room width and depth.",
-            severity: "error",
-          });
-          return;
-        }
+ const handleNextStep = async () => {
+  if (currentStep === "Room Layout") {
+    if (!roomSize.width || !roomSize.depth) {
+      setAlert({
+        open: true,
+        message: "Please enter room width and depth.",
+        severity: "error",
+      });
+      return;
+    }
 
-        if (!description.trim()) {
-          setAlert({
-            open: true,
-            message: "Description is required.",
-            severity: "error",
-          });
-          return;
-        }
-      }
+    if (!description.trim()) {
+      setAlert({
+        open: true,
+        message: "Description is required.",
+        severity: "error",
+      });
+      return;
+    }
+  }
 
-      // Proceed to next step
-      if (!completedSteps.includes(currentStep)) {
-        setCompletedSteps([...completedSteps, currentStep]);
-      }
+  // 📸 Take snapshot on Top View step
+  if (currentStep === "Top View" && dropZoneRef.current) {
+    dropZoneRef.current.style.transform = "scale(0.75)";
+    dropZoneRef.current.style.transformOrigin = "top left";
 
-      let nextStep;
-      switch (currentStep) {
-        case "Start":
-          nextStep = "Room Layout";
-          break;
-        case "Room Layout":
-          nextStep = "Top View";
-          break;
-        case "Top View":
-          nextStep = "Add Notes";
-          break;
-        case "Add Notes":
-          nextStep = "Review";
-          break;
-        default:
-          nextStep = currentStep;
-      }
+    await new Promise((resolve) => setTimeout(resolve, 300)); // Let DOM settle
 
-      setCurrentStep(nextStep);
-    };
+const canvas = await html2canvas(dropZoneRef.current);
+const imageData = canvas.toDataURL("image/png");
+
+
+    dropZoneRef.current.style.transform = "scale(1)";
+setSnapshotImage(imageData); 
+
+    localStorage.setItem("snapshotImage", imageData);
+
+   
+  }
+
+  // Move to next step
+  if (!completedSteps.includes(currentStep)) {
+    setCompletedSteps([...completedSteps, currentStep]);
+  }
+
+  let nextStep;
+  switch (currentStep) {
+    case "Start":
+      nextStep = "Room Layout";
+      break;
+    case "Room Layout":
+      nextStep = "Top View";
+      break;
+    case "Top View":
+      nextStep = "Add Notes";
+      break;
+    case "Add Notes":
+      nextStep = "Review";
+      break;
+    default:
+      nextStep = currentStep;
+  }
+
+  setCurrentStep(nextStep);
+};
+
 
     if (currentStep === "Room Layout") {
       return (
@@ -955,7 +982,7 @@ const redirectToLoginWithData = (action) => {
               }}
               className="remmar"
             >
-              <DropZone {...commonDropZoneProps} roomSize={roomSize} />
+              <DropZone  ref={dropZoneRef} {...commonDropZoneProps} roomSize={roomSize} />
             </div>
 
             <div style={{ marginTop: "20px", textAlign: "center" }}>
@@ -1093,7 +1120,7 @@ const redirectToLoginWithData = (action) => {
                 backgroundColor: "#fff",
                 padding: "20px",
                 borderRadius: "5px",
-                marginBottom: "20px", // Add some space below the drop zone
+                marginBottom: "20px",  
               }}
               className="sidemenu"
             >
@@ -1259,23 +1286,63 @@ const redirectToLoginWithData = (action) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_SERVER_URL}/api/product/products`
-        );
-        setProducts(response.data);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("Failed to load products");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchProducts();
-  }, []);
+  const convertToBase64 = async (url) => {
+  const response = await fetch(url, { mode: "cors" });
+  const blob = await response.blob();
+  return await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+};
+
+useEffect(() => {
+  const convertToBase64 = async (url) => {
+    try {
+      const response = await fetch(url, { mode: "cors" });
+      const blob = await response.blob();
+      return await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch (err) {
+      console.error("Failed to convert image to base64:", url);
+      return url; // fallback to original if failed
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_SERVER_URL}/api/product/products`
+      );
+
+      const rawProducts = response.data;
+
+      const processedProducts = await Promise.all(
+        rawProducts.map(async (product) => {
+          const base64FrontImage = await convertToBase64(product.cabinateFrontImage);
+          return {
+            ...product,
+            cabinateFrontImage: base64FrontImage,
+          };
+        })
+      );
+
+      setProducts(processedProducts);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProducts();
+}, []);
+
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);

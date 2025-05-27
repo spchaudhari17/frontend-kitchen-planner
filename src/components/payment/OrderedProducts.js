@@ -57,6 +57,7 @@ const OrderProductDetails = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_SERVER_URL}/api/payment/order-products/${transactionId}`
       );
+      console.log("Order API response:", response.data                                                    );
       setProducts(response.data.data || []);
       setUserInfo(response.data.user || null);
       setOrderDate(response.data.created_at || null);
