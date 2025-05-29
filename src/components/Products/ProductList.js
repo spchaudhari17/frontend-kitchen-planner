@@ -340,17 +340,28 @@ const redirectToLoginWithData = (action) => {
     setSelectedItem(newItem);
     setShowModal(true);
   };
+const handleRotate = (index) => {
+  setDroppedItems((prevItems) => {
+    const updatedItems = prevItems.map((item, i) => {
+      if (i !== index) return item;
 
-  const handleRotate = (index) => {
-    setDroppedItems((prevItems) => {
-      const updatedItems = prevItems.map((item, i) =>
-        i === index ? { ...item, rotation: (item.rotation + 90) % 360 } : item
-      );
+      const newRotation = (item.rotation + 90) % 360;
+      const isRotated = newRotation % 180 === 90;
 
-      console.log("Updated Items:", updatedItems); // 🔍 Debugging
-      return updatedItems;
+      const newItem = {
+        ...item,
+        rotation: newRotation,
+        width: isRotated ? item.height : item.width,
+        height: isRotated ? item.width : item.height,
+      };
+
+      return newItem;
     });
-  };
+
+    return updatedItems;
+  });
+};
+
 
   const handleAddToDesign = () => {
     if (!itemDimensions.width || !itemDimensions.height) {
@@ -734,24 +745,30 @@ const redirectToLoginWithData = (action) => {
     }
   }
 
-  // 📸 Take snapshot on Top View step
-  if (currentStep === "Top View" && dropZoneRef.current) {
-    dropZoneRef.current.style.transform = "scale(0.75)";
-    dropZoneRef.current.style.transformOrigin = "top left";
+  //  Take snapshot on Top View step
+if (currentStep === "Top View" && dropZoneRef.current) {
+  dropZoneRef.current.style.transform = "scale(0.75)";
+  dropZoneRef.current.style.transformOrigin = "top left";
+  await new Promise((resolve) => setTimeout(resolve, 300));
 
-    await new Promise((resolve) => setTimeout(resolve, 300)); // Let DOM settle
+  const canvas = await html2canvas(dropZoneRef.current);
 
-const canvas = await html2canvas(dropZoneRef.current);
-const imageData = canvas.toDataURL("image/png");
+  // 🔽 Create smaller canvas
+  const scale = 0.25;
+  const resizedCanvas = document.createElement('canvas');
+  resizedCanvas.width = canvas.width * scale;
+  resizedCanvas.height = canvas.height * scale;
 
+  const ctx = resizedCanvas.getContext('2d');
+  ctx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
 
-    dropZoneRef.current.style.transform = "scale(1)";
-setSnapshotImage(imageData); 
+ 
+  const imageData = resizedCanvas.toDataURL("image/jpeg", 0.5);
 
-    localStorage.setItem("snapshotImage", imageData);
-
-   
-  }
+  dropZoneRef.current.style.transform = "scale(1)";
+  setSnapshotImage(imageData);
+  localStorage.setItem("snapshotImage", imageData);
+}
 
   // Move to next step
   if (!completedSteps.includes(currentStep)) {

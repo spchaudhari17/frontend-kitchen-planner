@@ -22,6 +22,13 @@ const getNotesFromLocalStorage = () => {
 const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
   const [note, setNote] = useState("");
 
+  useEffect(() => {
+    if (isOpen) {
+      
+      setNote(item?.note || "");
+    }
+  }, [isOpen, item]);
+
   if (!isOpen) return null;
 
   return (
@@ -35,25 +42,30 @@ const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
         padding: "20px",
         boxShadow: "0px 0px 10px rgba(0,0,0,0.3)",
         zIndex: 1000,
+        width: "300px",
+        borderRadius: "8px",
       }}
     >
-      <h3>Add Notes for {item?.name}</h3>
+      <h3 style={{ marginBottom: "10px" }}>
+        Add Notes for {item?.name}
+      </h3>
       <textarea
         value={note}
         onChange={(e) => setNote(e.target.value)}
         rows="4"
         cols="30"
+        style={{ width: "100%", resize: "none", padding: "8px" }}
       />
-      <div style={{ marginTop: "10px" }}>
+      <div style={{ marginTop: "10px", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
         <button
           onClick={() => {
-            onSave(item, note);
+            onSave(item, note);  
             setNote("");
           }}
         >
           Save
         </button>
-        <button onClick={onClose} style={{ marginLeft: "10px" }}>
+        <button onClick={onClose}>
           Cancel
         </button>
       </div>
@@ -428,14 +440,16 @@ export const DropZone = forwardRef((props, ref) => {
     setModalOpen(false);
   };
 
-  const handleCabinetClick = (item, index) => {
-    if (currentStep === "Add Notes") {
-      setSelectedItem(item);
-      setModalOpen(true);
-    } else {
-      setSelectedItemIndex(index);
-    }
-  };
+const handleCabinetClick = (item, index) => {
+  if (currentStep === "Add Notes") {
+    const savedNote = notesMap[item.name]?.slice(-1)[0] || ""; // get last saved note
+    setSelectedItem({ ...item, note: savedNote }); // inject note into item
+    setModalOpen(true);
+  } else {
+    setSelectedItemIndex(index);
+  }
+};
+
 
   // Function to ensure measurements stay within bounds
   const constrainPosition = (position, total) => {
@@ -597,7 +611,9 @@ export const DropZone = forwardRef((props, ref) => {
           marginLeft: "40px", // Push to the right to make space for vertical measurements
         }}
       >
+      
         {droppedItems.map((item, index) => (
+          
           <Fragment key={item.id || index}>
             <Draggable
               position={{
