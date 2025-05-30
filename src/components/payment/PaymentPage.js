@@ -164,72 +164,116 @@ const PaymentForm = () => {
     setLoading(false);
   };
 
-  const handleBankPayment = async (e) => {
-    e.preventDefault();
+  // const handleBankPayment = async (e) => {
+  //   e.preventDefault();
 
-    if (!stripe || !elements) {
-      setAlert({ type: "danger", message: "Stripe is not loaded yet." });
-      return;
-    }
+  //   if (!stripe || !elements) {
+  //     setAlert({ type: "danger", message: "Stripe is not loaded yet." });
+  //     return;
+  //   }
 
-    setLoading(true);
-    setAlert({ type: "", message: "" }); // Clear previous alerts
+  //   setLoading(true);
+  //   setAlert({ type: "", message: "" }); // Clear previous alerts
 
-    try {
-      // 1. Create payment intent from backend
-      const { data } = await axiosPrivate.post(
-        `${process.env.REACT_APP_SERVER_URL}/api/payment/bank-transfer`,
-        {
-          userId: user._id,
-          amount,
-          email: user.email,
-          name: user.name,
-        }
-      );
+  //   try {
+  //     // 1. Create payment intent from backend
+  //     const { data } = await axiosPrivate.post(
+  //       `${process.env.REACT_APP_SERVER_URL}/api/payment/bank-transfer`,
+  //       {
+  //         userId: user._id,
+  //         amount,
+  //         email: user.email,
+  //         name: user.name,
+  //       }
+  //     );
 
-      // 2. Get the Stripe bank account element
-      const bankAccountElement = elements.getElement(AuBankAccountElement);
-      if (!bankAccountElement) {
-        setAlert({ type: "danger", message: "Bank account element not found" });
-        setLoading(false);
-        return;
+  //     // 2. Get the Stripe bank account element
+  //     const bankAccountElement = elements.getElement(AuBankAccountElement);
+  //     if (!bankAccountElement) {
+  //       setAlert({ type: "danger", message: "Bank account element not found" });
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     // 3. Confirm the BECS debit payment
+  //     const result = await stripe.confirmAuBecsDebitPayment(data.clientSecret, {
+  //       payment_method: {
+  //         au_becs_debit: bankAccountElement,
+  //         billing_details: {
+  //           name: user.name,
+  //           email: user.email,
+  //         },
+  //       },
+  //     });
+
+  //     // 4. Handle the result
+  //     if (result.error) {
+  //       console.error("Stripe BECS Error:", result.error);
+  //       setAlert({ type: "danger", message: result.error.message });
+  //     } else if (result.paymentIntent?.status === "succeeded") {
+  //       setAlert({ type: "success", message: "Bank payment successful!" });
+  //       resetForm();
+  //     } else {
+  //       setAlert({
+  //         type: "warning",
+  //         message:
+  //           "Payment submitted but status: " + result.paymentIntent?.status,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Bank Transfer Error:", error);
+  //     setAlert({
+  //       type: "danger",
+  //       message: "Failed to submit bank transfer. Please try again.",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleBankTransferConfirm = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setAlert({ type: "", message: "" });
+
+  try {
+    // 1. Create the transaction
+    const { data } = await axiosPrivate.post(
+      `${process.env.REACT_APP_SERVER_URL}/api/payment/bank-transfer`,
+      {
+        userId: user._id,
+        email: user.email,
+        name: user.name,
+        amount,
+        products: formattedProducts,
       }
+    );
 
-      // 3. Confirm the BECS debit payment
-      const result = await stripe.confirmAuBecsDebitPayment(data.clientSecret, {
-        payment_method: {
-          au_becs_debit: bankAccountElement,
-          billing_details: {
-            name: user.name,
-            email: user.email,
-          },
-        },
-      });
-
-      // 4. Handle the result
-      if (result.error) {
-        console.error("Stripe BECS Error:", result.error);
-        setAlert({ type: "danger", message: result.error.message });
-      } else if (result.paymentIntent?.status === "succeeded") {
-        setAlert({ type: "success", message: "Bank payment successful!" });
-        resetForm();
-      } else {
-        setAlert({
-          type: "warning",
-          message:
-            "Payment submitted but status: " + result.paymentIntent?.status,
-        });
+    // 2. Now update status and trigger email
+    await axiosPrivate.post(
+      `${process.env.REACT_APP_SERVER_URL}/api/payment/update-transaction`,
+      {
+        transaction_id: data.clientSecret.split('_secret')[0], // Extract base transaction ID
+        userId: user._id,
+        email: user.email,
+        products: formattedProducts,
+        status: "success",
       }
-    } catch (error) {
-      console.error("Bank Transfer Error:", error);
-      setAlert({
-        type: "danger",
-        message: "Failed to submit bank transfer. Please try again.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    );
+
+    setAlert({
+      type: "success",
+      message: "Thank you! Invoice has been sent to your email.",
+    });
+  } catch (err) {
+    console.error("Bank Transfer Confirm Error:", err);
+    setAlert({
+      type: "danger",
+      message: "Error processing your request. Please try again.",
+    });
+  }
+
+  setLoading(false);
+};
 
   return (
     <Container className="my-5">
@@ -308,47 +352,34 @@ const PaymentForm = () => {
         </Col>
 
         {/* Bank Transfer Section */}
-        <Col md={6}>
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
-              <Card.Title>Pay via Bank Transfer</Card.Title>
-              <Form onSubmit={handleBankPayment}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Amount (NZD)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={amount}
-                    readOnly
-                    required
-                  />
-                </Form.Group>
+       {/* Static Bank Transfer Section */}
+<Col md={6}>
+  <Card className="shadow-sm mb-4">   
+    <Card.Body>
+      <Card.Title>Pay via Bank Transfer</Card.Title>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Bank Account</Form.Label>
-                  <div className="p-2 border rounded">
-                    <AuBankAccountElement
-                      options={{ style: { base: { fontSize: "16px" } } }}
-                      onReady={() => console.log("Ready")}
-                      onChange={(e) => console.log("Change", e)}
-                    />
-                  </div>
-                </Form.Group>
+      <p><strong>Bank Name:</strong> ANZ Bank New Zealand</p>
+      <p><strong>Account Name:</strong> Your Company Ltd</p>
+      <p><strong>Account Number:</strong> 12-3456-7890123-00</p>
+      <p><strong>Reference:</strong> {user.name || "Your Name"}</p>
+      <p><strong>Amount to Pay:</strong> ${amount} NZD</p>
 
-                <Button
-                  type="submit"
-                  variant="success"
-                  disabled={!stripe || loading}
-                >
-                  {loading ? (
-                    <Spinner animation="border" size="sm" />
-                  ) : (
-                    "Pay with Bank Account"
-                  )}
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
+      <hr />
+      <Form onSubmit={handleBankTransferConfirm}>
+        <p>Once you've completed the transfer, please confirm:</p>
+        <Button
+          type="submit"
+          variant="success"
+          disabled={loading}
+          className="w-100"
+        >
+          {loading ? <Spinner animation="border" size="sm" /> : "I Have Paid"}
+        </Button>
+      </Form>
+    </Card.Body>
+  </Card>
+</Col>
+
       </Row>
     </Container>
   );

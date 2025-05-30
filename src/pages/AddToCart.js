@@ -545,6 +545,7 @@
 // };
 
 // export default AddToCart;
+
 import React, { useState, useEffect } from "react";
 import "./AddToCart.css";
 import { useNavigate } from "react-router-dom";
