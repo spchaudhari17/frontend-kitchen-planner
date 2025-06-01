@@ -1,4 +1,4 @@
-import React, { useState, useEffect , useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Form, Modal } from "react-bootstrap";
 import Button from "../ui/Button";
 import { axiosPrivate } from "../../api/axios";
@@ -25,8 +25,8 @@ const ProductList = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [selectedRoomDetails, setSelectedRoomDetails] = useState(null);
   const isEditing = Boolean(location.state?.roomDetails);
-const dropZoneRef = useRef(null);
-const [snapshotImage, setSnapshotImage] = useState("");
+  const dropZoneRef = useRef(null);
+  const [snapshotImage, setSnapshotImage] = useState("");
 
 
 
@@ -87,52 +87,52 @@ const [snapshotImage, setSnapshotImage] = useState("");
 
 
 
-useEffect(() => {
-  const stored = sessionStorage.getItem("resumeRoomData");
-  if (stored) {
-    const { roomData, pendingAction, currentStep } = JSON.parse(stored);
-    sessionStorage.removeItem("resumeRoomData");
+  useEffect(() => {
+    const stored = sessionStorage.getItem("resumeRoomData");
+    if (stored) {
+      const { roomData, pendingAction, currentStep } = JSON.parse(stored);
+      sessionStorage.removeItem("resumeRoomData");
 
-    if (roomData) {
-      setRoomSize({ width: roomData.width, depth: roomData.depth });
-      setDescription(roomData.description || "");        // ✅ MUST set this
-      setSubdescription(roomData.subdescription || "");
-      setNotes(roomData.notes || {});
-      setDroppedItems(roomData.droppedItems || []);
-      setCurrentStep(currentStep || "Room Layout");
+      if (roomData) {
+        setRoomSize({ width: roomData.width, depth: roomData.depth });
+        setDescription(roomData.description || "");        // ✅ MUST set this
+        setSubdescription(roomData.subdescription || "");
+        setNotes(roomData.notes || {});
+        setDroppedItems(roomData.droppedItems || []);
+        setCurrentStep(currentStep || "Room Layout");
 
-      // 🕒 Delay running the pending action until state is hydrated
-      setTimeout(() => {
-        if (pendingAction === "addToCart") {
-          handleAddToCart(new Event("resume"));
-        } else if (pendingAction === "saveRoom") {
-          handleSubmit(new Event("resume"));
-        }
-      }, 300); // Wait for hydration to finish
+        // 🕒 Delay running the pending action until state is hydrated
+        setTimeout(() => {
+          if (pendingAction === "addToCart") {
+            handleAddToCart(new Event("resume"));
+          } else if (pendingAction === "saveRoom") {
+            handleSubmit(new Event("resume"));
+          }
+        }, 300); // Wait for hydration to finish
+      }
     }
-  }
-}, []);
+  }, []);
 
 
 
 
-const redirectToLoginWithData = (action) => {
-  const pendingData = {
-    pendingAction: action,
-    currentStep,
-    roomData: {
-      width: roomSize.width,
-      depth: roomSize.depth,
-      description,
-      subdescription,
-      notes,
-      droppedItems,
-    },
+  const redirectToLoginWithData = (action) => {
+    const pendingData = {
+      pendingAction: action,
+      currentStep,
+      roomData: {
+        width: roomSize.width,
+        depth: roomSize.depth,
+        description,
+        subdescription,
+        notes,
+        droppedItems,
+      },
+    };
+
+    sessionStorage.setItem("resumeRoomData", JSON.stringify(pendingData));
+    navigate("/login");
   };
-
-  sessionStorage.setItem("resumeRoomData", JSON.stringify(pendingData));
-  navigate("/login");
-};
 
 
 
@@ -221,6 +221,13 @@ const redirectToLoginWithData = (action) => {
         height: item.height || item.minDepth || 600,
         id: item.id || Date.now(),
         basePrice: item.basePrice || 0,
+        hinges: item.hinges,
+        handles: item.handles,
+        cabinateType: item.cabinateType,
+        minWidth: item.minWidth,
+        maxWidth: item.maxWidth,
+        minDepth: item.minDepth,
+        maxDepth: item.maxDepth,
       }));
 
       setRoomSize({ width: room.width, depth: room.depth });
@@ -335,32 +342,35 @@ const redirectToLoginWithData = (action) => {
       minDepth: item.minDepth, // Store min depth from API
       maxDepth: item.maxDepth, // Store max depth from API
       basePrice: item.basePrice, // Store base price from API
+      hinges: item.hinges,
+      handles: item.handles,
+      cabinateType: item.cabinateType,
     };
 
     setSelectedItem(newItem);
     setShowModal(true);
   };
-const handleRotate = (index) => {
-  setDroppedItems((prevItems) => {
-    const updatedItems = prevItems.map((item, i) => {
-      if (i !== index) return item;
+  const handleRotate = (index) => {
+    setDroppedItems((prevItems) => {
+      const updatedItems = prevItems.map((item, i) => {
+        if (i !== index) return item;
 
-      const newRotation = (item.rotation + 90) % 360;
-      const isRotated = newRotation % 180 === 90;
+        const newRotation = (item.rotation + 90) % 360;
+        const isRotated = newRotation % 180 === 90;
 
-      const newItem = {
-        ...item,
-        rotation: newRotation,
-        width: isRotated ? item.height : item.width,
-        height: isRotated ? item.width : item.height,
-      };
+        const newItem = {
+          ...item,
+          rotation: newRotation,
+          width: isRotated ? item.height : item.width,
+          height: isRotated ? item.width : item.height,
+        };
 
-      return newItem;
+        return newItem;
+      });
+
+      return updatedItems;
     });
-
-    return updatedItems;
-  });
-};
+  };
 
 
   const handleAddToDesign = () => {
@@ -374,7 +384,7 @@ const handleRotate = (index) => {
     }
     setDroppedItems((prev) => [
       ...prev,
-      { ...selectedItem, ...itemDimensions, basePrice: selectedItem.basePrice , minWidth: selectedItem.minWidth,maxWidth: selectedItem.maxWidth},
+      { ...selectedItem, ...itemDimensions, basePrice: selectedItem.basePrice, minWidth: selectedItem.minWidth, maxWidth: selectedItem.maxWidth },
     ]);
     setShowModal(false);
     setItemDimensions({ height: "", width: "" });
@@ -420,7 +430,7 @@ const handleRotate = (index) => {
           subdescription,
           notes,
           droppedItems,
-          snapshotImage, 
+          snapshotImage,
         },
         { withCredentials: true }
       );
@@ -534,13 +544,13 @@ const handleRotate = (index) => {
       width: roomSize.width,
       depth: roomSize.depth,
       description,
-      subdescription,  
+      subdescription,
       notes,
       droppedItems: droppedItems.map((item) => ({
         id: item.id,
         name: item.name,
         imageSrc: item.imageSrc,
-         minWidth: item.minWidth, // Add minWidth
+        minWidth: item.minWidth, // Add minWidth
         maxWidth: item.maxWidth, // Add maxWidth
         basePrice: item.basePrice,
         x: item.x,
@@ -548,6 +558,13 @@ const handleRotate = (index) => {
         rotation: item.rotation,
         width: item.width,
         height: item.height,
+        minWidth: item.minWidth, // Add minWidth
+        maxWidth: item.maxWidth, // Add maxWidth
+        minDepth: item.minDepth, // Add minDepth if needed
+        maxDepth: item.maxDepth, // Add maxDepth if needed
+        hinges: item.hinges,
+        handles: item.handles,
+        cabinateType: item.cabinateType,
       })),
     };
 
@@ -641,7 +658,7 @@ const handleRotate = (index) => {
               sm={6}
               md={4}
               onClick={() => {
-                 
+
                 setRoomSize({ width: 3000, depth: 2000 });
                 setDescription("");
                 setSubdescription("");
@@ -724,77 +741,77 @@ const handleRotate = (index) => {
       );
     }
 
- const handleNextStep = async () => {
-  if (currentStep === "Room Layout") {
-    if (!roomSize.width || !roomSize.depth) {
-      setAlert({
-        open: true,
-        message: "Please enter room width and depth.",
-        severity: "error",
-      });
-      return;
-    }
+    const handleNextStep = async () => {
+      if (currentStep === "Room Layout") {
+        if (!roomSize.width || !roomSize.depth) {
+          setAlert({
+            open: true,
+            message: "Please enter room width and depth.",
+            severity: "error",
+          });
+          return;
+        }
 
-    if (!description.trim()) {
-      setAlert({
-        open: true,
-        message: "Description is required.",
-        severity: "error",
-      });
-      return;
-    }
-  }
+        if (!description.trim()) {
+          setAlert({
+            open: true,
+            message: "Description is required.",
+            severity: "error",
+          });
+          return;
+        }
+      }
 
-  //  Take snapshot on Top View step
-if (currentStep === "Top View" && dropZoneRef.current) {
-  dropZoneRef.current.style.transform = "scale(0.75)";
-  dropZoneRef.current.style.transformOrigin = "top left";
-  await new Promise((resolve) => setTimeout(resolve, 300));
+      //  Take snapshot on Top View step
+      if (currentStep === "Top View" && dropZoneRef.current) {
+        dropZoneRef.current.style.transform = "scale(0.75)";
+        dropZoneRef.current.style.transformOrigin = "top left";
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const canvas = await html2canvas(dropZoneRef.current);
+        const canvas = await html2canvas(dropZoneRef.current);
 
-  // 🔽 Create smaller canvas
-  const scale = 0.25;
-  const resizedCanvas = document.createElement('canvas');
-  resizedCanvas.width = canvas.width * scale;
-  resizedCanvas.height = canvas.height * scale;
+        // 🔽 Create smaller canvas
+        const scale = 0.25;
+        const resizedCanvas = document.createElement('canvas');
+        resizedCanvas.width = canvas.width * scale;
+        resizedCanvas.height = canvas.height * scale;
 
-  const ctx = resizedCanvas.getContext('2d');
-  ctx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
+        const ctx = resizedCanvas.getContext('2d');
+        ctx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
 
- 
-  const imageData = resizedCanvas.toDataURL("image/jpeg", 0.5);
 
-  dropZoneRef.current.style.transform = "scale(1)";
-  setSnapshotImage(imageData);
-  localStorage.setItem("snapshotImage", imageData);
-}
+        const imageData = resizedCanvas.toDataURL("image/jpeg", 0.5);
 
-  // Move to next step
-  if (!completedSteps.includes(currentStep)) {
-    setCompletedSteps([...completedSteps, currentStep]);
-  }
+        dropZoneRef.current.style.transform = "scale(1)";
+        setSnapshotImage(imageData);
+        localStorage.setItem("snapshotImage", imageData);
+      }
 
-  let nextStep;
-  switch (currentStep) {
-    case "Start":
-      nextStep = "Room Layout";
-      break;
-    case "Room Layout":
-      nextStep = "Top View";
-      break;
-    case "Top View":
-      nextStep = "Add Notes";
-      break;
-    case "Add Notes":
-      nextStep = "Review";
-      break;
-    default:
-      nextStep = currentStep;
-  }
+      // Move to next step
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps([...completedSteps, currentStep]);
+      }
 
-  setCurrentStep(nextStep);
-};
+      let nextStep;
+      switch (currentStep) {
+        case "Start":
+          nextStep = "Room Layout";
+          break;
+        case "Room Layout":
+          nextStep = "Top View";
+          break;
+        case "Top View":
+          nextStep = "Add Notes";
+          break;
+        case "Add Notes":
+          nextStep = "Review";
+          break;
+        default:
+          nextStep = currentStep;
+      }
+
+      setCurrentStep(nextStep);
+    };
 
 
     if (currentStep === "Room Layout") {
@@ -999,7 +1016,7 @@ if (currentStep === "Top View" && dropZoneRef.current) {
               }}
               className="remmar"
             >
-              <DropZone  ref={dropZoneRef} {...commonDropZoneProps} roomSize={roomSize} />
+              <DropZone ref={dropZoneRef} {...commonDropZoneProps} roomSize={roomSize} />
             </div>
 
             <div style={{ marginTop: "20px", textAlign: "center" }}>
@@ -1137,7 +1154,7 @@ if (currentStep === "Top View" && dropZoneRef.current) {
                 backgroundColor: "#fff",
                 padding: "20px",
                 borderRadius: "5px",
-                marginBottom: "20px",  
+                marginBottom: "20px",
               }}
               className="sidemenu"
             >
@@ -1240,8 +1257,8 @@ if (currentStep === "Top View" && dropZoneRef.current) {
 
               {/* </div> */}
 
-            
-  {isEditing ? (
+
+              {isEditing ? (
                 <Button
                   className="rbtn2"
                   style={{
@@ -1271,7 +1288,7 @@ if (currentStep === "Top View" && dropZoneRef.current) {
                   }}
                   onClick={handleSubmit}
                 >
-                   SAVE
+                  SAVE
                 </Button>
               )}
 
@@ -1305,60 +1322,60 @@ if (currentStep === "Top View" && dropZoneRef.current) {
 
 
   const convertToBase64 = async (url) => {
-  const response = await fetch(url, { mode: "cors" });
-  const blob = await response.blob();
-  return await new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(blob);
-  });
-};
-
-useEffect(() => {
-  const convertToBase64 = async (url) => {
-    try {
-      const response = await fetch(url, { mode: "cors" });
-      const blob = await response.blob();
-      return await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-    } catch (err) {
-      console.error("Failed to convert image to base64:", url);
-      return url; // fallback to original if failed
-    }
+    const response = await fetch(url, { mode: "cors" });
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
   };
 
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_SERVER_URL}/api/product/products`
-      );
+  useEffect(() => {
+    const convertToBase64 = async (url) => {
+      try {
+        const response = await fetch(url, { mode: "cors" });
+        const blob = await response.blob();
+        return await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      } catch (err) {
+        console.error("Failed to convert image to base64:", url);
+        return url; // fallback to original if failed
+      }
+    };
 
-      const rawProducts = response.data;
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_SERVER_URL}/api/product/products`
+        );
 
-      const processedProducts = await Promise.all(
-        rawProducts.map(async (product) => {
-          const base64FrontImage = await convertToBase64(product.cabinateFrontImage);
-          return {
-            ...product,
-            cabinateFrontImage: base64FrontImage,
-          };
-        })
-      );
+        const rawProducts = response.data;
 
-      setProducts(processedProducts);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      setError("Failed to load products");
-    } finally {
-      setLoading(false);
-    }
-  };
+        const processedProducts = await Promise.all(
+          rawProducts.map(async (product) => {
+            const base64FrontImage = await convertToBase64(product.cabinateFrontImage);
+            return {
+              ...product,
+              cabinateFrontImage: base64FrontImage,
+            };
+          })
+        );
 
-  fetchProducts();
-}, []);
+        setProducts(processedProducts);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
 
   const toggleSection = (section) => {
@@ -1378,10 +1395,13 @@ useEffect(() => {
             imageSrc={cabinet.cabinateImage}
             cabinateFrontImage={cabinet.cabinateFrontImage}
             minWidth={cabinet.minWidth}
-            basePrice={cabinet.basePrice}
             maxWidth={cabinet.maxWidth}
             minDepth={cabinet.minDepth}
             maxDepth={cabinet.maxDepth}
+            basePrice={cabinet.basePrice}
+            hinges={cabinet.hinges}
+            handles={cabinet.handles}
+            cabinateType={cabinet.cabinateType}
           />
         );
       });

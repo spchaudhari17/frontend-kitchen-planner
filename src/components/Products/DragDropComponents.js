@@ -24,7 +24,7 @@ const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
 
   useEffect(() => {
     if (isOpen) {
-      
+
       setNote(item?.note || "");
     }
   }, [isOpen, item]);
@@ -59,7 +59,7 @@ const AddNotesModal = ({ isOpen, onClose, onSave, item }) => {
       <div style={{ marginTop: "10px", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
         <button
           onClick={() => {
-            onSave(item, note);  
+            onSave(item, note);
             setNote("");
           }}
         >
@@ -84,6 +84,9 @@ export const DraggableCabinet = ({
   minDepth,
   maxDepth,
   basePrice,
+  hinges,
+  handles,
+  cabinateType
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CABINET",
@@ -91,12 +94,15 @@ export const DraggableCabinet = ({
       id,
       name,
       imageSrc,
-      minWidth, 
+      minWidth, // Include in drag item
       maxWidth,
       minDepth,
-      basePrice,
       maxDepth,
       frontImageSrc: cabinateFrontImage,
+      basePrice,
+      hinges,
+      handles,
+      cabinateType
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -126,24 +132,19 @@ export const DraggableCabinet = ({
   );
 };
 
- 
-export const DropZone = forwardRef((props, ref) => {
-  const {
-    onDrop,
-    droppedItems,
-    onRemove,
-    onRotate,
-    currentStep,
-    setDroppedItems,
-    roomSize = { width: 3000, depth: 2000 },
-  } = props;
 
- 
-
- {
+export const DropZone = ({
+  onDrop,
+  droppedItems,
+  onRemove,
+  onRotate,
+  currentStep,
+  setDroppedItems,
+  roomSize = { width: 3000, depth: 2000 },
+}) => {
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const dropRef = useRef(null);
   const [roomSizePixels, setRoomSizePixels] = useState({ width: 1, height: 1 });
-  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [notesMap, setNotesMap] = useState(getNotesFromLocalStorage());
@@ -162,6 +163,58 @@ export const DropZone = forwardRef((props, ref) => {
     clientOffset: monitor.getClientOffset(),
   }));
 
+  // --- Helper to get rotated bounding box ---
+  const getRotatedBoundingBox = (item) => {
+    const { x, y, width, height, rotation } = item;
+    const angleRad = (rotation * Math.PI) / 180;
+
+    const corners = [
+      { dx: 0, dy: 0 },
+      { dx: width, dy: 0 },
+      { dx: 0, dy: height },
+      { dx: width, dy: height },
+    ].map(({ dx, dy }) => {
+      // Rotate around the item's center
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const rotatedX = (dx - centerX) * Math.cos(angleRad) - (dy - centerY) * Math.sin(angleRad) + centerX;
+      const rotatedY = (dx - centerX) * Math.sin(angleRad) + (dy - centerY) * Math.cos(angleRad) + centerY;
+      return { x: rotatedX, y: rotatedY };
+    });
+
+    const minX = Math.min(...corners.map(c => c.x));
+    const maxX = Math.max(...corners.map(c => c.x));
+    const minY = Math.min(...corners.map(c => c.y));
+    const maxY = Math.max(...corners.map(c => c.y));
+
+    return {
+      x: x + minX,
+      y: y + minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  };
+
+  // --- Updated isOverlapping with rotated bounding box ---
+  const isOverlapping = (newItem, existingItems) => {
+    const newBox = getRotatedBoundingBox(newItem);
+
+    return existingItems.some((item) => {
+      // Exclude self from overlap check during drag
+      if (newItem.id === item.id) return false;
+
+      const existingBox = getRotatedBoundingBox(item);
+      const buffer = 1; // Minimal buffer for 'sticking' without overlap
+
+      return (
+        newBox.x < existingBox.x + existingBox.width - buffer &&
+        newBox.x + newBox.width > existingBox.x + buffer &&
+        newBox.y < existingBox.y + existingBox.height - buffer &&
+        newBox.y + newBox.height > existingBox.y + buffer
+      );
+    });
+  };
+
   // Load and save notes to localStorage
   useEffect(() => {
     saveNotesToLocalStorage(notesMap);
@@ -174,7 +227,7 @@ export const DropZone = forwardRef((props, ref) => {
         !event.target.closest(".cabinet-item") &&
         !event.target.closest(".measurement-label")
       ) {
-        setSelectedItemIndex(null);
+        // setSelectedAItemIndex(null);
       }
     };
     document.addEventListener("click", handleClickOutside);
@@ -191,18 +244,6 @@ export const DropZone = forwardRef((props, ref) => {
     }
   }, [dropRef]);
 
-  const isOverlapping = (newItem, existingItems) => {
-    return existingItems.some((item) => {
-      const buffer = 5; // Optional buffer for spacing
-      return (
-        newItem.x < item.x + item.width + buffer &&
-        newItem.x + newItem.width > item.x - buffer &&
-        newItem.y < item.y + item.height + buffer &&
-        newItem.y + newItem.height > item.y - buffer
-      );
-    });
-  };
-
   const calculateMeasurements = (items, index) => {
     if (!dropRef.current || !items || !items.length || index == null || index >= items.length) {
       setHorizontalMeasurements([]);
@@ -217,16 +258,9 @@ export const DropZone = forwardRef((props, ref) => {
       return;
     }
 
-    const safeItem = {
-      x: item.x || 0,
-      y: item.y || 0,
-      width: item.width || 300,
-      height: item.height || 600,
-      rotation: item.rotation || 0
-    };
-
-
-    let { x, y, width, height } = item;
+    // Use the potentially rotated bounding box for measurements
+    const itemBox = getRotatedBoundingBox(item);
+    let { x, y, width, height } = itemBox; // Use width/height from the rotated box
 
     const roomWidth = roomSize.width;
     const roomHeight = roomSize.depth;
@@ -313,79 +347,80 @@ export const DropZone = forwardRef((props, ref) => {
       const rect = dropZoneNode.getBoundingClientRect();
       const mmPerPixelX = roomSize.width / rect.width;
       const mmPerPixelY = roomSize.depth / rect.height;
+
       let x = (clientOffset.x - rect.left) * mmPerPixelX;
       let y = (clientOffset.y - rect.top) * mmPerPixelY;
 
-      const SNAP_THRESHOLD = 20;
-      let snappedX = x;
-      let snappedY = y;
-
-      // Snap to other cabinets or walls
-      droppedItems.forEach((cabinet) => {
-        if (Math.abs(x - cabinet.x) < SNAP_THRESHOLD) {
-          snappedX = cabinet.x;
-        }
-        if (Math.abs(x - (cabinet.x + cabinet.width)) < SNAP_THRESHOLD) {
-          snappedX = cabinet.x + cabinet.width;
-        }
-        if (Math.abs(y - cabinet.y) < SNAP_THRESHOLD) {
-          snappedY = cabinet.y;
-        }
-        if (Math.abs(y - (cabinet.y + cabinet.height)) < SNAP_THRESHOLD) {
-          snappedY = cabinet.y + cabinet.height;
-        }
-      });
-
-      // Snap to walls
-      if (x < SNAP_THRESHOLD) snappedX = 0;
-      if (x > roomSize.width - SNAP_THRESHOLD) {
-        snappedX = roomSize.width - (item.width || 300);
-      }
-      if (y < SNAP_THRESHOLD) snappedY = 0;
-      if (y > roomSize.depth - SNAP_THRESHOLD) {
-        snappedY = roomSize.depth - (item.height || 600);
-      }
-
-      const itemWidth = item.minWidth || item.width || 300;
-      const itemHeight = item.minDepth || item.height || 600;
-
-      // Prevent overlapping with other cabinets
-      let finalX = snappedX;
-      let finalY = snappedY;
-      for (const cabinet of droppedItems) {
-        if (
-          finalX < cabinet.x + cabinet.width &&
-          finalX + itemWidth > cabinet.x &&
-          finalY < cabinet.y + cabinet.height &&
-          finalY + itemHeight > cabinet.y
-        ) {
-          // Collision detected, move to the right of the existing cabinet
-          finalX = cabinet.x + cabinet.width;
-          finalY = cabinet.y;
-        }
-      }
-
-      // Ensure we stay within bounds
-      finalX = Math.max(0, Math.min(finalX, roomSize.width - itemWidth));
-      finalY = Math.max(0, Math.min(finalY, roomSize.depth - itemHeight));
-
-      const newItem = {
+      // Initial placement for the new item
+      const newItemBase = {
         ...item,
-        x: Math.round(finalX),
-        y: Math.round(finalY),
-        rotation: 0,
-        width: itemWidth,
-        height: itemHeight,
+        x: Math.round(x),
+        y: Math.round(y),
+        rotation: 0, // New items usually start unrotated
+        width: item.minWidth || item.width || 300,
+        height: item.minDepth || item.height || 600,
         id: Date.now(),
-         frontImageSrc: item.frontImageSrc, // Explicitly include this
-  imageSrc: item.imageSrc   
+        frontImageSrc: item.frontImageSrc,
+        imageSrc: item.imageSrc
       };
 
-      if (!isOverlapping(newItem, droppedItems)) {
-        onDrop(newItem);
+      // Get the rotated bounding box for the new item
+      const newItemBox = getRotatedBoundingBox(newItemBase);
+
+      const SNAP_THRESHOLD = 20; // in mm
+
+      let finalX = newItemBox.x;
+      let finalY = newItemBox.y;
+
+      // Snap to walls
+      if (finalX < SNAP_THRESHOLD) finalX = 0;
+      if (finalX > roomSize.width - SNAP_THRESHOLD - newItemBox.width) {
+        finalX = roomSize.width - newItemBox.width;
+      }
+      if (finalY < SNAP_THRESHOLD) finalY = 0;
+      if (finalY > roomSize.depth - SNAP_THRESHOLD - newItemBox.height) {
+        finalY = roomSize.depth - newItemBox.height;
+      }
+
+      // Snap to existing cabinets (edges)
+      let snapped = false;
+      for (const cabinet of droppedItems) {
+        const existingBox = getRotatedBoundingBox(cabinet);
+
+        // Snap to left edge of existing cabinet
+        if (Math.abs(finalX + newItemBox.width - existingBox.x) < SNAP_THRESHOLD) {
+          finalX = existingBox.x - newItemBox.width;
+          snapped = true;
+        }
+        // Snap to right edge of existing cabinet
+        if (Math.abs(finalX - (existingBox.x + existingBox.width)) < SNAP_THRESHOLD) {
+          finalX = existingBox.x + existingBox.width;
+          snapped = true;
+        }
+        // Snap to top edge of existing cabinet
+        if (Math.abs(finalY + newItemBox.height - existingBox.y) < SNAP_THRESHOLD) {
+          finalY = existingBox.y - newItemBox.height;
+          snapped = true;
+        }
+        // Snap to bottom edge of existing cabinet
+        if (Math.abs(finalY - (existingBox.y + existingBox.height)) < SNAP_THRESHOLD) {
+          finalY = existingBox.y + existingBox.height;
+          snapped = true;
+        }
+      }
+
+      const itemToDrop = {
+        ...newItemBase,
+        x: Math.round(finalX),
+        y: Math.round(finalY),
+      };
+
+      // Final overlap check before dropping
+      if (!isOverlapping(itemToDrop, droppedItems)) {
+        onDrop(itemToDrop);
         setSelectedItemIndex(droppedItems.length); // Select the newly added item
       } else {
-        console.warn("Drop ignored due to overlap");
+        console.warn("Drop ignored due to overlap or unable to find non-overlapping spot.");
       }
     },
     collect: (monitor) => ({ isOver: !!monitor.isOver() }),
@@ -395,21 +430,140 @@ export const DropZone = forwardRef((props, ref) => {
     const mmPerPixelX = roomSize.width / roomSizePixels.width;
     const mmPerPixelY = roomSize.depth / roomSizePixels.height;
 
-    let x = data.x * mmPerPixelX;
-    let y = data.y * mmPerPixelY;
+    let newX = data.x * mmPerPixelX;
+    let newY = data.y * mmPerPixelY;
 
     const item = droppedItems[index];
-    x = Math.max(0, Math.min(x, roomSize.width - item.width));
-    y = Math.max(0, Math.min(y, roomSize.depth - item.height));
+    const originalItemX = item.x;
+    const originalItemY = item.y;
+
+    // Temporarily update the item's position for overlap check
+    const tempUpdatedItem = { ...item, x: newX, y: newY };
+    const tempUpdatedItemBox = getRotatedBoundingBox(tempUpdatedItem);
+
+    // Keep track of the best non-overlapping position
+    let bestX = newX;
+    let bestY = newY;
+    let foundNonOverlapping = false;
+
+    // Check for overlap with other items
+    const otherItems = droppedItems.filter((_, i) => i !== index);
+
+    // Prioritize snapping to edges if not overlapping
+    const SNAP_THRESHOLD = 20; // in mm
+
+    // Attempt to snap while dragging
+    let snappedX = newX;
+    let snappedY = newY;
+
+    // Snap to walls
+    if (newX < SNAP_THRESHOLD) snappedX = 0;
+    if (newX > roomSize.width - SNAP_THRESHOLD - tempUpdatedItemBox.width) {
+      snappedX = roomSize.width - tempUpdatedItemBox.width;
+    }
+    if (newY < SNAP_THRESHOLD) snappedY = 0;
+    if (newY > roomSize.depth - SNAP_THRESHOLD - tempUpdatedItemBox.height) {
+      snappedY = roomSize.depth - tempUpdatedItemBox.height;
+    }
+
+    // Snap to other cabinets (edges)
+    for (const cabinet of otherItems) {
+      const existingBox = getRotatedBoundingBox(cabinet);
+
+      // Snap to left edge of existing cabinet
+      if (Math.abs(newX + tempUpdatedItemBox.width - existingBox.x) < SNAP_THRESHOLD) {
+        snappedX = existingBox.x - tempUpdatedItemBox.width;
+      }
+      // Snap to right edge of existing cabinet
+      if (Math.abs(newX - (existingBox.x + existingBox.width)) < SNAP_THRESHOLD) {
+        snappedX = existingBox.x + existingBox.width;
+      }
+      // Snap to top edge of existing cabinet
+      if (Math.abs(newY + tempUpdatedItemBox.height - existingBox.y) < SNAP_THRESHOLD) {
+        snappedY = existingBox.y - tempUpdatedItemBox.height;
+      }
+      // Snap to bottom edge of existing cabinet
+      if (Math.abs(newY - (existingBox.y + existingBox.height)) < SNAP_THRESHOLD) {
+        snappedY = existingBox.y + existingBox.height;
+      }
+    }
+
+    const potentialItem = { ...item, x: snappedX, y: snappedY };
+    if (!isOverlapping(potentialItem, otherItems)) {
+      bestX = snappedX;
+      bestY = snappedY;
+      foundNonOverlapping = true;
+    } else {
+      // If snapping leads to overlap, try the original unsnapped position
+      const unsnappedPotentialItem = { ...item, x: newX, y: newY };
+      if (!isOverlapping(unsnappedPotentialItem, otherItems)) {
+        bestX = newX;
+        bestY = newY;
+        foundNonOverlapping = true;
+      } else {
+        // If both snapped and unsnapped positions overlap,
+        // try to nudge it to a non-overlapping position
+        // This is a simple nudging strategy, more complex might be needed for dense layouts
+        let nudgedX = newX;
+        let nudgedY = newY;
+        let overlapResolved = false;
+        for (let i = 0; i < otherItems.length; i++) {
+          const otherItem = otherItems[i];
+          const otherBox = getRotatedBoundingBox(otherItem);
+          const currentBox = getRotatedBoundingBox({ ...item, x: nudgedX, y: nudgedY });
+
+          if (
+            currentBox.x < otherBox.x + otherBox.width &&
+            currentBox.x + currentBox.width > otherBox.x &&
+            currentBox.y < otherBox.y + otherBox.height &&
+            currentBox.y + currentBox.height > otherBox.y
+          ) {
+            // Overlap detected, try to move right
+            nudgedX = otherBox.x + otherBox.width;
+            const nudgedItemCheck = { ...item, x: nudgedX, y: nudgedY };
+            if (!isOverlapping(nudgedItemCheck, otherItems)) {
+              overlapResolved = true;
+              break;
+            }
+            // If moving right still overlaps, try moving down
+            nudgedX = newX; // Reset X
+            nudgedY = otherBox.y + otherBox.height;
+            const nudgedItemCheck2 = { ...item, x: nudgedX, y: nudgedY };
+            if (!isOverlapping(nudgedItemCheck2, otherItems)) {
+              overlapResolved = true;
+              break;
+            }
+            // For more complex cases, you'd need a more advanced collision response
+          }
+        }
+        if (overlapResolved) {
+          bestX = nudgedX;
+          bestY = nudgedY;
+          foundNonOverlapping = true;
+        } else {
+          // If all attempts to find a non-overlapping spot fail, revert to original position
+          bestX = originalItemX;
+          bestY = originalItemY;
+        }
+      }
+    }
+
+
+    // Ensure we stay within room bounds after snapping/nudging
+    bestX = Math.max(0, Math.min(bestX, roomSize.width - tempUpdatedItemBox.width));
+    bestY = Math.max(0, Math.min(bestY, roomSize.depth - tempUpdatedItemBox.height));
 
     const updated = [...droppedItems];
-    updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
+    updated[index] = { ...item, x: Math.round(bestX), y: Math.round(bestY) };
     setDroppedItems(updated);
     setSelectedItemIndex(index);
     calculateMeasurements(updated, index);
   };
 
   const handlePositionChange = (index, position) => {
+    // This is essentially the `onStop` for Draggable, which also calls handleDrag.
+    // So, the logic for collision resolution is already handled in handleDrag.
+    // We just need to update the state here based on the final position after drag.
     const mmPerPixelX = roomSize.width / roomSizePixels.width;
     const mmPerPixelY = roomSize.depth / roomSizePixels.height;
 
@@ -417,8 +571,10 @@ export const DropZone = forwardRef((props, ref) => {
     let y = position.y * mmPerPixelY;
 
     const item = droppedItems[index];
-    x = Math.max(0, Math.min(x, roomSize.width - item.width));
-    y = Math.max(0, Math.min(y, roomSize.depth - item.height));
+    const itemBox = getRotatedBoundingBox(item); // Use rotated box for boundary check
+
+    x = Math.max(0, Math.min(x, roomSize.width - itemBox.width));
+    y = Math.max(0, Math.min(y, roomSize.depth - itemBox.height));
 
     const updated = [...droppedItems];
     updated[index] = { ...item, x: Math.round(x), y: Math.round(y) };
@@ -440,16 +596,14 @@ export const DropZone = forwardRef((props, ref) => {
     setModalOpen(false);
   };
 
-const handleCabinetClick = (item, index) => {
-  if (currentStep === "Add Notes") {
-    const savedNote = notesMap[item.name]?.slice(-1)[0] || ""; // get last saved note
-    setSelectedItem({ ...item, note: savedNote }); // inject note into item
-    setModalOpen(true);
-  } else {
-    setSelectedItemIndex(index);
-  }
-};
-
+  const handleCabinetClick = (item, index) => {
+    if (currentStep === "Add Notes") {
+      setSelectedItem(item);
+      setModalOpen(true);
+    } else {
+      setSelectedItemIndex(index);
+    }
+  };
 
   // Function to ensure measurements stay within bounds
   const constrainPosition = (position, total) => {
@@ -458,7 +612,6 @@ const handleCabinetClick = (item, index) => {
 
   return (
     <div
-      ref={ref}
       style={{
         position: "relative",
         width: "100%",
@@ -474,7 +627,6 @@ const handleCabinetClick = (item, index) => {
 
       {/* Horizontal measurements at the top */}
       <div
-            
         style={{
           height: "40px",
           position: "relative",
@@ -531,7 +683,6 @@ const handleCabinetClick = (item, index) => {
 
       {/* Vertical measurements container (outside the drop zone) */}
       <div
-            
         style={{
           position: "absolute",
           left: "10px",
@@ -587,11 +738,10 @@ const handleCabinetClick = (item, index) => {
             )}
           </Fragment>
         ))}
-      </div>  
+      </div>
 
       {/* Drop zone */}
       <div
-           
         ref={(node) => {
           drop(node);
           dropRef.current = node;
@@ -611,9 +761,7 @@ const handleCabinetClick = (item, index) => {
           marginLeft: "40px", // Push to the right to make space for vertical measurements
         }}
       >
-      
         {droppedItems.map((item, index) => (
-          
           <Fragment key={item.id || index}>
             <Draggable
               position={{
@@ -632,104 +780,107 @@ const handleCabinetClick = (item, index) => {
                 handlePositionChange(index, data);
               }}
             >
-           <div
-  className="cabinet-item"
-  style={{
-    position: "absolute",
-    cursor: "move",
-    borderRadius: "3px",
-    padding: "0",
-    border: "2px solid #007bff",
-    boxShadow:
-      selectedItemIndex === index
-        ? "0 0 0 2px rgba(0, 123, 255, 0.3)"
-        : "0 2px 4px rgba(0,0,0,0.1)",
-    transform: `rotate(${item.rotation}deg)`,
-    zIndex: selectedItemIndex === index ? 10 : 1,
-    backgroundColor: "rgba(0, 123, 255, 0.07)",
-    width: `${(item.width / roomSize.width) * roomSizePixels.width}px`,
-    height: `${(item.height / roomSize.depth) * roomSizePixels.height}px`,
-  }}
-  onClick={(e) => {
-    e.stopPropagation();
-    handleCabinetClick(item, index);
-  }}
->
-  <div style={{ width: "100%", height: "100%", backgroundColor: "#e6f7ff" }}>
-    <img
-      src={item.frontImageSrc}
-      alt={item.name}
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "contain",
-        display: "block",
-        transform: `rotate(${item.rotation}deg)`,
-        transformOrigin: "center center",
-        transition: "transform 0.3s ease",
-      }}
-    />
-  </div>
+              <div
+                className="cabinet-item"
+                style={{
+                  position: "absolute",
+                  cursor: "move",
+                  borderRadius: "3px",
+                  padding: "2px",
+                  boxShadow:
+                    selectedItemIndex === index
+                      ? "0 0 0 2px #007bff, 0 2px 4px rgba(0,0,0,0.1)"
+                      : "0 2px 4px rgba(0,0,0,0.1)",
+                  // Rotation is now applied directly to the image inside, not the draggable container
+                  zIndex: selectedItemIndex === index ? 10 : 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  backgroundColor:
+                    selectedItemIndex === index
+                      ? "rgba(0, 123, 255, 0.1)"
+                      : "transparent",
+                  // Set width/height based on the original item's dimensions for the draggable container
+                  width: `${(item.width / roomSize.width) * roomSizePixels.width}px`,
+                  height: `${(item.height / roomSize.depth) * roomSizePixels.height}px`,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCabinetClick(item, index);
+                }}
+              >
+                <img
+                  src={item.frontImageSrc}
+                  alt={item.name}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    display: "block",
+                    transform: `rotate(${item.rotation}deg)`,
+                    transformOrigin: "center center",
+                    transition: "transform 0.3s ease",
+                  }}
+                />
 
-  {selectedItemIndex === index && currentStep !== "Add Notes" && (
-    <>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove(index);
-        }}
-        style={{
-          position: "absolute",
-          top: "5px",
-          right: "5px",
-          background: "#dc3545",
-          color: "#fff",
-          border: "none",
-          borderRadius: "50%",
-          width: "20px",
-          height: "20px",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "12px",
-          zIndex: 20,
-        }}
-        title="Remove cabinet"
-      >
-        ×
-      </button>
+                {selectedItemIndex === index && currentStep !== "Add Notes" && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(index);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "5px",
+                        right: "5px",
+                        background: "#dc3545",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "20px",
+                        height: "20px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "12px",
+                        zIndex: 20,
+                      }}
+                      title="Remove cabinet"
+                    >
+                      ×
+                    </button>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onRotate(index);
-        }}
-        style={{
-          position: "absolute",
-          bottom: "5px",
-          left: "5px",
-          background: "#28a745",
-          color: "#fff",
-          border: "none",
-          borderRadius: "50%",
-          width: "20px",
-          height: "20px",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "12px",
-          zIndex: 20,
-        }}
-        title="Rotate 90°"
-      >
-        ↻
-      </button>
-    </>
-  )}
-</div>
-
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRotate(index);
+                      }}
+                      style={{
+                        position: "absolute",
+                        bottom: "5px",
+                        left: "5px",
+                        background: "#28a745",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "20px",
+                        height: "20px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "12px",
+                        zIndex: 20,
+                      }}
+                      title="Rotate 90°"
+                    >
+                      ↻
+                    </button>
+                  </>
+                )}
+              </div>
             </Draggable>
           </Fragment>
         ))}
@@ -759,7 +910,6 @@ const handleCabinetClick = (item, index) => {
     </div>
   );
 };
-});
 
 // Function to retrieve notes from any file
 export const getNotes = () => getNotesFromLocalStorage();
