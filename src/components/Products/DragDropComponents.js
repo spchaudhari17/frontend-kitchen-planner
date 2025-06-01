@@ -86,7 +86,8 @@ export const DraggableCabinet = ({
   basePrice,
   hinges,
   handles,
-  cabinateType
+  cabinateType,
+  overlap,
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "CABINET",
@@ -102,7 +103,8 @@ export const DraggableCabinet = ({
       basePrice,
       hinges,
       handles,
-      cabinateType
+      cabinateType,
+      overlap
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),

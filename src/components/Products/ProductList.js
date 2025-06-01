@@ -228,6 +228,8 @@ const ProductList = () => {
         maxWidth: item.maxWidth,
         minDepth: item.minDepth,
         maxDepth: item.maxDepth,
+        overlap: item.overlap,
+        
       }));
 
       setRoomSize({ width: room.width, depth: room.depth });
@@ -345,6 +347,7 @@ const ProductList = () => {
       hinges: item.hinges,
       handles: item.handles,
       cabinateType: item.cabinateType,
+      overlap: item.overlap,
     };
 
     setSelectedItem(newItem);
@@ -565,6 +568,7 @@ const ProductList = () => {
         hinges: item.hinges,
         handles: item.handles,
         cabinateType: item.cabinateType,
+        overlap: item.overlap,
       })),
     };
 
@@ -1402,6 +1406,7 @@ const ProductList = () => {
             hinges={cabinet.hinges}
             handles={cabinet.handles}
             cabinateType={cabinet.cabinateType}
+            overlap={cabinet.overlap}
           />
         );
       });
