@@ -1386,32 +1386,43 @@ const ProductList = () => {
     setOpenSection(openSection === section ? null : section);
   };
 
-  const renderCabinets = (type) => {
-    return products
-      .filter((product) => product.cabinateType === type)
-      .map((cabinet) => {
-        console.log("Cabinet Data:", cabinet);
-        return (
-          <DraggableCabinet
-            key={cabinet._id}
-            id={cabinet._id}
-            name={cabinet.cabinateName}
-            imageSrc={cabinet.cabinateImage}
-            cabinateFrontImage={cabinet.cabinateFrontImage}
-            minWidth={cabinet.minWidth}
-            maxWidth={cabinet.maxWidth}
-            minDepth={cabinet.minDepth}
-            maxDepth={cabinet.maxDepth}
-            basePrice={cabinet.basePrice}
-            hinges={cabinet.hinges}
-            handles={cabinet.handles}
-            cabinateType={cabinet.cabinateType}
-            overlap={cabinet.overlap}
-          />
-        );
-      });
-  };
+const renderCabinets = (type) => {
+  return products
+    .filter((product) => product.cabinateType === type)
+    .map((cabinet) => {
+      const overlapText = {
+        1: "No Overlap",
+        2: "Base Cabinet",
+        3: "Wall Cabinet",
+        4: "Panel"
+      }[cabinet.overlap] || "Unknown";
 
+      return (
+        <CustomTooltip 
+          key={cabinet._id} 
+          message={`${cabinet.cabinateName} (${overlapText})`}
+        >
+          <div>
+            <DraggableCabinet
+              id={cabinet._id}
+              name={cabinet.cabinateName}
+              imageSrc={cabinet.cabinateImage}
+              cabinateFrontImage={cabinet.cabinateFrontImage}
+              minWidth={cabinet.minWidth}
+              maxWidth={cabinet.maxWidth}
+              minDepth={cabinet.minDepth}
+              maxDepth={cabinet.maxDepth}
+              basePrice={cabinet.basePrice}
+              hinges={cabinet.hinges}
+              handles={cabinet.handles}
+              cabinateType={cabinet.cabinateType}
+              overlap={cabinet.overlap}
+            />
+          </div>
+        </CustomTooltip>
+      );
+    });
+};
   const validateStepNavigation = (targetStep) => {
     const currentIndex = steps.findIndex((s) => s.name === currentStep);
     const targetIndex = steps.findIndex((s) => s.name === targetStep);
