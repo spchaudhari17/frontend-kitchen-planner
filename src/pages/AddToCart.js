@@ -225,7 +225,6 @@ useEffect(() => {
                         <p><strong>Width:</strong> {item?.width}mm (Min: {item?.minWidth}mm, Max: {item?.maxWidth}mm)</p>
                         <p><strong>Depth:</strong> {item?.height}mm</p>
                         <p><strong>Base Price:</strong> ${item?.basePrice || 100}</p>
-                        <p><strong>overlap:</strong> ${item?.overlap || 100}</p>
                         <p><strong>Price Calculation:</strong>
                           ${item?.basePrice} (base) +
                           (${item?.width - item?.minWidth}mm × $0.20) =

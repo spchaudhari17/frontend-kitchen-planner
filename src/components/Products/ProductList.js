@@ -16,6 +16,8 @@ import { useColorContext } from "../../context/colorcontext";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./ProductList.css";
 
+
+
 const ProductList = () => {
   const { auth } = useAuthContext();
   const navigate = useNavigate();
@@ -28,7 +30,9 @@ const ProductList = () => {
   const dropZoneRef = useRef(null);
   const [snapshotImage, setSnapshotImage] = useState("");
 
-
+  const isEditingAllowed = () => {
+    return currentStep === "Top View"; // Only allow editing in Top View step
+  };
 
 
   const defaultColors = {
@@ -229,7 +233,7 @@ const ProductList = () => {
         minDepth: item.minDepth,
         maxDepth: item.maxDepth,
         overlap: item.overlap,
-        
+
       }));
 
       setRoomSize({ width: room.width, depth: room.depth });
@@ -609,14 +613,15 @@ const ProductList = () => {
   };
 
   const commonDropZoneProps = {
-    onDrop: handleDrop,
-    droppedItems: droppedItems, // Same state for all steps
-    onRemove: handleRemove,
-    onRotate: handleRotate,
-    currentStep: currentStep,
-    setDroppedItems: setDroppedItems,
-    roomSize: roomSize,
-  };
+  onDrop: isEditingAllowed() ? handleDrop : null, // Only allow drops in Top View
+  droppedItems: droppedItems,
+  onRemove: isEditingAllowed() ? handleRemove : null, // Only allow removal in Top View
+  onRotate: isEditingAllowed() ? handleRotate : null, // Only allow rotation in Top View
+  currentStep: currentStep,
+  setDroppedItems: isEditingAllowed() ? setDroppedItems : null, // Only allow position changes in Top View
+  roomSize: roomSize,
+  isEditingAllowed: isEditingAllowed(), // Pass this flag to DropZone
+};
 
   const handleAlertClose = () => {
     setAlert((prev) => ({ ...prev, open: false }));
@@ -1386,43 +1391,43 @@ const ProductList = () => {
     setOpenSection(openSection === section ? null : section);
   };
 
-const renderCabinets = (type) => {
-  return products
-    .filter((product) => product.cabinateType === type)
-    .map((cabinet) => {
-      const overlapText = {
-        1: "No Overlap",
-        2: "Base Cabinet",
-        3: "Wall Cabinet",
-        4: "Panel"
-      }[cabinet.overlap] || "Unknown";
+  const renderCabinets = (type) => {
+    return products
+      .filter((product) => product.cabinateType === type)
+      .map((cabinet) => {
+        const overlapText = {
+          1: "No Overlap",
+          2: "Base Cabinet",
+          3: "Wall Cabinet",
+          4: "Panel"
+        }[cabinet.overlap] || "Unknown";
 
-      return (
-        <CustomTooltip 
-          key={cabinet._id} 
-          message={`${cabinet.cabinateName} (${overlapText})`}
-        >
-          <div>
-            <DraggableCabinet
-              id={cabinet._id}
-              name={cabinet.cabinateName}
-              imageSrc={cabinet.cabinateImage}
-              cabinateFrontImage={cabinet.cabinateFrontImage}
-              minWidth={cabinet.minWidth}
-              maxWidth={cabinet.maxWidth}
-              minDepth={cabinet.minDepth}
-              maxDepth={cabinet.maxDepth}
-              basePrice={cabinet.basePrice}
-              hinges={cabinet.hinges}
-              handles={cabinet.handles}
-              cabinateType={cabinet.cabinateType}
-              overlap={cabinet.overlap}
-            />
-          </div>
-        </CustomTooltip>
-      );
-    });
-};
+        return (
+          <CustomTooltip
+            key={cabinet._id}
+            message={`${cabinet.cabinateName} (${overlapText})`}
+          >
+            <div>
+              <DraggableCabinet
+                id={cabinet._id}
+                name={cabinet.cabinateName}
+                imageSrc={cabinet.cabinateImage}
+                cabinateFrontImage={cabinet.cabinateFrontImage}
+                minWidth={cabinet.minWidth}
+                maxWidth={cabinet.maxWidth}
+                minDepth={cabinet.minDepth}
+                maxDepth={cabinet.maxDepth}
+                basePrice={cabinet.basePrice}
+                hinges={cabinet.hinges}
+                handles={cabinet.handles}
+                cabinateType={cabinet.cabinateType}
+                overlap={cabinet.overlap}
+              />
+            </div>
+          </CustomTooltip>
+        );
+      });
+  };
   const validateStepNavigation = (targetStep) => {
     const currentIndex = steps.findIndex((s) => s.name === currentStep);
     const targetIndex = steps.findIndex((s) => s.name === targetStep);

@@ -113,7 +113,7 @@ export const DraggableCabinet = ({
 
   // Determine border color based on overlap type
   const getBorderColor = () => {
-    switch(overlap) {
+    switch (overlap) {
       case 1: return '#ff0000'; // Red for no overlap (tall cabinets)
       case 2: return '#00ff00'; // Green for base cabinets
       case 3: return '#0000ff'; // Blue for wall cabinets
@@ -144,8 +144,8 @@ export const DraggableCabinet = ({
           objectFit: "cover",
         }}
       />
-      <div style={{ 
-        fontSize: "10px", 
+      <div style={{
+        fontSize: "10px",
         textAlign: "center",
         marginTop: "4px",
         fontWeight: "bold",
@@ -968,6 +968,10 @@ export const DropZone = ({
     clientOffset: monitor.getClientOffset(),
   }));
 
+  const isEditingAllowed = () => {
+    return currentStep === "Top View"; // Only allow editing in Top View step
+  };
+
   // --- Helper to get rotated bounding box ---
   const getRotatedBoundingBox = (item) => {
     const { x, y, width, height, rotation } = item;
@@ -1097,7 +1101,6 @@ export const DropZone = ({
     const cappedY = Math.max(0, Math.min(y, roomHeight - height));
     const cappedRight = cappedX + Math.min(width, roomWidth - cappedX);
     const cappedBottom = cappedY + Math.min(height, roomHeight - cappedY);
-
     const leftGap = Math.round(cappedX);
     const cabinetWidth = Math.round(cappedRight - cappedX);
     const rightGap = Math.round(roomWidth - cappedRight);
@@ -1597,15 +1600,22 @@ export const DropZone = ({
               }}
               bounds="parent"
               onStart={() => {
-                setIsDragging(true);
-                setDraggingIndex(index);
+                if (isEditingAllowed) {
+                  setIsDragging(true);
+                  setDraggingIndex(index);
+                }
               }}
-              onDrag={(e, data) => handleDrag(index, data)}
+              onDrag={(e, data) => {
+                if (isEditingAllowed) handleDrag(index, data);
+              }}
               onStop={(e, data) => {
-                setIsDragging(false);
-                setDraggingIndex(null);
-                handlePositionChange(index, data);
+                if (isEditingAllowed) {
+                  setIsDragging(false);
+                  setDraggingIndex(null);
+                  handlePositionChange(index, data);
+                }
               }}
+              disabled={!isEditingAllowed} 
             >
               <div
                 className="cabinet-item"
@@ -1650,7 +1660,7 @@ export const DropZone = ({
                   }}
                 />
 
-                {selectedItemIndex === index && currentStep !== "Add Notes" && (
+                {selectedItemIndex === index && isEditingAllowed &&  (
                   <>
                     <button
                       onClick={(e) => {
